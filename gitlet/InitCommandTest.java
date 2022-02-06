@@ -22,7 +22,7 @@ public class InitCommandTest {
     public void initCommitDumpTest() throws IOException {
         Repository.init();
         String initCommitID = readContentsAsString(join(BRANCHES_DIR, "master"));
-        File initCommitFile = join(OBJECTS_Commit_DIR, initCommitID);
+        File initCommitFile = join(OBJECTS_DIR, initCommitID);
         System.out.println("initCommitID: " + initCommitID);
         DumpObj.main(initCommitFile);
     }

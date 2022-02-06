@@ -14,20 +14,6 @@ import static gitlet.Utils.*;
 public class HashObject implements Serializable, Dumpable {
 
     /**
-     * The type of THIS.
-     * Either Commit, or Tree, or Blob.
-     */
-    private final String _type;
-
-    /**
-     * Constructor.
-     * @param type the type of THIS, designated by invoking
-     */
-    public HashObject(String type) {
-        this._type = type;
-    }
-
-    /**
      * Get the SHA-1 of THIS
      * @return the SHA-1 of THIS
      */
@@ -42,7 +28,7 @@ public class HashObject implements Serializable, Dumpable {
      */
     public String save() {
         String id = id();
-        File dest = join(OBJECTS_DIR, _type, id);
+        File dest = join(OBJECTS_DIR, id);
         writeObject(dest, this);
         return id;
     }
@@ -52,19 +38,18 @@ public class HashObject implements Serializable, Dumpable {
      */
     @Override
     public void dump() {
-        System.out.println("Object type: " + _type);
+        System.out.println("This is a HashObject.");
     }
 
     /* STATIC METHODS */
 
     /**
      * Load a type object with id.
-     * @param type the given type
      * @param id the given id
      * @return the deserialized object
      */
-    static HashObject load(String type, String id) {
-        File dest = join(OBJECTS_DIR, type, id);
+    static HashObject load(String id) {
+        File dest = join(OBJECTS_DIR, id);
         return readObject(dest, HashObject.class);
     }
 }

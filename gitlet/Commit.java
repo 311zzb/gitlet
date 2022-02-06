@@ -27,7 +27,6 @@ public class Commit extends HashObject {
      * @param treeRef the corresponding tree's hash
      */
     private Commit(String parentCommitRef, String message, String treeRef) {
-        super("Commit");
         this._parentCommitRef = parentCommitRef;
         this._parentCommitMergeRef = null; // TODO: merge command
         this._message = message;
@@ -87,6 +86,6 @@ public class Commit extends HashObject {
      * @return the deserialized commit object
      */
     static Commit loadCommit(String id) {
-        return (Commit) HashObject.load("Commit", id);
+        return (Commit) HashObject.load(id);
     }
 }

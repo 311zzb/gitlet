@@ -17,7 +17,6 @@ public class Tree extends HashObject{
 
     /** Constructor */
     public Tree() {
-        super("Tree");
         _structure = new TreeMap<>();
     }
 

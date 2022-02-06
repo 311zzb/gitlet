@@ -33,25 +33,22 @@ public class Repository {
     static final File OBJECTS_DIR = join(GITLET_DIR, "objects");
     /** The branches directory. */
     static final File BRANCHES_DIR = join(GITLET_DIR, "branches");
-    static final File OBJECTS_Blob_DIR = join(OBJECTS_DIR, "Blob");
-    static final File OBJECTS_Tree_DIR = join(OBJECTS_DIR, "Tree");
-    static final File OBJECTS_Commit_DIR = join(OBJECTS_DIR, "Commit");
 
 
-    /** Caching commits. */
-    static Map<String, Commit> commits = new TreeMap<>();
-    /** Lazy loading and caching of Commit objects. */
-    private Commit getCommit(String ID) {
-        if (!commits.containsKey(ID)) {
-            commits.put(ID, loadCommit(ID));
-        }
-        return commits.get(ID);
-    }
-    /** Get the Commit object of the latest commit. */
-    private Commit getLatestCommit() {
-        return getCommit(loadLatestCommitID());
-    }
-    
+//    /** Caching commits. */
+//    static Map<String, Commit> commits = new TreeMap<>();
+//    /** Lazy loading and caching of Commit objects. */
+//    private Commit getCommit(String ID) {
+//        if (!commits.containsKey(ID)) {
+//            commits.put(ID, loadCommit(ID));
+//        }
+//        return commits.get(ID);
+//    }
+//    /** Get the Commit object of the latest commit. */
+//    private Commit getLatestCommit() {
+//        return getCommit(loadLatestCommitID());
+//    }
+//
 
 
     /* INIT COMMAND */
@@ -73,9 +70,7 @@ public class Repository {
     /** Set up the persistence directories. */
     private static void setUpPersistence() throws IOException {
         BRANCHES_DIR.mkdirs();
-        OBJECTS_Blob_DIR.mkdirs();
-        OBJECTS_Tree_DIR.mkdirs();
-        OBJECTS_Commit_DIR.mkdirs();
+        OBJECTS_DIR.mkdirs();
         HEAD.createNewFile();
         STAGE.createNewFile();
     }

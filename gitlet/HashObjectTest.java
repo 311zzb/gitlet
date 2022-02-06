@@ -16,7 +16,7 @@ public class HashObjectTest {
      */
     @Test
     public void dumpingTest() {
-        HashObject test = new HashObject("test");
+        HashObject test = new HashObject();
         String fileName = test.save();
         DumpObj.main(fileName);
     }
@@ -29,7 +29,7 @@ public class HashObjectTest {
     @Test
     public void saveAndHashTest() {
         // An object's SHA1 will change once it is serialized and deserialized.
-        HashObject testHashObject = new HashObject("test");
+        HashObject testHashObject = new HashObject();
         testHashObject.save();
         String fileID = testHashObject.id(); // SHA-1
         File savedFile = join(CWD, fileID);
