@@ -4,6 +4,10 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
+ * Represent a Gitlet Tree, corresponding to UNIX directory entries.
+ * A single tree object contains a TreeMap, containing zero or more entries.
+ * Each of these entries is a fileName-BlobID pair.
+ * This class also contains Tree related static methods.
  *
  * @author XIE Changyuan
  */
@@ -18,15 +22,8 @@ public class Tree extends HashObject{
     }
 
     /**
-     * Create a new empty Tree object and save it
-     * @return the new tree's ID
+     * Print the treeMap in this object on System.out.
      */
-    public static String newWrite_Tree() {
-        Tree newTree = new Tree();
-        return newTree.save();
-    }
-
-    /** dump method. */
     @Override
     public void dump(){
         super.dump();
@@ -54,5 +51,16 @@ public class Tree extends HashObject{
      */
     public String retrieve(String fileName) {
         return _structure.get(fileName);
+    }
+
+    /* STATIC METHODS */
+
+    /**
+     * Create a new empty Tree object and save it
+     * @return the new tree's ID
+     */
+    public static String newWrite_Tree() {
+        Tree newTree = new Tree();
+        return newTree.save();
     }
 }

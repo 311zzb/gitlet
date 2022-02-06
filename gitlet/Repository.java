@@ -3,12 +3,17 @@ package gitlet;
 import java.io.File;
 import java.io.IOException;
 
+import static gitlet.Branch.*;
+import static gitlet.Stage.*;
+import static gitlet.Commit.*;
+import static gitlet.Tree.*;
 import static gitlet.Utils.*;
 
 
-/** Represents a gitlet repository.
- *  TODO: make classes for STAGE and branch for related methods to live
- *  does at a high level.
+/**
+ * A class where Repository related static methods live.
+ * Handling all commands to gitlet passed by the Main method.
+ * Will never be instantiated.
  *
  *  @author XIE Changyuan
  */
@@ -30,7 +35,7 @@ public class Repository {
     static final File OBJECTS_Tree_DIR = join(OBJECTS_DIR, "Tree");
     static final File OBJECTS_Commit_DIR = join(OBJECTS_DIR, "Commit");
 
-    /** INIT COMMAND */
+    /* INIT COMMAND */
 
     /**
      * 1. Set up persistence directories
@@ -56,38 +61,12 @@ public class Repository {
         STAGE.createNewFile();
     }
 
-    /**
-     * Make an initial commit
-     * Refresh the staging area
-     * @return the ID of the initial commit
-     */
-    private static String mkInitialCommit() {
-        String emptyTreeRef = Tree.newWrite_Tree();
-        String initialCommitID = Commit.newWrite_Commit(null, "initial commit", emptyTreeRef);
-        refresh_Stage();
-        return initialCommitID;
-    }
-
-    /**
-     * Create a master branch and make it point to the initial commit.
-     * @param initialCommitID the ID of the initial commit
-     */
-    private static void mkMasterBranch(String initialCommitID) {
-        File masterBranchFile = join(BRANCHES_DIR, "master");
-        writeContents(masterBranchFile, initialCommitID);
-    }
+    /* MISC */
 
     /** Move HEAD points to branchName. */
     private static void moveHeadTo(String branchName) {
         writeContents(HEAD, branchName);
     }
 
-    /**
-     * Refresh the staging area.
-     * By creating a new Tree and overwriting STAGE with the new Tree's ID.
-     */
-    private static void refresh_Stage() {
-        String newTreeID = Tree.newWrite_Tree();
-        writeContents(STAGE, newTreeID);
-    }
+
 }

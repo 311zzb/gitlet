@@ -3,8 +3,7 @@ package gitlet;
 import java.util.Date;
 
 /** Represents a gitlet commit object.
- *  TODO: It's a good idea to give a description here of what else this Class
- *  does at a high level.
+ *
  *
  *  @author XIE Changyuan
  */
@@ -41,6 +40,17 @@ public class Commit extends HashObject {
     }
 
     /**
+     * Print information of this commit on System.out.
+     */
+    @Override
+    public void dump(){
+        super.dump();
+        System.out.println("message: " + _message);
+        System.out.println("parent: " + _parentCommitRef);
+        System.out.println("treeRef: " + _treeRef);
+    }
+
+    /**
      * Create a new Commit object and write it
      * @return the new commit's ID
      */
@@ -57,12 +67,17 @@ public class Commit extends HashObject {
         return null;
     }
 
-    /** dump method. */
-    @Override
-    public void dump(){
-        super.dump();
-        System.out.println("message: " + _message);
-        System.out.println("parent: " + _parentCommitRef);
-        System.out.println("treeRef: " + _treeRef);
+    /* STATIC METHODS */
+
+    /**
+     * Make an initial commit
+     * Refresh the staging area
+     * @return the ID of the initial commit
+     */
+    static String mkInitialCommit() {
+        String emptyTreeRef = Tree.newWrite_Tree();
+        String initialCommitID = Commit.newWrite_Commit(null, "initial commit", emptyTreeRef);
+        Stage.refresh_Stage();
+        return initialCommitID;
     }
 }
