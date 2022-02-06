@@ -3,8 +3,8 @@ package gitlet;
 import java.io.File;
 
 import static gitlet.Repository.BRANCHES_DIR;
-import static gitlet.Utils.join;
-import static gitlet.Utils.writeContents;
+import static gitlet.Repository.HEAD;
+import static gitlet.Utils.*;
 
 /**
  * A class where Branch related static methods live.
@@ -21,5 +21,13 @@ public class Branch {
     static void mkMasterBranch(String initialCommitID) {
         File masterBranchFile = join(BRANCHES_DIR, "master");
         writeContents(masterBranchFile, initialCommitID);
+    }
+
+    static String loadLatestCommitID() {
+        return readContentsAsString(join(BRANCHES_DIR, loadCurrBranchName()));
+    }
+
+    static String loadCurrBranchName() {
+        return readContentsAsString(HEAD);
     }
 }

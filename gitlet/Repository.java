@@ -2,6 +2,8 @@ package gitlet;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
+import java.util.TreeMap;
 
 import static gitlet.Branch.*;
 import static gitlet.Stage.*;
@@ -34,6 +36,23 @@ public class Repository {
     static final File OBJECTS_Blob_DIR = join(OBJECTS_DIR, "Blob");
     static final File OBJECTS_Tree_DIR = join(OBJECTS_DIR, "Tree");
     static final File OBJECTS_Commit_DIR = join(OBJECTS_DIR, "Commit");
+
+
+    /** Caching commits. */
+    static Map<String, Commit> commits = new TreeMap<>();
+    /** Lazy loading and caching of Commit objects. */
+    private Commit getCommit(String ID) {
+        if (!commits.containsKey(ID)) {
+            commits.put(ID, loadCommit(ID));
+        }
+        return commits.get(ID);
+    }
+    /** Get the Commit object of the latest commit. */
+    private Commit getLatestCommit() {
+        return getCommit(loadLatestCommitID());
+    }
+    
+
 
     /* INIT COMMAND */
 

@@ -54,4 +54,17 @@ public class HashObject implements Serializable, Dumpable {
     public void dump() {
         System.out.println("Object type: " + _type);
     }
+
+    /* STATIC METHODS */
+
+    /**
+     * Load a type object with id.
+     * @param type the given type
+     * @param id the given id
+     * @return the deserialized object
+     */
+    static HashObject load(String type, String id) {
+        File dest = join(OBJECTS_DIR, type, id);
+        return readObject(dest, HashObject.class);
+    }
 }

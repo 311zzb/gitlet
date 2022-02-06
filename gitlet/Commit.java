@@ -50,6 +50,8 @@ public class Commit extends HashObject {
         System.out.println("treeRef: " + _treeRef);
     }
 
+    /* STATIC METHODS */
+
     /**
      * Create a new Commit object and write it
      * @return the new commit's ID
@@ -67,8 +69,6 @@ public class Commit extends HashObject {
         return null;
     }
 
-    /* STATIC METHODS */
-
     /**
      * Make an initial commit
      * Refresh the staging area
@@ -79,5 +79,14 @@ public class Commit extends HashObject {
         String initialCommitID = Commit.newWrite_Commit(null, "initial commit", emptyTreeRef);
         Stage.refresh_Stage();
         return initialCommitID;
+    }
+
+    /**
+     * Load a commit with id
+     * @param id the given ID
+     * @return the deserialized commit object
+     */
+    static Commit loadCommit(String id) {
+        return (Commit) HashObject.load("Commit", id);
     }
 }
