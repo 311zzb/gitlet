@@ -8,10 +8,10 @@ import static gitlet.Utils.*;
 
 public class HashObject implements Serializable, Dumpable {
 
-    String _msg;
+    private final String _type;
 
-    public HashObject(String msg) {
-        this._msg = msg;
+    public HashObject(String type) {
+        this._type = type;
     }
 
     public String id() {
@@ -20,13 +20,13 @@ public class HashObject implements Serializable, Dumpable {
 
     public String save() {
         String id = id();
-        File dest = join(CWD, id);
+        File dest = join(CWD, id); // FIXME
         writeObject(dest, this);
         return id;
     }
 
     @Override
     public void dump() {
-        System.out.println(_msg);
+        System.out.println("Object type: " + _type);
     }
 }

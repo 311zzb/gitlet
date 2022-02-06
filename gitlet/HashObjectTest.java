@@ -6,7 +6,7 @@ import java.io.File;
 
 import static gitlet.Repository.CWD;
 import static gitlet.Utils.*;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class HashObjectTest {
 
@@ -22,6 +22,7 @@ public class HashObjectTest {
 
     /**
      * Try to find a way to get a content-addressable id of objects.
+     * It seems impossible.
      */
     @Test
     public void saveAndHashTest() {
@@ -38,5 +39,19 @@ public class HashObjectTest {
         HashObject readHashObject = readObject(savedFile, HashObject.class);
         String readHashObjectID = readHashObject.id();
         assertEquals(fileID, readHashObjectID);
+    }
+
+    /**
+     * Sanity test for Tree functions.
+     */
+    @Test
+    public void treeTest() {
+        Tree testTree = new Tree();
+        assertTrue(testTree.isEmpty());
+
+        testTree.record("test.txt", "some hash");
+
+        assertEquals("some hash", testTree.retrieve("test.txt"));
+        assertNull(testTree.retrieve("notExist.txt"));
     }
 }
