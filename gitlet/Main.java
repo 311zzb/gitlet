@@ -1,5 +1,7 @@
 package gitlet;
 
+import java.io.IOException;
+
 /** Driver class for Gitlet, a subset of the Git version-control system.
  *  @author XIE Changyuan
  */
@@ -8,15 +10,15 @@ public class Main {
     /** Usage: java gitlet.Main ARGS, where ARGS contains
      *  <COMMAND> <OPERAND1> <OPERAND2> ... 
      */
-    public static void main(String[] args) {
-        validateArgsNum("Gitlet", args, 0);
+    public static void main(String[] args) throws IOException {
+        assertNotArgsNum("Gitlet", args, 0);
         String command = args[0];
         String[] operands = getOperands(args);
 
         switch(command) {
             case "init":
                 validateArgsNum("init", operands, 0);
-                // TODO: init the repository
+                Repository.init();
                 break;
             case "add":
                 validateArgsNum("add", operands, 1);
@@ -34,6 +36,14 @@ public class Main {
      */
     private static void validateArgsNum(String cmd, String[] args, int n) {
         if (args.length != n) {
+            throw new GitletException(
+                    String.format("Invalid number of arguments for: %s.", cmd)
+            );
+        }
+    }
+
+    private static void assertNotArgsNum(String cmd, String[] args, int n) {
+        if (args.length == n) {
             throw new GitletException(
                     String.format("Invalid number of arguments for: %s.", cmd)
             );

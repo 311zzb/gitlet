@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.Serializable;
 
 import static gitlet.Repository.CWD;
+import static gitlet.Repository.OBJECTS_DIR;
 import static gitlet.Utils.*;
 
 public class HashObject implements Serializable, Dumpable {
@@ -20,7 +21,7 @@ public class HashObject implements Serializable, Dumpable {
 
     public String save() {
         String id = id();
-        File dest = join(CWD, id); // FIXME
+        File dest = join(OBJECTS_DIR, _type, id);
         writeObject(dest, this);
         return id;
     }

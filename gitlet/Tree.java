@@ -17,6 +17,15 @@ public class Tree extends HashObject{
         _structure = new TreeMap<>();
     }
 
+    /**
+     * Create a new empty Tree object and save it
+     * @return the new tree's ID
+     */
+    public static String newWrite_Tree() {
+        Tree newTree = new Tree();
+        return newTree.save();
+    }
+
     /** dump method. */
     @Override
     public void dump(){

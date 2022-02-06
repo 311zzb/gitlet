@@ -1,26 +1,68 @@
 package gitlet;
 
-// TODO: any imports you need here
-
-import java.util.Date; // TODO: You'll likely use this in this class
+import java.util.Date;
 
 /** Represents a gitlet commit object.
  *  TODO: It's a good idea to give a description here of what else this Class
  *  does at a high level.
  *
- *  @author TODO
+ *  @author XIE Changyuan
  */
-public class Commit {
-    /**
-     * TODO: add instance variables here.
-     *
-     * List all instance variables of the Commit class here with a useful
-     * comment above them describing what that variable represents and how that
-     * variable is used. We've provided one example for `message`.
-     */
+public class Commit extends HashObject {
 
     /** The message of this Commit. */
-    private String message;
+    private String _message;
+    /** A hash reference to the parent commit. */
+    private String _parentCommitRef;
+    /** A hash reference to another parent (if any). */
+    private String _parentCommitMergeRef;
+    /** A time stamp of the commit been made. */
+    private Date _timeStamp;
+    /** A hash reference to a Tree object. */
+    private String _treeRef;
 
-    /* TODO: fill in the rest of this class. */
+    /**
+     * Constructor of Commit.
+     * @param parentCommitRef the hash of parent commit
+     * @param message the message come with the commit
+     * @param treeRef the corresponding tree's hash
+     */
+    private Commit(String parentCommitRef, String message, String treeRef) {
+        super("Commit");
+        this._parentCommitRef = parentCommitRef;
+        this._parentCommitMergeRef = null; // TODO: merge command
+        this._message = message;
+        this._treeRef = treeRef;
+        if (message.equals("initial commit")) {
+            this._timeStamp = new Date(0); // initial commit special case
+        } else {
+            this._timeStamp = new Date(System.currentTimeMillis());
+        }
+    }
+
+    /**
+     * Create a new Commit object and write it
+     * @return the new commit's ID
+     */
+    public static String newWrite_Commit(String parentCommitRef, String message, String treeRef) {
+        Commit newCommit = new Commit(parentCommitRef, message, treeRef);
+        return newCommit.save();
+    }
+
+    public static String readModifyWrite_Commit() {
+        return null;
+    }
+
+    public static Commit read_Commit(String commitID) {
+        return null;
+    }
+
+    /** dump method. */
+    @Override
+    public void dump(){
+        super.dump();
+        System.out.println("message: " + _message);
+        System.out.println("parent: " + _parentCommitRef);
+        System.out.println("treeRef: " + _treeRef);
+    }
 }

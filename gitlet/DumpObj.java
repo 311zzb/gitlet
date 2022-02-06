@@ -39,5 +39,12 @@ public class DumpObj {
             System.out.println("---");
         }
     }
+
+    public static void main(File file) {
+        Dumpable obj = Utils.readObject(file,
+                Dumpable.class);
+        obj.dump();
+        System.out.println("---");
+    }
 }
 

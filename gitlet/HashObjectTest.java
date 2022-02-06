@@ -3,6 +3,7 @@ package gitlet;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.Serializable;
 
 import static gitlet.Repository.CWD;
 import static gitlet.Utils.*;
@@ -23,18 +24,15 @@ public class HashObjectTest {
     /**
      * Try to find a way to get a content-addressable id of objects.
      * It seems impossible.
+     * @deprecated
      */
     @Test
     public void saveAndHashTest() {
         // An object's SHA1 will change once it is serialized and deserialized.
         HashObject testHashObject = new HashObject("test");
         testHashObject.save();
-        String fileID = testHashObject.id();
+        String fileID = testHashObject.id(); // SHA-1
         File savedFile = join(CWD, fileID);
-
-        String readHashObjectString = readContentsAsString(savedFile);
-        String readHashObjectStringID = sha1(readHashObjectString);
-        assertEquals(fileID, readHashObjectStringID);
 
         HashObject readHashObject = readObject(savedFile, HashObject.class);
         String readHashObjectID = readHashObject.id();
