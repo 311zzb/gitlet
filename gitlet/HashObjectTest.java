@@ -41,9 +41,7 @@ public class HashObjectTest {
         assertEquals(fileID, readHashObjectID);
     }
 
-    /**
-     * Sanity test for Tree functions.
-     */
+    /** Sanity test for Tree functions. */
     @Test
     public void treeTest() {
         Tree testTree = new Tree();
@@ -53,5 +51,16 @@ public class HashObjectTest {
 
         assertEquals("some hash", testTree.retrieve("test.txt"));
         assertNull(testTree.retrieve("notExist.txt"));
+    }
+
+    /** Dump test for Tree. */
+    @Test
+    public void treeDumpTest() {
+        Tree testTree = new Tree();
+        testTree.record("test.txt", "some hash");
+        testTree.record("other.txt", "other hash");
+
+        String testTreeID = testTree.save();
+        DumpObj.main(testTreeID);
     }
 }
