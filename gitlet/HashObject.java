@@ -8,13 +8,17 @@ import static gitlet.Repository.*;
 import static gitlet.Utils.*;
 
 /**
+ * This class represents a HashObject that will be serialized within .gitlet/objects, named after its SHA-1.
+ * The HashObject class has helper methods that will return the SHA-1 of a HashObject,
+ * or returning the HashObject object corresponding to its ID (SHA-1),
+ * as well as static methods that write to or delete from the object database a HashObject.
  *
  * @author XIE Changyuan
  */
 public class HashObject implements Serializable, Dumpable {
 
     /**
-     * Get the SHA-1 of THIS
+     * Get the SHA-1 of THIS.
      * @return the SHA-1 of THIS
      */
     String id() {
@@ -32,7 +36,7 @@ public class HashObject implements Serializable, Dumpable {
     /* STATIC METHODS */
 
     /**
-     * Load a type object with id.
+     * Load a type object with its ID.
      * @param id the given id
      * @return the deserialized object
      */
@@ -42,7 +46,7 @@ public class HashObject implements Serializable, Dumpable {
     }
 
     /**
-     * Write a cached HashObject with id in cachedObjects.
+     * Write a cached HashObject with ID in cachedObjects to filesystem.
      * @param id the designated objects id
      */
     static void writeCachedHashObject(String id) {
@@ -52,7 +56,7 @@ public class HashObject implements Serializable, Dumpable {
     }
 
     /**
-     * Delete a HashObject on the filesystem.
+     * Delete a HashObject from filesystem.
      * @param id the designated ID
      */
     static void deleteHashObject(String id) {

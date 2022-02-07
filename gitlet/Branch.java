@@ -9,17 +9,18 @@ import static gitlet.Repository.HEAD;
 import static gitlet.Utils.*;
 
 /**
- * A class where Branch related static methods live.
- * Will never be instantiated.
+ * This class houses static methods that related to branch and HEAD.
+ * It contains methods for loading and writing branch files and the HEAD file.
+ * This class will never be instantiated since there are only static methods.
  *
  * @author XIE Changyuan
  */
 public class Branch {
 
     /**
-     * Load a branch file.
+     * Load a branch file from filesystem with designated name.
      * @param branchName the designated branch name
-     * @return the pointed Commit ID
+     * @return the pointed Commit ID, null if the branch name is "" (nothing)
      */
     static String loadBranch(String branchName) {
         if (Objects.equals(branchName, "")) {
@@ -30,7 +31,8 @@ public class Branch {
     }
 
     /**
-     * Write branch branchName to filesystem.
+     * Get the branch's information from cache and write it back to filesystem.
+     * Invoked by the Cache class.
      * @param branchName the designated branch name
      */
     static void writeBranch(String branchName) {
@@ -39,15 +41,15 @@ public class Branch {
     }
 
     /**
-     * Make a new branch at the latest commit.
+     * Make a new branch with designated name at the latest commit.
      * @param branchName the designated branch name
      */
-    static void mkNewBranch(String branchName, String commitID) {
-        cacheBranch(branchName, commitID);
+    static void mkNewBranch(String branchName) {
+        cacheBranch(branchName, getLatestCommitRef());
     }
 
     /**
-     * Move the current branch to pointing to commitID.
+     * Make the current branch pointing to a designated commit.
      * @param commitID the designated commit ID
      */
     static void moveCurrBranch(String commitID) {
@@ -63,14 +65,14 @@ public class Branch {
     }
 
     /**
-     * Write HEAD to filesystem.
+     * Get the HEAD from cache and write it back to filesystem. Invoked by the Cache class.
      */
     static void writeHEAD() {
         writeContents(HEAD, getHEAD());
     }
 
     /**
-     * Move HEAD to branchName
+     * Make the HEAD pointing to a designated branch.
      */
     static void moveHEAD(String branchName) {
         cacheHEAD(branchName);

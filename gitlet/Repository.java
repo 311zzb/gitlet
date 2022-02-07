@@ -5,13 +5,14 @@ import java.io.IOException;
 
 import static gitlet.Branch.*;
 import static gitlet.Commit.*;
+import static gitlet.Stage.*;
 import static gitlet.Utils.*;
 
 
 /**
- * A class where Repository related static methods live.
- * Handling all commands to gitlet passed by the Main method.
- * Will never be instantiated.
+ * A class houses static methods related to the whole repository.
+ * This class will handle all actual Gitlet commands by invoking methods in other classes correctly.
+ * It also sets up persistence and do additional error checking.
  *
  *  @author XIE Changyuan
  */
@@ -35,15 +36,16 @@ public class Repository {
 
     /**
      * 1. Set up persistence directories
-     * 2. Create an initial commit
-     * 3. Create a master branch and make it point to the initial commit
-     * 4. Make the HEAD points to master branch
-     * Don't forget the READ-MODIFY-WRITE paradigm!
+     * 2. Make the default branch "master" which is pointing null for now (no pun intended)
+     * 3. Make the HEAD pointing to the master branch
+     * 4. Make a new staging area
+     * 5. Create an initial commit (branch master will be moved in this method)
      */
     public static void init() throws IOException {
         setUpPersistence();
-        mkNewBranch("master", null);
+        mkNewBranch("master");
         moveHEAD("master");
+        mkNewStage();
         mkCommit("initial commit");
     }
 

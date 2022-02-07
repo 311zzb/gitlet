@@ -10,16 +10,25 @@ import static gitlet.HashObject.*;
 import static gitlet.Stage.*;
 
 /**
- * Cache related methods.
- * Will never be instantiated.
+ * This class is used to house static methods that facilitate lazy loading and caching of persistence.
+ * This file will set up data structures for caching, load necessary objects,
+ * and write back the cache at the very end of execution.
+ * This class will never be instantiated.
+ *
+ * This class defers all HashObject and its subclasses' logic to them.
+ * For example, instead of deserialize and serialize objects directly,
+ * Cache class will invoke methods from the corresponding class to do that.
+ *
+ * On the other hand, the Cache class will do all the get xxx() methods which retrieving desired objects lazily
+ * from the cache.
  *
  * @author XIE Changyuan
  */
 public class Cache {
 
-    /* CACHING OBJECTS */
+    /* CACHING OBJECT */
 
-    /** Cached objects. */
+    /** A Map that stores cached ID and HashObject pairs. */
     static Map<String, HashObject> cachedHashObjects = new TreeMap<>();
     /** Lazy loading and caching of HashObjects. */
     private static HashObject getHashObject(String id) {
@@ -43,14 +52,11 @@ public class Cache {
     static Commit getLatestCommit() {
         return getCommit(getLatestCommitRef());
     }
-    static String getLatestCommitRef() {
-        return getBranch(getHEAD());
-    }
+
     /** Get the Tree object representing the staging area. */
     static Tree getStage() {
         return getTree(getStageID());
     }
-
 
 
     /** New HashObjects' IDs that are queued for writing to filesystem. */
@@ -64,7 +70,7 @@ public class Cache {
         queuedForWriteHashObjects.add(id);
         return id;
     }
-    /** Write back all queued-for-writing HashObjects to filesystem. */
+    /** Write back all queued-for-writing HashObjects to filesystem. Invoked upon exit. */
     static void writeBackAllQueuedHashObject() {
         for (String id : queuedForWriteHashObjects) {
             writeCachedHashObject(id);
@@ -74,11 +80,11 @@ public class Cache {
 
     /** Deprecated HashObjects' IDs that are queued for deletion from filesystem. */
     static List<String> queuedForDeleteHashObject = new ArrayList<>();
-    /** Queue a HashObject's ID for deletion. */
+    /** Given a HashObject's ID, queue it for deletion. */
     static void queueForDeleteHashObject(String id) {
         queuedForDeleteHashObject.add(id);
     }
-    /** Delete all queued-for-deletion HashObjects. */
+    /** Delete all queued-for-deletion HashObjects. Invoked upon exit. */
     static void deleteAllQueuedHashObject() {
         for (String id : queuedForDeleteHashObject) {
             deleteHashObject(id);
@@ -86,7 +92,8 @@ public class Cache {
     }
 
 
-    /* CACHING BRANCHES */
+
+    /* CACHING BRANCH */
 
     /** Cached branches. */
     static Map<String, String> cachedBranches = new TreeMap<>();
@@ -98,15 +105,18 @@ public class Cache {
         }
         return cachedBranches.get(branchName);
     }
+    static String getLatestCommitRef() {
+        return getBranch(getHEAD());
+    }
     static void cacheBranch(String branchName, String commitID) {
         cachedBranches.put(branchName, commitID);
     }
-    /** Write back (update) all branches to filesystem. */
+    /** Write back (update) all branches to filesystem. Invoked upon exit. */
     static void writeBackAllBranches() {
         for (String branchName : cachedBranches.keySet()) {
             if (branchName.equals("")) {
                 continue;
-            } // Special case: don't write back empty branch.
+            } // Special case: don't write back empty branch
             writeBranch(branchName);
         }
     }
@@ -115,7 +125,7 @@ public class Cache {
     /* CACHING HEAD */
 
     static String cachedHEAD = null;
-    /** lazy loading and caching of HEAD (the current branch's branch name).
+    /** Lazy loading and caching of HEAD (the current branch's branch name).
      * @return the current branch's name */
     static String getHEAD() {
         if (cachedHEAD == null) {
@@ -126,7 +136,7 @@ public class Cache {
     static void cacheHEAD(String branchName) {
         cachedHEAD = branchName;
     }
-    /** Write back HEAD file. */
+    /** Write back HEAD file. Invoked upon exit. */
     static void writeBackHEAD() {
         writeHEAD();
     }
@@ -135,17 +145,17 @@ public class Cache {
     /* CACHING STAGE */
 
     static String cachedStageID = null;
-    /** Lazy loading and caching of STAGE (a pointer to the staging area). */
+    /** Lazy loading and caching of STAGE (the ID of the current staging area). */
     static String getStageID() {
         if (cachedStageID == null) {
             cachedStageID = loadSTAGEID();
         }
         return cachedStageID;
     }
-    static void cacheStage(String newStageID) {
-        cachedStageID = newStageID;
+    static void cacheStageID(String stageID) {
+        cachedStageID = stageID;
     }
-    /** Write back STAGE file. */
+    /** Write back STAGE file. Invoked upon exit. */
     static void writeBackSTAGE() {
         writeSTAGE();
     }

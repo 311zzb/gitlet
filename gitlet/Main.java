@@ -2,8 +2,12 @@ package gitlet;
 
 import java.io.IOException;
 
-/** Driver class for Gitlet, a subset of the Git version-control system.
- *  @author XIE Changyuan
+/**
+ * Driver class for Gitlet, a subset of the Git version-control system.
+ * Account for validating the number of arguments and invoking package-private methods according to received commands.
+ * The cache write back method `Cache.writeBack()` which enabling the persistence of Gitlet is also invoked in this class.
+ *
+ * @author XIE Changyuan
  */
 public class Main {
 
@@ -17,11 +21,11 @@ public class Main {
 
         switch(command) {
             case "init":
-                validateArgsNum("init", operands, 0);
+                assertArgsNum("init", operands, 0);
                 Repository.init();
                 break;
             case "add":
-                validateArgsNum("add", operands, 1);
+                assertArgsNum("add", operands, 1);
                 // TODO: handle the `add [filename]` command
                 break;
             // TODO: FILL THE REST IN
@@ -35,7 +39,7 @@ public class Main {
      * @param args the input arguments
      * @param n the necessary number of arguments
      */
-    private static void validateArgsNum(String cmd, String[] args, int n) {
+    private static void assertArgsNum(String cmd, String[] args, int n) {
         if (args.length != n) {
             throw new GitletException(
                     String.format("Invalid number of arguments for: %s.", cmd)
@@ -43,6 +47,12 @@ public class Main {
         }
     }
 
+    /**
+     * Throw a GitletException if args have exactly n elements.
+     * @param cmd the current command
+     * @param args the input arguments
+     * @param n the tattoo number of arguments
+     */
     private static void assertNotArgsNum(String cmd, String[] args, int n) {
         if (args.length == n) {
             throw new GitletException(

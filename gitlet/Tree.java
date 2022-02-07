@@ -7,18 +7,18 @@ import static gitlet.Cache.*;
 
 /**
  * Represent a Gitlet Tree, corresponding to UNIX directory entries.
- * A single tree object contains a TreeMap, containing zero or more entries.
+ * An instance of Tree object contains a TreeMap as instance variable, which has zero or more entries.
  * Each of these entries is a fileName-BlobID pair.
  * This class also contains Tree related static methods.
  *
  * @author XIE Changyuan
  */
 public class Tree extends HashObject implements Iterable<String> {
-    /* A map that store the FILENAME - Blob ID pairs. */
+    /* The TreeMap that stores fileName - blobID pairs. */
     private final Map<String, String> _structure;
 
     /** Constructor */
-    Tree() {
+    private Tree() {
         _structure = new TreeMap<>();
     }
 
@@ -73,7 +73,8 @@ public class Tree extends HashObject implements Iterable<String> {
     /* STATIC METHODS */
 
     /**
-     * Make a new empty Tree object and cache it.
+     * A packaged constructor for Tree.
+     * Creates an empty Tree, cache it and return its ID.
      * @return the new tree's ID
      */
     static String mkNewEmptyTree() {

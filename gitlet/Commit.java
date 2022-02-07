@@ -6,26 +6,31 @@ import static gitlet.Branch.*;
 import static gitlet.Cache.*;
 import static gitlet.Tree.*;
 
-/** Represents a gitlet commit object.
- *
+/**
+ * This class represents a Commit in Gitlet, it extends the HashObject class.
+ * Each instance of Commit have several instance variables such as commit message and time stamp.
+ * This file also has helper methods that unlocks instance variable
+ * as well as static method that carry out the procedure to make a new commit.
  *
  *  @author XIE Changyuan
  */
 public class Commit extends HashObject {
 
-    /** The message of this Commit. */
+    /** The commit message */
     private final String _message;
-    /** A hash reference to the parent commit. */
+    /** The ID of the parent commit. */
     private final String _parentCommitRef;
-    /** A hash reference to another parent (if any). */
-    private final String _parentCommitMergeRef;
+    /** The ID of the other parent (if any). */
+    private final String _parentCommitMergeRef; // TODO: merging of branches
     /** A time stamp of the commit been made. */
     private final Date _timeStamp;
-    /** A hash reference to a Tree object. */
+    /** The ID of the associated Tree object. */
     private final String _treeRef;
 
     /**
-     * Constructor of Commit.
+     * The constructor of `Commit` class. This method is `private`
+     * because no "naked" instantiation of `Commit` is allowed outside the `Commit` class.
+     * Additionally, the time stamp is set to 1970.01.01 for initial commit.
      * @param parentCommitRef the hash of parent commit
      * @param message the message come with the commit
      * @param treeRef the corresponding tree's hash
@@ -35,8 +40,8 @@ public class Commit extends HashObject {
         this._parentCommitMergeRef = null; // TODO: merge command
         this._message = message;
         this._treeRef = treeRef;
-        if (message.equals("initial commit")) { // initial commit special case
-            this._timeStamp = new Date(0);
+        if (message.equals("initial commit")) {
+            this._timeStamp = new Date(0); // Special case: the time is set to 1970 for initial commit
         } else {
             this._timeStamp = new Date(System.currentTimeMillis());
         }
@@ -55,7 +60,7 @@ public class Commit extends HashObject {
     }
 
     /**
-     * Return the ID of the Tree of THIS.
+     * Get the associating Tree of this commit.
      */
     public String getCommitTreeRef() {
         return _treeRef;
@@ -66,9 +71,9 @@ public class Commit extends HashObject {
     /**
      * Make a new Commit.
      * 1. Get the ID of the latest commit
-     * 2. Make a commit tree by copy from the latest commit, and update it with staging area
+     * 2. Make a commit tree by copying from the latest commit, and update it with the staging area
      * 3. Construct a new Commit object
-     * 4. Cache the new Commit and queue it for write (back)
+     * 4. Cache the new Commit and queue it for write back
      * 5. Move the current branch pointing the new commit
      */
     static void mkCommit(String message) {
