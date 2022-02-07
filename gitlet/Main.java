@@ -26,6 +26,7 @@ public class Main {
                 break;
             // TODO: FILL THE REST IN
         }
+        Cache.writeBack();
     }
 
     /**

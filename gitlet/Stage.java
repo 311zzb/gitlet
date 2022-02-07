@@ -1,7 +1,9 @@
 package gitlet;
 
+import static gitlet.Cache.*;
 import static gitlet.Repository.STAGE;
-import static gitlet.Utils.writeContents;
+import static gitlet.Tree.mkNewEmptyTree;
+import static gitlet.Utils.*;
 
 /**
  * A class where Stage related static methods live.
@@ -12,11 +14,24 @@ import static gitlet.Utils.writeContents;
 public class Stage {
 
     /**
-     * Refresh the staging area.
-     * By creating a new Tree and overwriting STAGE with the new Tree's ID.
+     * Return the ID of staging area (a Tree object).
      */
-    static void refresh_Stage() {
-        String newTreeID = Tree.newWrite_Tree();
-        writeContents(STAGE, newTreeID);
+    static String loadSTAGEID() {
+        return readContentsAsString(STAGE);
+    }
+
+    /**
+     * Write the stage ID in cache to filesystem.
+     */
+    static void writeSTAGE() {
+        writeContents(STAGE, getStageID());
+    }
+
+    /**
+     * Make a new stage (Tree object) and cache its ID.
+     */
+    static void mkNewStage() {
+        String newStageID = mkNewEmptyTree();
+        cacheStage(newStageID);
     }
 }

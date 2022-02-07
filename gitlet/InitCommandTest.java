@@ -11,7 +11,8 @@ public class InitCommandTest {
     /** Sanity test */
     @Test
     public void sanityTest() throws IOException {
-        Repository.init();
+        String[] initCommand = {"init"};
+        Main.main(initCommand);
     }
 
     /** Use the init command.

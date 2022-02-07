@@ -1,7 +1,9 @@
 package gitlet;
 
+import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
+import static gitlet.Cache.*;
 
 /**
  * Represent a Gitlet Tree, corresponding to UNIX directory entries.
@@ -11,12 +13,12 @@ import java.util.TreeMap;
  *
  * @author XIE Changyuan
  */
-public class Tree extends HashObject{
+public class Tree extends HashObject implements Iterable<String> {
     /* A map that store the FILENAME - Blob ID pairs. */
     private final Map<String, String> _structure;
 
     /** Constructor */
-    public Tree() {
+    Tree() {
         _structure = new TreeMap<>();
     }
 
@@ -32,7 +34,7 @@ public class Tree extends HashObject{
     /**
      * Return true if a Tree is empty.
      */
-    public boolean isEmpty() {
+    boolean isEmpty() {
         return _structure.isEmpty();
     }
 
@@ -41,25 +43,67 @@ public class Tree extends HashObject{
      * @param fileName the name of the recording file
      * @param blobRef the hash pointer to a Blob
      */
-    public void record(String fileName, String blobRef) {
+    void record(String fileName, String blobRef) {
         _structure.put(fileName, blobRef);
     }
 
     /**
      * Return the Blob ref according to a given fileName (if exists).
      */
-    public String retrieve(String fileName) {
+    String retrieve(String fileName) {
         return _structure.get(fileName);
     }
+
+    @Override
+    public Iterator<String> iterator() {
+        return _structure.keySet().iterator();
+    }
+
+    /**
+     * Update THIS Tree with entries in UPDATER.
+     * @param updater the Tree has newer entries
+     */
+    void updateWith(Tree updater) {
+        for (String key : updater) {
+            this.record(key, updater.retrieve(key));
+        }
+    }
+
 
     /* STATIC METHODS */
 
     /**
-     * Create a new empty Tree object and save it
+     * Make a new empty Tree object and cache it.
      * @return the new tree's ID
      */
-    public static String newWrite_Tree() {
+    static String mkNewEmptyTree() {
         Tree newTree = new Tree();
-        return newTree.save();
+        return cacheAndQueueForWriteHashObject(newTree);
+    }
+
+    /**
+     * Return the Tree of the latest commit.
+     */
+    static Tree getLatestCommitTree() {
+        Commit latestCommit = getLatestCommit();
+        if (latestCommit == null) {
+            return null;
+        } // Special case: return null if there is no latest commit.
+        String latestCommitTreeRef = latestCommit.getCommitTreeRef();
+        return getTree(latestCommitTreeRef);
+    }
+
+    /**
+     * Copy the Tree from the latest commit and update it with the staging area.
+     * Cache it and queue it for writing.
+     * @return the new Tree
+     */
+    static String mkCommitTree() {
+        Tree tree = getLatestCommitTree();
+        if (tree == null) {
+            return mkNewEmptyTree();
+        } // Special cases: make a new empty tree if there is no Tree for latest commit.
+        tree.updateWith(getStage());
+        return cacheAndQueueForWriteHashObject(tree);
     }
 }

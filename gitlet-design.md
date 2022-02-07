@@ -30,15 +30,8 @@ CWD                                                      <==== Whatever the curr
     ├── HEAD                                             <==== The name of the current branch.
     ├── STAGE                                            <==== A hash pointer to the serialized staging area Tree.
     ├── objects                                          <==== The object database.
-    │   ├── Blob
-    │   │   ├── a991f6cad12cc1bfb64791e893fa01ac5bf8358e
-    │   │   └── ...
-    │   ├── Tree
-    │   │   ├── b991f6cad12cc1bfb64791e893fa01ac5bf8358e
-    │   │   └── ...
-    │   └── Commit
-    │       ├── d991f6cad12cc1bfb64791e893fa01ac5bf8358e <==== A saved HashObject.
-    │       └── ...                                         
+    │   ├── d991f6cad12cc1bfb64791e893fa01ac5bf8358e    <==== A saved HashObject.
+    │   └── ...                                         
     └── branches                                         <==== Store all the branch references.
         ├── master                                       <==== The default branch. Contains a hash pointer to a commit.
         └── ...

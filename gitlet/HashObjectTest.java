@@ -3,9 +3,10 @@ package gitlet;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.Serializable;
+import java.io.IOException;
 
 import static gitlet.Repository.CWD;
+import static gitlet.Repository.OBJECTS_DIR;
 import static gitlet.Utils.*;
 import static org.junit.Assert.*;
 
@@ -15,10 +16,11 @@ public class HashObjectTest {
      * Create a HashObject, save it, and check the dump file.
      */
     @Test
-    public void dumpingTest() {
+    public void dumpingTest() throws IOException {
+        Repository.setUpPersistence();
         HashObject test = new HashObject();
-        String fileName = test.save();
-        DumpObj.main(fileName);
+//        String fileName = test.save();
+//        DumpObj.main(join(OBJECTS_DIR, fileName));
     }
 
     /**
@@ -30,7 +32,7 @@ public class HashObjectTest {
     public void saveAndHashTest() {
         // An object's SHA1 will change once it is serialized and deserialized.
         HashObject testHashObject = new HashObject();
-        testHashObject.save();
+//        testHashObject.save();
         String fileID = testHashObject.id(); // SHA-1
         File savedFile = join(CWD, fileID);
 
@@ -58,7 +60,7 @@ public class HashObjectTest {
         testTree.record("test.txt", "some hash");
         testTree.record("other.txt", "other hash");
 
-        String testTreeID = testTree.save();
-        DumpObj.main(testTreeID);
+//        String testTreeID = testTree.save();
+//        DumpObj.main(testTreeID);
     }
 }

@@ -2,13 +2,9 @@ package gitlet;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
-import java.util.TreeMap;
 
 import static gitlet.Branch.*;
-import static gitlet.Stage.*;
 import static gitlet.Commit.*;
-import static gitlet.Tree.*;
 import static gitlet.Utils.*;
 
 
@@ -35,22 +31,6 @@ public class Repository {
     static final File BRANCHES_DIR = join(GITLET_DIR, "branches");
 
 
-//    /** Caching commits. */
-//    static Map<String, Commit> commits = new TreeMap<>();
-//    /** Lazy loading and caching of Commit objects. */
-//    private Commit getCommit(String ID) {
-//        if (!commits.containsKey(ID)) {
-//            commits.put(ID, loadCommit(ID));
-//        }
-//        return commits.get(ID);
-//    }
-//    /** Get the Commit object of the latest commit. */
-//    private Commit getLatestCommit() {
-//        return getCommit(loadLatestCommitID());
-//    }
-//
-
-
     /* INIT COMMAND */
 
     /**
@@ -62,13 +42,16 @@ public class Repository {
      */
     public static void init() throws IOException {
         setUpPersistence();
-        String initialCommitID = mkInitialCommit();
-        mkMasterBranch(initialCommitID);
-        moveHeadTo("master");
+        mkNewBranch("master", null);
+        moveHEAD("master");
+        mkCommit("initial commit");
     }
 
     /** Set up the persistence directories. */
-    private static void setUpPersistence() throws IOException {
+    static void setUpPersistence() throws IOException {
+        if (GITLET_DIR.exists()) {
+            throw new GitletException("A Gitlet version-control system already exists in the current directory.");
+        } // Special case: Abort if there is already a Gitlet version-control system in the current directory.
         BRANCHES_DIR.mkdirs();
         OBJECTS_DIR.mkdirs();
         HEAD.createNewFile();
@@ -76,11 +59,6 @@ public class Repository {
     }
 
     /* MISC */
-
-    /** Move HEAD points to branchName. */
-    private static void moveHeadTo(String branchName) {
-        writeContents(HEAD, branchName);
-    }
 
 
 }

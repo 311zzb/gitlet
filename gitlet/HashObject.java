@@ -3,8 +3,8 @@ package gitlet;
 import java.io.File;
 import java.io.Serializable;
 
-import static gitlet.Repository.CWD;
-import static gitlet.Repository.OBJECTS_DIR;
+import static gitlet.Cache.*;
+import static gitlet.Repository.*;
 import static gitlet.Utils.*;
 
 /**
@@ -17,20 +17,8 @@ public class HashObject implements Serializable, Dumpable {
      * Get the SHA-1 of THIS
      * @return the SHA-1 of THIS
      */
-    public String id() {
+    String id() {
         return sha1(this.toString());
-    }
-
-    /**
-     * Save THIS to one of the subdirectories of OBJECTS_DIR
-     * (according to the type of THIS)
-     * @return the file name (ID) of this
-     */
-    public String save() {
-        String id = id();
-        File dest = join(OBJECTS_DIR, id);
-        writeObject(dest, this);
-        return id;
     }
 
     /**
@@ -48,8 +36,27 @@ public class HashObject implements Serializable, Dumpable {
      * @param id the given id
      * @return the deserialized object
      */
-    static HashObject load(String id) {
+    static HashObject loadHashObject(String id) {
         File dest = join(OBJECTS_DIR, id);
         return readObject(dest, HashObject.class);
+    }
+
+    /**
+     * Write a cached HashObject with id in cachedObjects.
+     * @param id the designated objects id
+     */
+    static void writeCachedHashObject(String id) {
+        assert cachedHashObjects.containsKey(id);
+        File dest = join(OBJECTS_DIR, id);
+        writeObject(dest, cachedHashObjects.get(id));
+    }
+
+    /**
+     * Delete a HashObject on the filesystem.
+     * @param id the designated ID
+     */
+    static void deleteHashObject(String id) {
+        File dest = join(OBJECTS_DIR, id);
+        dest.delete();
     }
 }
