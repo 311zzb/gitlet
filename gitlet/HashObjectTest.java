@@ -10,6 +10,9 @@ import static gitlet.Repository.OBJECTS_DIR;
 import static gitlet.Utils.*;
 import static org.junit.Assert.*;
 
+/**
+ * @deprecated
+ */
 public class HashObjectTest {
 
     /**

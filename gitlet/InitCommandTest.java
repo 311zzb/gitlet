@@ -7,6 +7,10 @@ import java.io.IOException;
 import static gitlet.Utils.*;
 import static gitlet.Repository.*;
 
+/**
+ * // TODO: make a new compact unit test class.
+ * @deprecated
+ */
 public class InitCommandTest {
     /** Sanity test */
     @Test
