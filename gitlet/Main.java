@@ -26,6 +26,7 @@ public class Main {
                 break;
             case "add":
                 assertArgsNum("add", operands, 1);
+                
                 // TODO: handle the `add [filename]` command
                 break;
             // TODO: FILL THE REST IN
