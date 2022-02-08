@@ -60,10 +60,22 @@ public class Commit extends HashObject {
     }
 
     /**
-     * Get the associating Tree of this commit.
+     * Get the ID of the associating Tree of this commit.
      */
-    public String getCommitTreeRef() {
+    String getCommitTreeRef() {
         return _treeRef;
+    }
+
+    /** Get the associating Tree of this commit. */
+    Tree getCommitTree() {
+        String commitTreeRef = getCommitTreeRef();
+        return getTree(commitTreeRef);
+    }
+
+    /** Get the ID of the Blob of a designated file name in this commit. */
+    String getCommitTreeBlobID(String fileName) {
+        Tree commitTree = this.getCommitTree();
+        return commitTree.getBlobID(fileName);
     }
 
     /* STATIC METHODS */

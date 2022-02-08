@@ -31,7 +31,26 @@ public class GitletTest {
         Main.main(initCommand);
         String[] addCommand = {"add", "_hello.txt"};
         Main.main(addCommand);
-
-        // check persistence
     }
+
+    /** Test using add command many times. */
+    @Test
+    public void addCommandManyTimesTest() throws IOException {
+        File _hello = join(CWD, "_hello.txt");
+        writeContents(_hello, "hello");
+        File _bye = join(CWD, "_bye.txt");
+        writeContents(_bye, "bye");
+        File _mystery = join(CWD, "_mystery.txt");
+        writeContents(_mystery, "mystery");
+
+        String[] initCommand = {"init"};
+        Main.main(initCommand);
+        String[] addCommand1 = {"add", "_hello.txt"};
+        String[] addCommand2 = {"add", "_bye.txt"};
+        String[] addCommand3 = {"add", "_mystery.txt"};
+        Main.main(addCommand1);
+        Main.main(addCommand2);
+        Main.main(addCommand3);
+    }
+
 }

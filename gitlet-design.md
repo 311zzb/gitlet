@@ -36,7 +36,7 @@ from the cache.
 
 #### Fields
 1. Caching `HashObject`
-   1. `static Map<String, HashObject> cachedHashObjects` A `Map` that stores cached ID and `HashObject` pairs.
+   1. `static final Map<String, HashObject> cachedHashObjects` A `Map` that stores cached ID and `HashObject` pairs.
    2. `private static HashObject getHashObject(String id)` 
       Lazy loading and caching of HashObjects. 
       Being `private` because a `HashObject` will never be requested as `HashObject` 
@@ -45,20 +45,22 @@ from the cache.
       A method that lazy-load a `Commit` with `id` utilizing `getHashObject(String id)`.
    4. `static Tree getTree(String id)`
       A method that lazy-load a `Tree` with `id` utilizing `getHashObject(String id)`.
-   5. `static Commit getLatestCommit()` Get the `Commit` object of the latest commit utilizing `getCommit(String id)`.
-   6. `static Tree getStage()` Get the `Tree` object representing the staging area utilizing `getTree(String id)`.
-   7. `static List<String> queuedForWriteHashObjects` New HashObjects' IDs that are queued for writing to filesystem.
+   5. `static Blob getBlob(String id)`
+      A method that lazy-load a `Blob` with `id` utilizing `getHashObject(String id)`.
+   6. `static Commit getLatestCommit()` Get the `Commit` object of the latest commit utilizing `getCommit(String id)`.
+   7. `static final Set<String> queuedForWriteHashObjects` 
+      New HashObjects' IDs that are queued for writing to filesystem.
    8. `static String cacheAndQueueForWriteHashObject(HashObject object)`
       Manually cache a `HashObject` by put a `HashObject` into the cache, 
       and queue it for writing to filesystem. Return its ID.
    9. `static void writeBackAllQueuedHashObject()` 
       Write back all queued-for-writing `HashObjects` to filesystem. Invoked upon exit.
-   10. `static List<String> queuedForDeleteHashObject`
+   10. `static final Set<String> queuedForDeleteHashObject`
        Deprecated `HashObject`s' IDs that are queued for deletion from filesystem.
    11. `static void queueForDeleteHashObject(String id)` Given Qa `HashObject`'s ID, queue it for deletion.
    12. `static void deleteAllQueuedHashObject()` Delete all queued-for-deletion `HashObject`s. Invoked upon exit.
 2. Caching `Branch`
-   1. `static Map<String, String> cachedBranches` A `Map` that stores cached branch name and commit ID pairs.
+   1. `static final Map<String, String> cachedBranches` A `Map` that stores cached branch name and commit ID pairs.
    2. `static String getBranch(String branchName)` Lazy loading and caching of branches.
    3. `static String getLatestCommitRef()`
       A method that lazy-load the ID of the latest commit by `getBranch(getHEAD())`.
@@ -72,13 +74,21 @@ from the cache.
    3. `static void cacheHEAD(String branchName)` 
       Manually cache the `HEAD` by assigning the `cachedHEAD` to a given `branchName`.
    4. `static void writeBackHEAD()` Write back (update) the `HEAD` file. Invoked upon exit.
-4. Caching `STAGE`
+4. Caching Stage ID
    1. `static String cachedStageID` A `String` that stores cached `STAGE`, the ID of the current staging area.
-   2. `static String getStageID()` Lazy loading and caching of `STAGE`.
+   2. `static String getStageID()`
+      Lazy loading and caching of STAGE (the ID of the saved staging area).
+      Notice: this DOES NOT point to the current staging area after the staging area is modified and before write back.
    3. `static void cacheStageID(String newStageID)` 
       Manually cache the `STAGE` by assigning the `cachedStageID` to a given `stageID`.
-   4. `static void writeBackSTAGE()` Write back STAGE file. Invoked upon exit.
-5. MISC
+   4. `static void writeBackStageID()` Write back STAGE file. Invoked upon exit.
+5. Caching Stage
+   1. `static Tree cachedStage` A `Tree` that stores cached staging area.
+   2. `static Tree getStage()` Get the `Tree` object representing the staging area utilizing `getTree(getStageID())`.
+   3. `static void cacheStage(Tree stage)`
+      Manual cache the Stage.
+      Queue the previous staging area for deletion.
+6. MISC
    1. `static void writeBack()` Write back all caches. Invoked upon exit.
 
 ### Repository
@@ -107,7 +117,8 @@ It also sets up persistence and do additional error checking.
       A helper method of `init` command, set up the persistence directories.
       This method also checks if there is an existing `.gitlet` directory and abort the execution if so.
 3. `add` command
-   1. 
+   1. `public static void add(String fileName)`
+      Execute the add command by adding a copy of the file as it currently exists to the staging area.
 
 
 ### Branch
@@ -137,9 +148,20 @@ It contains methods for loading and writing the `STAGE` file, as well as making 
 This class will never be instantiated since there are only static methods.
 
 #### Fields
-1. `static String loadSTAGEID()` Return the ID of the current staging area (a `Tree` object). Invoked by the Cache class.
-2. `static void writeSTAGE()` Write the stage ID in cache back to filesystem. Invoked by the Cache class.
-3. `static void mkNewStage()` Make a new stage (a `Tree` object) and cache its ID.
+1. `static String loadStageID()` 
+   Return the ID of the current staging area (a `Tree` object). Invoked by the Cache class.
+2. `static void putInStage(String fileName, String BlobID)`
+   Simply add a `fileName` - `BlobID` pair into the cached staging area.
+   Mark the previous staging area `Tree` for deletion.
+   This function should only be invoked once per run.
+3. `static void removeFromStage(String fileName)`
+   Simply remove an entry from the staging area with a specific `fileName` (if exists).
+   Mark the previous staging area `Tree` for deletion.
+   This function should only be invoked once per run.
+4. `static void writeStageID()` Write the stage ID in cache back to filesystem. Invoked by the Cache class.
+5. `static void mkNewStage()` Make a new stage (a `Tree` object) and cache its ID.
+6. `static void addToStage(String fileName)`
+   Add a file to the current staging area. Implementation details in the Algorithms section.
 
 
 ### HashObject 
@@ -178,14 +200,16 @@ as well as static method that carry out the procedure to make a new commit.
    because no "naked" instantiation of `Commit` is allowed outside the `Commit` class.
    Additionally, the time stamp is set to 1970.01.01 for initial commit.
 7. `public void dump()` Print information of this `Commit` on `System.out`.
-8. `public String getCommitTreeRef()` Get the associating `Tree` of this commit.
-9. `static void mkCommit(String message)` A packaged constructor for `Commit`. 
-   Implementation details in the Algorithm section.
+8. `String getCommitTreeRef()` Get the ID of the associating `Tree` of this commit.
+9. `Tree getCommitTree()` Get the associating `Tree` of this commit.
+10. `String getCommitTreeBlobID(String fileName)` Get the ID of the `Blob` of a designated file name in this commit.
+11. `static void mkCommit(String message)` A packaged constructor for `Commit`. 
+    Implementation details in the Algorithm section.
 
 
 ### Tree
 Represent a Gitlet `Tree`, corresponding to UNIX directory entries.
-Implements `Iterable<String>`.
+Implements `Iterable<String>`, extends `HashObject`.
 An instance of `Tree` object contains a `TreeMap` as instance variable, which has zero or more entries.
 Each of these entries is a `fileName` - `BlobID` pair.
 This class also contains `Tree` related static methods.
@@ -196,30 +220,44 @@ This class also contains `Tree` related static methods.
    This method is `private` because no "naked" instantiation of `Tree` should be allowed outside the `Tree` class.
 3. `public void dump()` Print information of this `Tree` on `System.out`.
 4. `boolean isEmpty()` Return whether this `Tree` is empty.
-5. `void record(String fileName, String blobRef)` Record a `fileName` - `blobID` pairs.
-6. `String retrieve(String fileName)` Return the `blobID` corresponding to a given `fileName`.
-7. `public Iterator<String> iterator()` Returns an `Iterator` of this `Tree`, namely the `keySet()` of its `TreeMap`.
-8. `void updateWith(Tree updater)` Update this `Tree` with the entries in the given `Tree`.
-9. `static String mkNewEmptyTree()` A packaged constructor for `Tree`. 
-   Creates an empty `Tree`, cache it and return its ID.
-10. `static Tree getLatestCommitTree()` Return the associated `Tree` of the latest commit if exists.
+5. `void putBlobID(String fileName, String blobRef)` Record a `fileName` - `blobID` pairs.
+6. `void removeBlobID(String fileName)` Remove an entry with `fileName` as the key from this `Tree`.
+7. `String getBlobID(String fileName)` Return the ID of a `Blob` according to a given `fileName` (if exists).
+8. `Blob getBlob(String fileName)` Return a `Blob` according to a given `fileName` (if exist).
+9. `public Iterator<String> iterator()` Returns an `Iterator` of this `Tree`, namely the `keySet()` of its `TreeMap`.
+10. `void updateWith(Tree updater)` Update this `Tree` with the entries in the given `Tree`.
+11. `static String mkNewEmptyTree()` A packaged constructor for `Tree`. 
+    Creates an empty `Tree`, cache it and return its ID.
+12. `static Tree getLatestCommitTree()` Return the associated `Tree` of the latest commit if exists.
     Return `null` if there is no latest commit.
-11. `static String mkCommitTree()` Return the `Tree` that snapshots the current add and remove status. 
+13. `static String mkCommitTree()` Return the `Tree` that snapshots the current add and remove status. 
     Implementation details in the Algorithm section.
 
 
 ### Blob
+Represent a Gitlet `Blob`, corresponding to UNIX files.
+Extends `HashObject`.
+`Blob` has one instance variable `_content`, which holding the content of a file. 
+This variable enables a `Blob` to represent a version of such file.
+This class also has `Blob` related static methods.
 
 #### Fields
-
-1. xxx
+1. `private final String _content` The instance variable that hold the content of a version of a file.
+2. `private Blob(String content)` The private constructor of `Blob`.
+   No "naked" instantiation of `Blob` is allowed.
+3. `String getContent()` Unlocks the content of a `Blob`.
+4. `public void dump()` Print information of this `Tree` on `System.out`.
+5. `static String mkBlob(String fileName)` 
+   Make a new `Blob` with a designated file. Cache it and queue it for writing to filesystem.
 
 
 ### GitletTest
+This class contains JUnit tests for Gitlet.
 
 #### Fields
-
-1. xxx
+1. `public void initCommandSanityTest()` Sanity test for init command.
+2. `public void addCommandSanityTest()` Sanity test for add command.
+3. `public void addCommandManyTimesTest()` Test using add command many times.
 
 
 
@@ -280,6 +318,14 @@ A commit `Tree` is a `Tree` that every commit uses to record the associated file
 2. Overwrite it with the current staging area
 3. Cache it and queue it for write back
 4. Return the ID of overwritten `Tree`
+
+### Add a file to the staging area
+1. Get the file as its current version, cache it as a Blob (don't queue for write back yet)
+2. Get the version of the designated file from the latest commit
+3. Special case:
+   If the current version of the file is identical to the version in the latest commit (by comparing IDs),
+   do not stage it, and remove it from the staging area if it is already there. End the execution.
+4. Modify cached staging area
 
 
 ## Persistence

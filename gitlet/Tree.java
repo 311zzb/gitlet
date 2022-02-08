@@ -39,19 +39,28 @@ public class Tree extends HashObject implements Iterable<String> {
     }
 
     /**
-     * Record a FILENAME - Blob ID pair
+     * Record a fileName - Blob ID pair
      * @param fileName the name of the recording file
      * @param blobRef the hash pointer to a Blob
      */
-    void record(String fileName, String blobRef) {
+    void putBlobID(String fileName, String blobRef) {
         _structure.put(fileName, blobRef);
     }
 
+    /** Remove an entry with fileName as the key from this Tree. */
+    void removeBlobID(String fileName) {
+        _structure.remove(fileName);
+    }
+
     /**
-     * Return the Blob ref according to a given fileName (if exists).
+     * Return the ID of a Blob according to a given fileName (if exists).
      */
-    String retrieve(String fileName) {
+    String getBlobID(String fileName) {
         return _structure.get(fileName);
+    }
+
+    Blob getBlob(String fileName) {
+        return Cache.getBlob(getBlobID(fileName));
     }
 
     @Override
@@ -65,7 +74,7 @@ public class Tree extends HashObject implements Iterable<String> {
      */
     void updateWith(Tree updater) {
         for (String key : updater) {
-            this.record(key, updater.retrieve(key));
+            this.putBlobID(key, updater.getBlobID(key));
         }
     }
 

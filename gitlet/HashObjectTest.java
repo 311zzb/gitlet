@@ -52,8 +52,8 @@ public class HashObjectTest {
 //
 //        testTree.record("test.txt", "some hash");
 //
-//        assertEquals("some hash", testTree.retrieve("test.txt"));
-//        assertNull(testTree.retrieve("notExist.txt"));
+//        assertEquals("some hash", testTree.getBlobID("test.txt"));
+//        assertNull(testTree.getBlobID("notExist.txt"));
     }
 
     /** Dump test for Tree. */

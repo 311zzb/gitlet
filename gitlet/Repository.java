@@ -35,6 +35,7 @@ public class Repository {
     /* INIT COMMAND */
 
     /**
+     * Execute the init command.
      * 1. Set up persistence directories
      * 2. Make the default branch "master" which is pointing null for now (no pun intended)
      * 3. Make the HEAD pointing to the master branch
@@ -58,6 +59,23 @@ public class Repository {
         OBJECTS_DIR.mkdirs();
         HEAD.createNewFile();
         STAGE.createNewFile();
+    }
+
+
+    /* ADD COMMAND */
+
+    /**
+     * Execute the add command.
+     * 1. Add a copy of the file as it currently exists to the staging area
+     *
+     * @param fileName the designated file name
+     */
+    public static void add(String fileName) {
+        File targetFile = join(CWD, fileName);
+        if (!targetFile.exists()) {
+            throw new GitletException("File does not exist.");
+        } // Special case: abort if such file does not exist
+        addToStage(fileName);
     }
 
     /* MISC */

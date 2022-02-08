@@ -26,10 +26,12 @@ public class Main {
                 break;
             case "add":
                 assertArgsNum("add", operands, 1);
-                
-                // TODO: handle the `add [filename]` command
+                Repository.add(operands[0]);
                 break;
+                
             // TODO: FILL THE REST IN
+            default:
+                throw new GitletException("Unexpected command: " + command);
         }
         Cache.writeBack();
     }

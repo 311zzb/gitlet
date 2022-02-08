@@ -1,9 +1,6 @@
 package gitlet;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 import static gitlet.Branch.*;
 import static gitlet.HashObject.*;
@@ -29,7 +26,7 @@ public class Cache {
     /* CACHING OBJECT */
 
     /** A Map that stores cached ID and HashObject pairs. */
-    static Map<String, HashObject> cachedHashObjects = new TreeMap<>();
+    static final Map<String, HashObject> cachedHashObjects = new TreeMap<>();
     /** Lazy loading and caching of HashObjects. */
     private static HashObject getHashObject(String id) {
         if (id == null) {
@@ -46,21 +43,18 @@ public class Cache {
     static Tree getTree(String id) {
         return (Tree) getHashObject(id);
     }
-    // TODO: getBlob
+    static Blob getBlob(String id) {
+        return (Blob) getHashObject(id);
+    }
 
     /** Get the Commit object of the latest commit. */
     static Commit getLatestCommit() {
         return getCommit(getLatestCommitRef());
     }
 
-    /** Get the Tree object representing the staging area. */
-    static Tree getStage() {
-        return getTree(getStageID());
-    }
-
 
     /** New HashObjects' IDs that are queued for writing to filesystem. */
-    static List<String> queuedForWriteHashObjects = new ArrayList<>();
+    static final Set<String> queuedForWriteHashObjects = new TreeSet<>();
     /** Put a HashObject into the cache, and queue for writing to filesystem.
      * @return the ID of the HashObject
      */
@@ -79,7 +73,7 @@ public class Cache {
 
 
     /** Deprecated HashObjects' IDs that are queued for deletion from filesystem. */
-    static List<String> queuedForDeleteHashObject = new ArrayList<>();
+    static final Set<String> queuedForDeleteHashObject = new TreeSet<>();
     /** Given a HashObject's ID, queue it for deletion. */
     static void queueForDeleteHashObject(String id) {
         queuedForDeleteHashObject.add(id);
@@ -96,7 +90,7 @@ public class Cache {
     /* CACHING BRANCH */
 
     /** Cached branches. */
-    static Map<String, String> cachedBranches = new TreeMap<>();
+    static final Map<String, String> cachedBranches = new TreeMap<>();
     /** Lazy loading and caching of branches.
      * @return the Commit ID pointed by branch branchName */
     static String getBranch(String branchName) {
@@ -142,13 +136,16 @@ public class Cache {
     }
 
 
-    /* CACHING STAGE */
+    /* CACHING STAGE ID */
 
     static String cachedStageID = null;
-    /** Lazy loading and caching of STAGE (the ID of the current staging area). */
+    /**
+     * Lazy loading and caching of STAGE (the ID of the saved staging area).
+     * Notice: this DOES NOT point to the current staging area after the staging area is modified and before write back.
+     */
     static String getStageID() {
         if (cachedStageID == null) {
-            cachedStageID = loadSTAGEID();
+            cachedStageID = loadStageID();
         }
         return cachedStageID;
     }
@@ -156,8 +153,36 @@ public class Cache {
         cachedStageID = stageID;
     }
     /** Write back STAGE file. Invoked upon exit. */
-    static void writeBackSTAGE() {
-        writeSTAGE();
+    static void writeBackStageID() {
+        writeStageID(getStageID());
+    }
+
+
+    /* CACHING STAGE */
+
+    /** Cached staging area. */
+    static Tree cachedStage = null;
+    /** Get the Tree object representing the staging area. */
+    static Tree getStage() {
+        if (cachedStage == null) {
+            cachedStage = getTree(getStageID());
+        }
+        return cachedStage;
+    }
+    /**
+     * Manual cache the Stage.
+     * Queue the previous staging area for deletion.
+     */
+    static void cacheStage(Tree stage) {
+        queueForDeleteHashObject(getStageID()); // why th stageID changed before stage is cached?
+        cachedStage = stage;
+        String newStageID = cacheAndQueueForWriteHashObject(stage);
+        cacheStageID(newStageID);
+    }
+    /** Write the new staging area. Invoked upon exit. */
+    static void writeBackStage() {
+        // Stage is written to file system as a HashObject.
+        // There for no need for a standalone write-back method.
     }
 
 
@@ -171,6 +196,6 @@ public class Cache {
         writeBackAllQueuedHashObject();
         writeBackAllBranches();
         writeBackHEAD();
-        writeBackSTAGE();
+        writeBackStageID();
     }
 }
