@@ -21,6 +21,15 @@ public class Blob extends HashObject {
         return this._content;
     }
 
+    /**
+     * Content-addressable toString() method.
+     * @return the content of this Blob
+     */
+    @Override
+    public String toString() {
+        return this.getContent();
+    }
+
     @Override
     public void dump() {
         super.dump();

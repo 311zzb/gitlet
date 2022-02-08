@@ -22,6 +22,7 @@ public class HashObject implements Serializable, Dumpable {
      * @return the SHA-1 of THIS
      */
     String id() {
+        // Caution: this.toString() should be content-addressable!
         return sha1(this.toString());
     }
 
@@ -42,6 +43,9 @@ public class HashObject implements Serializable, Dumpable {
      */
     static HashObject loadHashObject(String id) {
         File dest = join(OBJECTS_DIR, id);
+        if (!dest.exists()) {
+            throw new GitletException("Failed to load HashObject " + id);
+        } // Special case: throw an Exception if told to load an object that does not exist
         return readObject(dest, HashObject.class);
     }
 

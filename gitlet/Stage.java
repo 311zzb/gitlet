@@ -23,26 +23,26 @@ public class Stage {
     }
 
     /**
-     * Simply add a fileName - BlobID pair into the cached staging area.
+     * Copy the staging area and add a fileName - BlobID pair.
      * Mark the previous staging area Tree for deletion.
      * This function should only be invoked once per run.
      * @param fileName the designated file name
      * @param BlobID the designated ID
      */
     static void putInStage(String fileName, String BlobID) {
-        Tree stage = getStage();
+        Tree stage = new Tree(getStage());
         stage.putBlobID(fileName, BlobID);
         cacheStage(stage);
     }
 
     /**
-     * Simply remove an entry from the staging area with a specific fileName (if exists).
+     * Copy the staging area and remove the entry with a specific fileName (if exists) from it.
      * Mark the previous staging area Tree for deletion.
      * This function should only be invoked once per run.
      * @param fileName the designated file name
      */
     static void removeFromStage(String fileName) {
-        Tree stage = getStage();
+        Tree stage = new Tree(getStage());
         stage.removeBlobID(fileName);
         cacheStage(stage);
     }
@@ -77,7 +77,7 @@ public class Stage {
         String currVerBlobID = mkBlob(fileName);
         Commit latestCommit = getLatestCommit();
         String prevVerBlobID = latestCommit.getCommitTreeBlobID(fileName);
-        if (currVerBlobID.equals(prevVerBlobID)) {
+        if (currVerBlobID.equals(prevVerBlobID)) { // TODO: test this
             removeFromStage(fileName);
             return;
         }

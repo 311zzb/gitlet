@@ -7,6 +7,7 @@ import java.io.IOException;
 
 import static gitlet.Repository.*;
 import static gitlet.Utils.*;
+import static gitlet.Cache.cleanCache;
 
 /**
  * This class contains JUnit tests for Gitlet.
@@ -29,28 +30,27 @@ public class GitletTest {
 
         String[] initCommand = {"init"};
         Main.main(initCommand);
+        cleanCache();
         String[] addCommand = {"add", "_hello.txt"};
         Main.main(addCommand);
     }
 
-    /** Test using add command many times. */
+    /** Test using add command twice. */
     @Test
-    public void addCommandManyTimesTest() throws IOException {
+    public void addCommandTwiceTest() throws IOException {
         File _hello = join(CWD, "_hello.txt");
         writeContents(_hello, "hello");
         File _bye = join(CWD, "_bye.txt");
         writeContents(_bye, "bye");
-        File _mystery = join(CWD, "_mystery.txt");
-        writeContents(_mystery, "mystery");
 
         String[] initCommand = {"init"};
         Main.main(initCommand);
+        cleanCache();
         String[] addCommand1 = {"add", "_hello.txt"};
         String[] addCommand2 = {"add", "_bye.txt"};
-        String[] addCommand3 = {"add", "_mystery.txt"};
         Main.main(addCommand1);
+        cleanCache();
         Main.main(addCommand2);
-        Main.main(addCommand3);
     }
 
 }

@@ -48,6 +48,18 @@ public class Commit extends HashObject {
     }
 
     /**
+     * Content-addressable toString() method.
+     * @return {parentCommitRef}@{message}@{treeRef}@{timeStamp}
+     */
+    @Override
+    public String toString() {
+        return _parentCommitRef + "@" +
+                _message + "@" +
+                _treeRef + "@" +
+                _timeStamp.toString();
+    }
+
+    /**
      * Print information of this commit on System.out.
      */
     @Override

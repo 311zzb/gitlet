@@ -170,11 +170,14 @@ public class Cache {
         return cachedStage;
     }
     /**
-     * Manual cache the Stage.
-     * Queue the previous staging area for deletion.
+     * Queue the previous staging area for deletion and manually cache the passed-in Stage.
+     * @param stage the new stage to be cached
      */
     static void cacheStage(Tree stage) {
-        queueForDeleteHashObject(getStageID()); // why th stageID changed before stage is cached?
+        String prevStageID = getStageID();
+        if (!prevStageID.equals(getLatestCommit().getCommitTreeRef())) {
+            queueForDeleteHashObject(getStageID());
+        } // Special case: queue the previous staging area for deletion only if it is different from the Tree of the latest commit
         cachedStage = stage;
         String newStageID = cacheAndQueueForWriteHashObject(stage);
         cacheStageID(newStageID);
@@ -197,5 +200,16 @@ public class Cache {
         writeBackAllBranches();
         writeBackHEAD();
         writeBackStageID();
+    }
+
+    /** Reset all caches. Used for testing proposes. */
+    static void cleanCache() {
+        cachedHashObjects.clear();
+        queuedForWriteHashObjects.clear();
+        queuedForDeleteHashObject.clear();
+        cachedBranches.clear();
+        cachedHEAD = null;
+        cachedStageID = null;
+        cachedStage = null;
     }
 }

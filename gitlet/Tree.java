@@ -22,6 +22,23 @@ public class Tree extends HashObject implements Iterable<String> {
         _structure = new TreeMap<>();
     }
 
+    /** A constructor that deep-copy the passed-in Tree. */
+    Tree(Tree another) {
+        _structure = new TreeMap<>();
+        for (String key : another) {
+            this.putBlobID(key, another.getBlobID(key));
+        }
+    }
+
+    /**
+     * Content-addressable toString() method.
+     * @return the TreeMap instance variable
+     */
+    @Override
+    public String toString() {
+        return _structure.toString();
+    }
+
     /**
      * Print the treeMap in this object on System.out.
      */
