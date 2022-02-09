@@ -15,42 +15,56 @@ import static gitlet.Cache.cleanCache;
  * @author XIE Changyuan
  */
 public class GitletTest {
+
+    /* INIT COMMAND */
+
     /** Sanity test for init command. */
     @Test
     public void initCommandSanityTest() throws IOException {
-        String[] initCommand = {"init"};
-        Main.main(initCommand);
+        GitletExecute("init");
     }
+
+    /* ADD COMMAND */
 
     /** Sanity test for add command. */
     @Test
     public void addCommandSanityTest() throws IOException {
-        File _hello = join(CWD, "_hello.txt");
-        writeContents(_hello, "hello");
+        GitletExecute("init");
 
-        String[] initCommand = {"init"};
-        Main.main(initCommand);
-        cleanCache();
-        String[] addCommand = {"add", "_hello.txt"};
-        Main.main(addCommand);
+        writeTestFile("_hello.txt", "hello");
+        GitletExecute("add", "_hello.txt");
     }
 
     /** Test using add command twice. */
     @Test
     public void addCommandTwiceTest() throws IOException {
-        File _hello = join(CWD, "_hello.txt");
-        writeContents(_hello, "hello");
-        File _bye = join(CWD, "_bye.txt");
-        writeContents(_bye, "bye");
+        GitletExecute("init");
 
-        String[] initCommand = {"init"};
-        Main.main(initCommand);
-        cleanCache();
-        String[] addCommand1 = {"add", "_hello.txt"};
-        String[] addCommand2 = {"add", "_bye.txt"};
-        Main.main(addCommand1);
-        cleanCache();
-        Main.main(addCommand2);
+        writeTestFile("_hello.txt", "hello");
+        GitletExecute("add", "_hello.txt");
+
+        writeTestFile("_bye.txt", "bye");
+        GitletExecute("add", "_bye.txt");
     }
 
+    /* COMMIT COMMAND */
+
+    public void commitSanityTest() {
+
+    }
+
+
+    /* MISC */
+
+    /** Execute commands with Gitlet and clean the cache after execution. */
+    private static void GitletExecute(String... command) throws IOException {
+        Main.main(command);
+        cleanCache();
+    }
+
+    /** Write content into a designated file name. Overwriting or creating file as needed. */
+    private static void writeTestFile(String fileName, String content) {
+        File file = join(CWD, fileName);
+        writeContents(file, content);
+    }
 }

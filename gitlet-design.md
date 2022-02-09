@@ -272,9 +272,19 @@ This class contains JUnit tests for Gitlet.
 
 #### Fields
 
-1. `public void initCommandSanityTest()` Sanity test for init command.
-2. `public void addCommandSanityTest()` Sanity test for add command.
-3. `public void addCommandManyTimesTest()` Test using add command many times.
+1. `init` command
+   1. `public void initCommandSanityTest()` Sanity test for init command.
+2. `add` command
+   1. `public void addCommandSanityTest()` Sanity test for add command.
+   2. `public void addCommandTwiceTest()` Test using add command twice.
+3. `commit` command
+   1. xxx
+4. misc
+   1. `private static void GitletExecute(String... command)` 
+      Execute commands with Gitlet and clean the cache after execution.
+   2. `private static void writeTestFile(String fileName, String content)`
+      Write content into a designated file name. Overwriting or creating file as needed.
+
 
 ## Algorithms
 
