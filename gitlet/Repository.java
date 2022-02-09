@@ -67,7 +67,7 @@ public class Repository {
     /**
      * Execute the add command.
      * 1. Add a copy of the file as it currently exists to the staging area
-     *
+     * 2. Remove the file from staging for removal if it was at the time of the command // TODO
      * @param fileName the designated file name
      */
     public static void add(String fileName) {
