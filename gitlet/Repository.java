@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 import static gitlet.Branch.*;
+import static gitlet.Cache.*;
 import static gitlet.Commit.*;
 import static gitlet.Stage.*;
 import static gitlet.Utils.*;
@@ -100,6 +101,34 @@ public class Repository {
             throw new GitletException("Please enter a commit message.");
         } // Special case: abort if message is blank
         mkCommit(message);
+    }
+
+    /* LOG COMMAND */
+
+    /**
+     * Execute the log command.
+     * 1. Get the ID of the latest commit
+     * 2. Print log information starting from that commit to the initial commit recursively
+     */
+    public static void log() {
+        assertGITLET();
+        log(getLatestCommitRef());
+    }
+
+    /**
+     * Print log information starting from a given commit ID.
+     * 1. Get the Commit object with the given CommitID
+     * 2. Print its log information
+     * 3. Recursively print its ascendants' log information
+     * @param CommitID the given commit ID
+     */
+    private static void log(String CommitID) {
+        if (CommitID == null) {
+            return;
+        }
+        Commit commit = getCommit(CommitID);
+        System.out.println(commit.logString());
+        log(commit.getParentCommitRef());
     }
 
     /* MISC */

@@ -1,5 +1,7 @@
 package gitlet;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import static gitlet.Branch.*;
@@ -60,6 +62,25 @@ public class Commit extends HashObject {
                 _timeStamp.toString();
     }
 
+    /** Return the log information of this Commit. */
+    String logString() {
+        String pattern = "EEE MMM dd HH:mm:ss yyyy Z";
+        DateFormat df = new SimpleDateFormat(pattern);
+        String timeStampString = df.format(_timeStamp);
+        if (_parentCommitMergeRef == null) {
+            return  "===\n" +
+                    "commit " + this.id() + "\n" +
+                    "Date: " + timeStampString + "\n" +
+                    _message + "\n";
+        } else { // TODO: test merge commits handling
+            return  "===\n" +
+                    "commit " + this.id() + "\n" +
+                    "Merge: " + _parentCommitRef.substring(0, 7) + " " + _parentCommitMergeRef.substring(0, 7) + "\n" +
+                    "Date: " + timeStampString + "\n" +
+                    _message + "\n";
+        }
+    }
+
     /**
      * Print information of this commit on System.out.
      */
@@ -70,6 +91,11 @@ public class Commit extends HashObject {
         System.out.println("message: " + _message);
         System.out.println("parent: " + _parentCommitRef);
         System.out.println("treeRef: " + _treeRef);
+    }
+
+    /** Get the ID of the parent commit. */
+    String getParentCommitRef() {
+        return _parentCommitRef;
     }
 
     /**

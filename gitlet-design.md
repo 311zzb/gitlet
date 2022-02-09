@@ -132,7 +132,11 @@ It also sets up persistence and do additional error checking.
       Execute the add command by adding a copy of the file as it currently exists to the staging area.
 4. `commit` command
    1. `public static void commit(String message)` Execute the commit command.
-5. misc
+5. `log` command
+   1. `public static void log()` Execute the log command. Implementation details in the Algorithms section.
+   2. `private static void log(String CommitID)` 
+      Print log information recursively. Starting from the commit with the given commit ID, to the initial commit.
+6. misc
    1. `private static void assertGITLET()` Assert the `CWD` contains a `.gitlet` directory.
 
 ### Branch
@@ -218,11 +222,13 @@ as well as static method that carry out the procedure to make a new commit.
    because no "naked" instantiation of `Commit` is allowed outside the `Commit` class.
    Additionally, the time stamp is set to 1970.01.01 for initial commit.
 7. `public String toString()` Content-addressable overriding `toString()` method.
-8. `public void dump()` Print information of this `Commit` on `System.out`.
-9. `String getCommitTreeRef()` Get the ID of the associating `Tree` of this commit.
-10. `Tree getCommitTree()` Get the associating `Tree` of this commit.
-11. `String getCommitTreeBlobID(String fileName)` Get the ID of the `Blob` of a designated file name in this commit.
-12. `static void mkCommit(String message)` A packaged constructor for `Commit`.
+8. `String logString()` Return the log information of this `Commit`.
+9. `public void dump()` Print information of this `Commit` on `System.out`.
+10. `String getParentCommitRef()` Get the ID of the parent commit.
+11. `String getCommitTreeRef()` Get the ID of the associating `Tree` of this commit.
+12. `Tree getCommitTree()` Get the associating `Tree` of this commit.
+13. `String getCommitTreeBlobID(String fileName)` Get the ID of the `Blob` of a designated file name in this commit.
+14. `static void mkCommit(String message)` A packaged constructor for `Commit`.
     Implementation details in the Algorithm section.
 
 ### Tree
@@ -395,6 +401,16 @@ A commit `Tree` is a `Tree` that every commit uses to record the associated file
    do not stage it, and remove it from the staging area if it is already there. End the execution.
 4. Modify cached staging area
 
+### Print commit log
+
+1. Get the ID of the latest commit
+2. Print log information starting from that commit to the initial commit recursively
+   1. Get the Commit object with the given CommitID
+   2. Print its log information
+   3. Recursively print its ascendants' log information
+
+### 
+
 ## Persistence
 
 The directory structure looks like this:
@@ -444,6 +460,6 @@ The `commit` command will modify persistence following the following rules (no p
 1. Save a serialized `Commit` object in the object database
 2. Overwrite the current branch's file, make it contains the new commit's ID
 3. Make a new staging area and overwrite the `STAGE` file
-4. Delete the previous staging area if it is not empty, and there is a commit already _(subtle bug may exist)_\
+4. Delete the previous staging area if it is not empty, and there is a commit already _(subtle bug may exist)_
 
 #### 

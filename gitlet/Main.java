@@ -32,6 +32,10 @@ public class Main {
                 assertArgsNum("commit", operands, 1);
                 Repository.commit(operands[0]);
             }
+            case "log" -> {
+                assertArgsNum("log", operands, 0);
+                Repository.log();
+            }
             default -> throw new GitletException("Unexpected command: " + command);
         }
         Cache.writeBack();
