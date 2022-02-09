@@ -102,6 +102,39 @@ public class GitletTest {
         GitletExecute("add", "_hello.txt");
     }
 
+    /* LOG COMMAND */
+
+    /** Sanity test for log command. */
+    @Test
+    public void logSanityTest() throws IOException {
+        GitletExecute("init");
+        GitletExecute("log");
+    }
+
+    /** Simple test for log command. */
+    @Test
+    public void simpleLogTest() throws  IOException {
+        GitletExecute("init");
+        GitletExecute("commit", "dummy commit");
+        GitletExecute("log");
+    }
+
+    /** Normal test for log command. */
+    @Test
+    public void normalLogTest() throws  IOException {
+        GitletExecute("init");
+
+        writeTestFile("_hello.txt", "hello");
+        GitletExecute("add", "_hello.txt");
+        GitletExecute("commit", "added hello");
+
+        writeTestFile("_bye.txt", "bye");
+        GitletExecute("add", "_bye.txt");
+        GitletExecute("commit", "added bye");
+
+        GitletExecute("log");
+    }
+
 
 
     /* MISC */

@@ -292,7 +292,11 @@ This class contains JUnit tests for Gitlet.
    3. `public void commitAndAddTest()` Add a file, make a commit, and add another file.
    4. `public void addAndRestoreTest()` Make a commit, change the file and add, then change back and add. 
       The staging area should be empty.
-4. misc
+4. `log` command
+   1. `public void logSanityTest()` Sanity test for log command. Init and log.
+   2. `public void simpleLogTest()` Simple test for log command. Init, commit, and log.
+   3. `public void normalLogTest()` Normal test for log command. Init, commit, commit, and log.
+5. misc
    1. `private static void GitletExecute(String... command)` 
       Execute commands with Gitlet and clean the cache after execution.
    2. `private static void writeTestFile(String fileName, String content)`
