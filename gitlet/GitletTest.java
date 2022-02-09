@@ -50,6 +50,7 @@ public class GitletTest {
     /* COMMIT COMMAND */
 
     /** Sanity test for commit command. */
+    @Test
     public void commitSanityTest() throws IOException {
         GitletExecute("init");
 
@@ -62,6 +63,7 @@ public class GitletTest {
     }
 
     /** Dummy commit test. */
+    @Test
     public void dummyCommitTest() throws IOException {
         GitletExecute("init");
 
@@ -72,6 +74,7 @@ public class GitletTest {
      * Make a commit, change the file and add, then change back and add.
      * The staging area should be empty.
      */
+    @Test
     public void addAndRestoreTest() throws IOException {
         GitletExecute("init");
 
