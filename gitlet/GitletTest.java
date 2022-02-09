@@ -49,9 +49,43 @@ public class GitletTest {
 
     /* COMMIT COMMAND */
 
-    public void commitSanityTest() {
+    /** Sanity test for commit command. */
+    public void commitSanityTest() throws IOException {
+        GitletExecute("init");
 
+        writeTestFile("_hello.txt", "hello");
+        GitletExecute("add", "_hello.txt");
+        writeTestFile("_bye.txt", "bye");
+        GitletExecute("add", "_bye.txt");
+
+        GitletExecute("commit", "added hello and bye");
     }
+
+    /** Dummy commit test. */
+    public void dummyCommitTest() throws IOException {
+        GitletExecute("init");
+
+        GitletExecute("commit", "dummy commit");
+    }
+
+    /**
+     * Make a commit, change the file and add, then change back and add.
+     * The staging area should be empty.
+     */
+    public void addAndRestoreTest() throws IOException {
+        GitletExecute("init");
+
+        writeTestFile("_hello.txt", "hello");
+        GitletExecute("add", "_hello.txt");
+        GitletExecute("commit", "added hello");
+
+        writeTestFile("_hello.txt", "hello world");
+        GitletExecute("add", "_hello.txt");
+        writeTestFile("_hello.txt", "hello");
+        // Should remove _hello.txt from the staging area since it is now identical with the version in the latest commit
+        GitletExecute("add", "_hello.txt");
+    }
+
 
 
     /* MISC */
