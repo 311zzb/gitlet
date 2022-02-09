@@ -304,11 +304,17 @@ This class contains JUnit tests for Gitlet.
    1. `public void logSanityTest()` Sanity test for log command. Init and log.
    2. `public void simpleLogTest()` Simple test for log command. Init, commit, and log.
    3. `public void normalLogTest()` Normal test for log command. Init, commit, commit, and log.
-5. misc
+5. `checkout` command
+   1. `public void checkoutHeadFileSanityTest()` 
+      Sanity test for checkout usage 1 (checkout a file to the latest commit).
+   2. `public void checkoutCommitFileSanityTest()` 
+      Sanity test for checkout usage 2 (checkout a file to the given commit).
+6. misc
    1. `private static void GitletExecute(String... command)` 
       Execute commands with Gitlet and clean the cache after execution.
    2. `private static void writeTestFile(String fileName, String content)`
       Write content into a designated file name. Overwriting or creating file as needed.
+   3. `private static String readTestFile(String fileName)` Read the designated file as String and return it.
 
 
 ## Algorithms

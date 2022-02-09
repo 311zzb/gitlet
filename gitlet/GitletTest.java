@@ -8,6 +8,7 @@ import java.io.IOException;
 import static gitlet.Repository.*;
 import static gitlet.Utils.*;
 import static gitlet.Cache.cleanCache;
+import static org.junit.Assert.*;
 
 /**
  * This class contains JUnit tests for Gitlet.
@@ -135,6 +136,38 @@ public class GitletTest {
         GitletExecute("log");
     }
 
+    /* CHECKOUT COMMAND */
+
+    /** Sanity test for checkout usage 1. */
+    @Test
+    public void checkoutHeadFileSanityTest() throws IOException {
+        GitletExecute("init");
+
+        writeTestFile("_hello.txt", "hello");
+        GitletExecute("add", "_hello.txt");
+        GitletExecute("commit", "added hello");
+
+        writeTestFile("_hello.txt", "hello world");
+        assertEquals("hello world", readTestFile("_hello.txt"));
+        GitletExecute("checkout", "--", "_hello.txt"); // java gitlet.Main checkout -- _hello.txt
+        assertEquals("hello", readTestFile("_hello.txt"));
+    }
+
+    /** Sanity test for checkout usage 2. */
+    @Test
+    public void checkoutCommitFileSanityTest() throws IOException {
+        GitletExecute("init");
+
+        writeTestFile("_hello.txt", "hello");
+        GitletExecute("add", "_hello.txt");
+        GitletExecute("commit", "added hello");
+
+        writeTestFile("_hello.txt", "hello world");
+        assertEquals("hello world", readTestFile("_hello.txt"));
+        GitletExecute("add", "_hello.txt");
+        GitletExecute("checkout", "COMMIT ID", "--", "_hello.txt"); // java gitlet.Main checkout [commit id] -- _hello.txt
+        assertEquals("hello", readTestFile("_hello.txt"));
+    }
 
 
     /* MISC */
@@ -149,5 +182,11 @@ public class GitletTest {
     private static void writeTestFile(String fileName, String content) {
         File file = join(CWD, fileName);
         writeContents(file, content);
+    }
+
+    /** Read the designated file as String and return it. */
+    private static String readTestFile(String fileName) {
+        File file = join(CWD, fileName);
+        return readContentsAsString(file);
     }
 }
