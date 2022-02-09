@@ -90,8 +90,11 @@ from the cache.
    2. `static Tree getStage()` Get the `Tree` object representing the staging area utilizing `getTree(getStageID())`.
    3. `static void cacheStage(Tree stage)`
       Queue the previous staging area for deletion and manually cache the passed-in Stage.
-      Special case: queue the previous staging area for deletion
-      only if it is different from the `Tree` of the latest commit
+      Special case:
+      queue the previous staging area for deletion only if
+      there is a commit,
+      and the previous staging area is different from the Tree of the latest commit,
+      and the previous staging area is not empty.
 6. MISC
    1. `static void writeBack()` Write back all caches. Invoked upon exit.
    2. `static void cleanCache()` Reset all caches. Used for testing proposes.
@@ -122,10 +125,13 @@ It also sets up persistence and do additional error checking.
       The method which handles the `init` command. Implementation details in the Algorithms section.
    2. `static void setUpPersistence()`
       A helper method of `init` command, set up the persistence directories.
+      Implementation details in the Algorithms section.
       This method also checks if there is an existing `.gitlet` directory and abort the execution if so.
 3. `add` command
    1. `public static void add(String fileName)`
       Execute the add command by adding a copy of the file as it currently exists to the staging area.
+4. `commit` command
+   1. `public static void commit(String message)` Execute the commit command.
 
 ### Branch
 
@@ -244,8 +250,11 @@ This class also contains `Tree` related static methods.
     Creates an empty `Tree`, cache it and return its ID.
 14. `static Tree getLatestCommitTree()` Return the associated `Tree` of the latest commit if exists.
     Return `null` if there is no latest commit.
-15. `static String mkCommitTree()` Return the `Tree` that snapshots the current add and remove status.
+15. `static String mkCommitTree()`
+    Return a `Tree` that capture the `Tree` from the latest commit as well as current addition and removal status.
     Implementation details in the Algorithm section.
+    Special cases: make a new empty tree if there is no Tree in the latest commit
+16. `private static Tree copyLatestCommitTree()` Return a deep-copy of the `Tree` in the latest commit.
 
 ### Blob
 
@@ -278,7 +287,11 @@ This class contains JUnit tests for Gitlet.
    1. `public void addCommandSanityTest()` Sanity test for add command.
    2. `public void addCommandTwiceTest()` Test using add command twice.
 3. `commit` command
-   1. xxx
+   1. `public void commitSanityTest()` Sanity test for commit command.
+   2. `public void dummyCommitTest()` Dummy commit test (commit without adding anything).
+   3. `public void commitAndAddTest()` Add a file, make a commit, and add another file.
+   4. `public void addAndRestoreTest()` Make a commit, change the file and add, then change back and add. 
+      The staging area should be empty.
 4. misc
    1. `private static void GitletExecute(String... command)` 
       Execute commands with Gitlet and clean the cache after execution.
@@ -339,11 +352,15 @@ And subclasses of the `HashObject` class overrides the default `toString()` meth
 
 ### Initialize the repository
 
+1. Set up the repository
+2. Create an initial commit
+
+### Set up the repository
+
 1. Set up persistence directories
 2. Make the default branch "master" which is pointing null for now (no pun intended)
-3. Make the `HEAD` pointing to the master branch
+3. Make the HEAD pointing to the master branch
 4. Make a new staging area
-5. Create an initial commit (branch master will be moved in this method)
 
 ### Make a `Commit`
 
@@ -352,15 +369,16 @@ And subclasses of the `HashObject` class overrides the default `toString()` meth
 3. Construct a new `Commit` object with the `private` constructor
 4. Cache the new Commit and queue it for write back
 5. Move the current branch pointing the new commit
+6. Make a new staging area
 
 ### Make a commit `Tree`
 
-A commit `Tree` is a `Tree` that every commit uses to record the associated file names and file versions (Blobs).
+A commit `Tree` is a `Tree` that every commit uses to record the associated file names and file versions (`Blob`).
 
-1. Copy the `Tree` from the latest commit
-2. Overwrite it with the current staging area
-3. Cache it and queue it for write back
-4. Return the ID of overwritten `Tree`
+1. Get a copy of the `Tree` of the latest commit
+2. Get the staging area `Tree`
+3. Update that copy with the staging area
+4. Cache it and queue it for writing
 
 ### Add a file to the staging area
 
@@ -414,3 +432,12 @@ This command will modify persistence in the following two cases:
    a new staging area containing the added file is saved to filesystem.
 
 #### `commit` command
+
+The `commit` command will modify persistence following the following rules (no pun intended):
+
+1. Save a serialized `Commit` object in the object database
+2. Overwrite the current branch's file, make it contains the new commit's ID
+3. Make a new staging area and overwrite the `STAGE` file
+4. Delete the previous staging area if it is not empty, and there is a commit already _(subtle bug may exist)_\
+
+#### 

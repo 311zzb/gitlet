@@ -59,7 +59,8 @@ public class Stage {
      */
     static void mkNewStage() {
         String newStageID = mkNewEmptyTree();
-        cacheStageID(newStageID);
+        Tree newStage = getTree(newStageID);
+        cacheStage(newStage);
     }
 
     /**

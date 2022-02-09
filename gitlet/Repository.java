@@ -36,18 +36,26 @@ public class Repository {
 
     /**
      * Execute the init command.
+     * 1. Set up the repository
+     * 2. Create an initial commit
+     */
+    public static void init() throws IOException {
+        setUpRepository();
+        mkCommit("initial commit");
+    }
+
+    /**
+     * Set up the repository
      * 1. Set up persistence directories
      * 2. Make the default branch "master" which is pointing null for now (no pun intended)
      * 3. Make the HEAD pointing to the master branch
      * 4. Make a new staging area
-     * 5. Create an initial commit (branch master will be moved in this method)
      */
-    public static void init() throws IOException {
+    private static void setUpRepository() throws IOException {
         setUpPersistence();
         mkNewBranch("master");
         moveHEAD("master");
         mkNewStage();
-        mkCommit("initial commit");
     }
 
     /** Set up the persistence directories. */
@@ -76,6 +84,16 @@ public class Repository {
             throw new GitletException("File does not exist.");
         } // Special case: abort if such file does not exist
         addToStage(fileName);
+    }
+
+    /* COMMIT COMMAND */
+
+    /**
+     * Execute the commit command.
+     * @param message the commit message
+     */
+    public static void commit(String message) {
+        mkCommit(message);
     }
 
     /* MISC */

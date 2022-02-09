@@ -70,6 +70,19 @@ public class GitletTest {
         GitletExecute("commit", "dummy commit");
     }
 
+    /** Add a file, make a commit, and add another file. */
+    @Test
+    public void commitAndAddTest() throws IOException {
+        GitletExecute("init");
+
+        writeTestFile("_hello.txt", "hello");
+        GitletExecute("add", "_hello.txt");
+        GitletExecute("commit", "added hello");
+
+        writeTestFile("_bye.txt", "bye");
+        GitletExecute("add", "_bye.txt");
+    }
+
     /**
      * Make a commit, change the file and add, then change back and add.
      * The staging area should be empty.

@@ -4,6 +4,7 @@ import java.util.Date;
 
 import static gitlet.Branch.*;
 import static gitlet.Cache.*;
+import static gitlet.Stage.*;
 import static gitlet.Tree.*;
 
 /**
@@ -99,6 +100,7 @@ public class Commit extends HashObject {
      * 3. Construct a new Commit object
      * 4. Cache the new Commit and queue it for write back
      * 5. Move the current branch pointing the new commit
+     * 6. Make a new staging area
      */
     static void mkCommit(String message) {
         String parentCommitRef = getLatestCommitRef();
@@ -106,6 +108,7 @@ public class Commit extends HashObject {
         Commit newCommit = new Commit(parentCommitRef, message, treeRef);
         String newCommitID = cacheAndQueueForWriteHashObject(newCommit);
         moveCurrBranch(newCommitID);
+        mkNewStage();
     }
 
 

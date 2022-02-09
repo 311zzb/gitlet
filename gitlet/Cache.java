@@ -175,9 +175,19 @@ public class Cache {
      */
     static void cacheStage(Tree stage) {
         String prevStageID = getStageID();
-        if (!prevStageID.equals(getLatestCommit().getCommitTreeRef())) {
+        if (
+                getLatestCommit() != null &&
+                !prevStageID.equals(getLatestCommit().getCommitTreeRef()) &&
+                !getStage().isEmpty()) {
             queueForDeleteHashObject(getStageID());
-        } // Special case: queue the previous staging area for deletion only if it is different from the Tree of the latest commit
+        } /*
+            Special case:
+            queue the previous staging area for deletion only if
+            there is a commit,
+            and the previous staging area is different from the Tree of the latest commit,
+            and the previous staging area is not empty.
+            FIXME: subtle bug may exist
+           */
         cachedStage = stage;
         String newStageID = cacheAndQueueForWriteHashObject(stage);
         cacheStageID(newStageID);

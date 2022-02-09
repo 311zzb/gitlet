@@ -19,19 +19,20 @@ public class Main {
         String command = args[0];
         String[] operands = getOperands(args);
 
-        switch(command) {
-            case "init":
+        switch (command) {
+            case "init" -> {
                 assertArgsNum("init", operands, 0);
                 Repository.init();
-                break;
-            case "add":
+            }
+            case "add" -> {
                 assertArgsNum("add", operands, 1);
                 Repository.add(operands[0]);
-                break;
-                
-            // TODO: FILL THE REST IN
-            default:
-                throw new GitletException("Unexpected command: " + command);
+            }
+            case "commit" -> {
+                assertArgsNum("commit", operands, 1);
+                Repository.commit(operands[0]);
+            }
+            default -> throw new GitletException("Unexpected command: " + command);
         }
         Cache.writeBack();
     }

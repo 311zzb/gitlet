@@ -66,6 +66,7 @@ public class Tree extends HashObject implements Iterable<String> {
 
     /** Remove an entry with fileName as the key from this Tree. */
     void removeBlobID(String fileName) {
+//        queueForDeleteHashObject(getBlobID(fileName)); // This may unintended delete Blob in previous commits
         _structure.remove(fileName);
     }
 
@@ -121,16 +122,29 @@ public class Tree extends HashObject implements Iterable<String> {
     }
 
     /**
-     * Copy the Tree from the latest commit and update it with the staging area.
-     * Cache it and queue it for writing.
-     * @return the new Tree
+     * Return a Tree that capture the Tree from the latest commit as well as current addition and removal status.
+     * 1. Get a copy of the Tree of the latest commit
+     * 2. Get the staging area Tree
+     * 3. Update that copy with the staging area
+     * 4. Cache it and queue it for writing
+     * @return the ID of the new Tree
      */
     static String mkCommitTree() {
-        Tree tree = getLatestCommitTree();
+        Tree tree = copyLatestCommitTree();
         if (tree == null) {
             return mkNewEmptyTree();
-        } // Special cases: make a new empty tree if there is no Tree for latest commit.
+        } // Special cases: make a new empty tree if there is no Tree in the latest commit
         tree.updateWith(getStage());
         return cacheAndQueueForWriteHashObject(tree);
+    }
+
+    /** Return a deep-copy of the Tree in the latest commit. */
+    private static Tree copyLatestCommitTree() {
+        Tree latestCommitTree = getLatestCommitTree();
+        if (latestCommitTree == null) {
+            return null;
+        } else {
+            return new Tree(latestCommitTree);
+        }
     }
 }
