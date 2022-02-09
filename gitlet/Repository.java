@@ -79,6 +79,7 @@ public class Repository {
      * @param fileName the designated file name
      */
     public static void add(String fileName) {
+        assertGITLET();
         File targetFile = join(CWD, fileName);
         if (!targetFile.exists()) {
             throw new GitletException("File does not exist.");
@@ -93,10 +94,21 @@ public class Repository {
      * @param message the commit message
      */
     public static void commit(String message) {
+        assertGITLET();
+        // TODO: assert the staging area is not empty. This is not implemented for testing convenience
+        if (message.equals("")) {
+            throw new GitletException("Please enter a commit message.");
+        } // Special case: abort if message is blank
         mkCommit(message);
     }
 
     /* MISC */
 
+    /** Assert the CWD contains a .gitlet directory. */
+    private static void assertGITLET() {
+        if (!GITLET_DIR.exists()) {
+            throw new GitletException("A Gitlet version-control system have not initialized in the current directory.");
+        }
+    }
 
 }

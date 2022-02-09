@@ -132,6 +132,8 @@ It also sets up persistence and do additional error checking.
       Execute the add command by adding a copy of the file as it currently exists to the staging area.
 4. `commit` command
    1. `public static void commit(String message)` Execute the commit command.
+5. misc
+   1. `private static void assertGITLET()` Assert the `CWD` contains a `.gitlet` directory.
 
 ### Branch
 
