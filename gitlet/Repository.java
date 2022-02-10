@@ -40,8 +40,12 @@ public class Repository {
      * 1. Set up the repository
      * 2. Create an initial commit
      */
-    public static void init() throws IOException {
-        setUpRepository();
+    public static void init() {
+        try {
+            setUpRepository();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         mkCommit("initial commit");
     }
 

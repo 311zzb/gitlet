@@ -22,11 +22,7 @@ public class Main {
         switch (command) {
             case "init" -> {
                 assertArgsNum("init", operands, 0);
-                try {
-                    Repository.init();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                Repository.init();
             }
             case "add" -> {
                 assertArgsNum("add", operands, 1);
