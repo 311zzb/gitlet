@@ -14,7 +14,7 @@ public class Main {
     /** Usage: java gitlet.Main ARGS, where ARGS contains
      *  <COMMAND> <OPERAND1> <OPERAND2> ... 
      */
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         assertNotArgsNum("Gitlet", args, 0);
         String command = args[0];
         String[] operands = getOperands(args);
@@ -22,7 +22,11 @@ public class Main {
         switch (command) {
             case "init" -> {
                 assertArgsNum("init", operands, 0);
-                Repository.init();
+                try {
+                    Repository.init();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
             case "add" -> {
                 assertArgsNum("add", operands, 1);
