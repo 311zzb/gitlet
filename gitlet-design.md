@@ -205,11 +205,20 @@ and write to or delete from the object database a `HashObject`.
 
 #### Fields
 
-1. `String id()` Get the SHA-1 of `THIS`.
-2. `public void dump()` Print the type of this object on System.out.
-3. `static HashObject loadHashObject(String id)` Load a type object with its ID.
-4. `static void writeCachedHashObject(String id)` Write a cached HashObject with ID in cachedObjects to filesystem.
-5. `static void deleteHashObject(String id)` Delete a HashObject from filesystem.
+1. `private static final Boolean OPTIMIZATION`
+   Allow you to switch between flat `objects` directory (easy to debug) and HashTable `objects` directory (better performance).
+   Notice: this should be consistence for a single Gitlet repository.
+2. `String id()` Get the SHA-1 of `THIS`.
+3. `public void dump()` Print the type of this object on System.out.
+4. `static HashObject loadHashObject(String id)` Load a type object with its ID.
+5. `static void writeCachedHashObject(String id)` Write a cached HashObject with ID in cachedObjects to filesystem.
+6. `static void deleteHashObject(String id)` Delete a HashObject from filesystem.
+7. `static private File optimizedObjectIDFolder(String id)`
+   Helper method that returns the housing directory of a HashObject with the given ID.
+   Used in the optimized object database.
+8. `static private File optimizedObjectIDFile(String id)`
+   Helper method that returns the file of a HashObject with the given ID.
+   Used in the optimized object database.
 
 Despite `HashObject` should be instantiated very often, it has no constructor method(s).
 Any `HashObject` is designed to be instantiated as a more specific subclass, namely `Commit`, `Tree`, or `Blob`.
@@ -379,6 +388,21 @@ In order to achieve content-addressability, the following two characteristics is
 To accomplish such requirements, ID of a `HashObject` is generated from applying SHA-1 on its string representation.
 And subclasses of the `HashObject` class overrides the default `toString()` method to make it content-addressable.
 
+### Saving, loading, or deleting a `HashObject`
+If the static variable `OPTIMIZATION` in `HashObject` class is set to `true`, 
+Gitlet will construct a `HashTable`-liked structure in the `.gitlet/objects` directory.
+That is, all `HashObject` (with a 40-character ID) will be stored under the `.gitlet/objects/xx` directory 
+and named after `xxx`, 
+where `xx` is the leading two characters of its ID and `xxx` is the left `38` characters. 
+The point of this optimization is speeding up retrieving `Commit` 
+when the user abbreviate commit ID with a unique prefix.
+The real Git is also utilizing this technique.
+
+On the other hand, if `OPTIMIZATION` is set to `false`,
+all `HashObject` will be stored flatly under the `.gitlet/objects` directory and named after the corresponding ID.
+This set up is might be more convenient when digging into the object database for debugging purposes. 
+
+
 ### Initialize the repository
 
 1. Set up the repository
@@ -455,8 +479,10 @@ CWD                                                      <==== Whatever the curr
     ├── HEAD                                             <==== The name of the current branch
     ├── STAGE                                            <==== A hash pointer to the serialized staging area Tree
     ├── objects                                          <==== The object database (all HashObject lives here)
-    │   ├── d991f6cad12cc1bfb64791e893fa01ac5bf8358e     <==== A saved HashObject
-    │   └── ...                                       
+    │   ├── d9                                           <==== Saves all HashObject with ID stating with "d9"
+    │   │   ├── 91f6cad12cc1bfb64791e893fa01ac5bf8358e   <==== A saved HashObject, named after its ID without the first two letters
+    │   │   └── ...                                      
+    │   └── ...                                          
     └── branches                                         <==== Store all the branch references
         ├── master                                       <==== The default branch. Contains a hash pointer to a commit
         └── ...

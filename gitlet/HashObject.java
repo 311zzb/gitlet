@@ -17,6 +17,9 @@ import static gitlet.Utils.*;
  */
 public class HashObject implements Serializable, Dumpable {
 
+    /** Allow you to switch between flat OBJECTS directory and HashTable OBJECTS directory. */
+    private static final Boolean OPTIMIZATION = true;
+
     /**
      * Get the SHA-1 of THIS.
      * @return the SHA-1 of THIS
@@ -42,12 +45,21 @@ public class HashObject implements Serializable, Dumpable {
      * @return the deserialized object
      */
     static HashObject loadHashObject(String id) {
-        File folder = join(OBJECTS_DIR, id.substring(0, 2));
-        File file = join(folder, id.substring(2));
-        if (!folder.exists() || !file.exists()) {
-            throw new GitletException("Failed to load HashObject " + id);
-        } // Special case: throw an Exception if told to load an object that does not exist
-        return readObject(file, HashObject.class);
+        if (OPTIMIZATION) {
+            File folder = optimizedObjectIDFolder(id);
+            File file = optimizedObjectIDFile(id);
+            if (!folder.exists() || !file.exists()) {
+                throw new GitletException("Failed to load HashObject " + id);
+            } // Special case: throw an Exception if told to load an object that does not exist
+            return readObject(file, HashObject.class);
+        } else {
+            File dest = join(OBJECTS_DIR, id);
+            if (!dest.exists()) {
+                throw new GitletException("Failed to load HashObject " + id);
+            } // Special case: throw an Exception if told to load an object that does not exist
+            return readObject(dest, HashObject.class);
+        }
+
     }
 
     /**
@@ -56,12 +68,17 @@ public class HashObject implements Serializable, Dumpable {
      */
     static void writeCachedHashObject(String id) {
         assert cachedHashObjects.containsKey(id);
-        File folder = join(OBJECTS_DIR, id.substring(0, 2));
-        if (!folder.exists()) {
-            folder.mkdir();
-        } // Special case: make the containing directory if it is not already there
-        File file = join(folder, id.substring(2));
-        writeObject(file, cachedHashObjects.get(id));
+        if (OPTIMIZATION) {
+            File folder = optimizedObjectIDFolder(id);
+            if (!folder.exists()) {
+                folder.mkdir();
+            } // Special case: make the containing directory if it is not already there
+            File file = optimizedObjectIDFile(id);
+            writeObject(file, cachedHashObjects.get(id));
+        } else {
+            File dest = join(OBJECTS_DIR, id);
+            writeObject(dest, cachedHashObjects.get(id));
+        }
     }
 
     /**
@@ -69,8 +86,29 @@ public class HashObject implements Serializable, Dumpable {
      * @param id the designated ID
      */
     static void deleteHashObject(String id) {
-        File folder = join(OBJECTS_DIR, id.substring(0, 2));
-        File file = join(folder, id.substring(2));
-        file.delete();
+        if (OPTIMIZATION) {
+            File folder = optimizedObjectIDFolder(id);
+            File file = optimizedObjectIDFile(id);
+            file.delete();
+        } else {
+            File dest = join(OBJECTS_DIR, id);
+            dest.delete();
+        }
+    }
+
+    /**
+     * Helper method that returns the housing directory of a HashObject with the given ID.
+     * Used in the optimized object database.
+     */
+    static private File optimizedObjectIDFolder(String id) {
+        return join(OBJECTS_DIR, id.substring(0, 2));
+    }
+
+    /**
+     * Helper method that returns the file of a HashObject with the given ID.
+     * Used in the optimized object database.
+     */
+    static private File optimizedObjectIDFile(String id) {
+        return join(optimizedObjectIDFolder(id), id.substring(2));
     }
 }
