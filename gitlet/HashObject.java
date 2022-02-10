@@ -42,11 +42,12 @@ public class HashObject implements Serializable, Dumpable {
      * @return the deserialized object
      */
     static HashObject loadHashObject(String id) {
-        File dest = join(OBJECTS_DIR, id);
-        if (!dest.exists()) {
+        File folder = join(OBJECTS_DIR, id.substring(0, 2));
+        File file = join(folder, id.substring(2));
+        if (!folder.exists() || !file.exists()) {
             throw new GitletException("Failed to load HashObject " + id);
         } // Special case: throw an Exception if told to load an object that does not exist
-        return readObject(dest, HashObject.class);
+        return readObject(file, HashObject.class);
     }
 
     /**
@@ -55,8 +56,12 @@ public class HashObject implements Serializable, Dumpable {
      */
     static void writeCachedHashObject(String id) {
         assert cachedHashObjects.containsKey(id);
-        File dest = join(OBJECTS_DIR, id);
-        writeObject(dest, cachedHashObjects.get(id));
+        File folder = join(OBJECTS_DIR, id.substring(0, 2));
+        if (!folder.exists()) {
+            folder.mkdir();
+        } // Special case: make the containing directory if it is not already there
+        File file = join(folder, id.substring(2));
+        writeObject(file, cachedHashObjects.get(id));
     }
 
     /**
@@ -64,7 +69,8 @@ public class HashObject implements Serializable, Dumpable {
      * @param id the designated ID
      */
     static void deleteHashObject(String id) {
-        File dest = join(OBJECTS_DIR, id);
-        dest.delete();
+        File folder = join(OBJECTS_DIR, id.substring(0, 2));
+        File file = join(folder, id.substring(2));
+        file.delete();
     }
 }
