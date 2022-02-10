@@ -136,8 +136,19 @@ It also sets up persistence and do additional error checking.
    1. `public static void log()` Execute the log command. Implementation details in the Algorithms section.
    2. `private static void log(String CommitID)` 
       Print log information recursively. Starting from the commit with the given commit ID, to the initial commit.
-6. misc
+6. `checkout` command
+   1. `public static void checkout1(String fileName)` 
+      Execute checkout command usage 1 (checkout a file to the latest commit). 
+      Implementation details in the Algorithms section.
+   2. `public static void checkout2(String commitID, String fileName)`
+      Execute checkout command usage 2 (checkout a file to the given commit).
+      Implementation details in the Algorithms section.
+   3. `public static void checkout3(String branchName)`
+      Execute checkout command usage 3 (checkout all files to the designated branch). TODO.
+7. misc
    1. `private static void assertGITLET()` Assert the `CWD` contains a `.gitlet` directory.
+   2. `private static void overwriteCWDFile(String fileName, Blob overwriteSrc)`
+      Overwrite the file in `CWD` of designated file name with the content in the given `Blob` object.
 
 ### Branch
 
@@ -415,7 +426,24 @@ A commit `Tree` is a `Tree` that every commit uses to record the associated file
    2. Print its log information
    3. Recursively print its ascendants' log information
 
+### Checkout a file to `HEAD` commit
+
+1. Get the ID of the latest commit
+2. Invoke `checkout2(String commitID, String fileName)` method with the ID of the latest commit.
+
+### Checkout a file to the commit with the designated ID
+
+1. Get the `Commit` object with the designated commit ID
+2. Get the designated file's `Blob` object form that commit
+3. Overwrite the file with that name in the `CWD`
+
+### Checkout all files to a designated branch
+
+1. xxx
+
 ### 
+
+
 
 ## Persistence
 
@@ -468,4 +496,6 @@ The `commit` command will modify persistence following the following rules (no p
 3. Make a new staging area and overwrite the `STAGE` file
 4. Delete the previous staging area if it is not empty, and there is a commit already _(subtle bug may exist)_
 
-#### 
+#### `checkout` command
+
+This command will write the current working directory, but only read persistence.

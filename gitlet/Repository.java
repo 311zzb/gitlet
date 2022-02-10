@@ -131,6 +131,48 @@ public class Repository {
         log(commit.getParentCommitRef());
     }
 
+    /* CHECKOUT COMMAND */
+
+    /**
+     * Execute checkout command usage 1 (checkout a file to the latest commit).
+     * 1. Get the ID of the latest commit
+     * 2. Invoke checkout2 method with the ID of the latest commit.
+     * @param fileName the designated file name
+     */
+    public static void checkout1(String fileName) {
+        String latestCommitRef = getLatestCommitRef();
+        checkout2(latestCommitRef, fileName);
+    }
+
+    /**
+     * Execute checkout command usage 2 (checkout a file to the given commit).
+     * 1. Get the Commit object with the designated commit ID
+     * 2. Get the designated file's Blob object form that commit
+     * 3. Overwrite the file with that name in the CWD
+     * @param commitID the designated commit ID
+     * @param fileName the designated file name
+     */
+    public static void checkout2(String commitID, String fileName) {
+        assertGITLET();
+        Commit commit = getCommit(commitID);
+        if (commit == null) {
+            throw new GitletException("No commit with that id exists.");
+        } // Special case: abort if there is no commit with the given commit ID
+        Blob blob = getBlob(commit.getCommitTreeBlobID(fileName));
+        if (blob == null) {
+            throw new GitletException("File does not exist in that commit.");
+        } // Special case: abort if such file does not exist in that commit
+        overwriteCWDFile(fileName, blob);
+    }
+
+    /**
+     * Execute checkout command usage 3 (checkout all files to the designated branch).
+     * @param branchName the designated branch name
+     */
+    public static void checkout3(String branchName) {
+        // TODO: checkout command usage 3
+    }
+
     /* MISC */
 
     /** Assert the CWD contains a .gitlet directory. */
@@ -140,4 +182,14 @@ public class Repository {
         }
     }
 
+    /**
+     * Overwrite the file in CWD of designated file name with the content in the given Blob object.
+     * @param fileName the designated file name
+     * @param overwriteSrc the given Blob object
+     */
+    private static void overwriteCWDFile(String fileName, Blob overwriteSrc) {
+        String overwriteContent = overwriteSrc.getContent();
+        File file = join(CWD, fileName);
+        writeContents(file, overwriteContent);
+    }
 }

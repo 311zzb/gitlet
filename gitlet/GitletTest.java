@@ -5,6 +5,7 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 
+import static gitlet.Cache.getLatestCommitRef;
 import static gitlet.Repository.*;
 import static gitlet.Utils.*;
 import static gitlet.Cache.cleanCache;
@@ -165,7 +166,9 @@ public class GitletTest {
         writeTestFile("_hello.txt", "hello world");
         assertEquals("hello world", readTestFile("_hello.txt"));
         GitletExecute("add", "_hello.txt");
-        GitletExecute("checkout", "COMMIT ID", "--", "_hello.txt"); // java gitlet.Main checkout [commit id] -- _hello.txt
+        GitletExecute("commit", "changed hello");
+        String commitID = Cache.getCommit(getLatestCommitRef()).getParentCommitRef();
+        GitletExecute("checkout", commitID, "--", "_hello.txt"); // java gitlet.Main checkout [commit id] -- _hello.txt
         assertEquals("hello", readTestFile("_hello.txt"));
     }
 

@@ -36,6 +36,23 @@ public class Main {
                 assertArgsNum("log", operands, 0);
                 Repository.log();
             }
+            case "checkout" -> {
+                switch (operands.length) {
+                    case 1 -> {
+                        Repository.checkout3(operands[0]);
+                    }
+                    case 2 -> {
+                        assertString("--", operands[0]);
+                        Repository.checkout1(operands[1]);
+                    }
+                    case 3 -> {
+                        assertString("--", operands[1]);
+                        Repository.checkout2(operands[0], operands[2]);
+                    }
+                    default -> throw new GitletException("Invalid number of arguments for: checkout.");
+                }
+            }
+
             default -> throw new GitletException("Unexpected command: " + command);
         }
         Cache.writeBack();
@@ -78,5 +95,23 @@ public class Main {
         String[] operands = new String[args.length - 1];
         System.arraycopy(args, 1, operands, 0, args.length - 1);
         return operands;
+    }
+
+    /**
+     * Assert two String are equal.
+     * @param expected the expected String
+     * @param actual the actual String
+     */
+    private static void assertString(String expected, String actual) {
+       if (expected == null) {
+           if (actual == null) {
+               return;
+           } else {
+               throw new GitletException("Make sure you use " + expected + ".");
+           }
+       }
+       if (!expected.equals(actual)) {
+           throw new GitletException("Make sure you use " + expected + ".");
+       }
     }
 }
