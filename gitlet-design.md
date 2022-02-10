@@ -214,10 +214,13 @@ and write to or delete from the object database a `HashObject`.
 5. `static void writeCachedHashObject(String id)` Write a cached HashObject with ID in cachedObjects to filesystem.
 6. `static void deleteHashObject(String id)` Delete a HashObject from filesystem.
 7. `static private File optimizedObjectIDFolder(String id)`
-   Helper method that returns the housing directory of a HashObject with the given ID.
+   Helper method that returns the housing directory of a `HashObject` with the given ID.
    Used in the optimized object database.
 8. `static private File optimizedObjectIDFile(String id)`
-   Helper method that returns the file of a HashObject with the given ID.
+   Helper method that returns the file of a `HashObject` with the given ID.
+   Used in the optimized object database.
+9. `static private File optimizedObjectAbbrevIDFile(String id)` 
+   Helper method that return the file of a `HashObject` with the given abbreviated ID.
    Used in the optimized object database.
 
 Despite `HashObject` should be instantiated very often, it has no constructor method(s).
@@ -397,10 +400,13 @@ where `xx` is the leading two characters of its ID and `xxx` is the left `38` ch
 The point of this optimization is speeding up retrieving `Commit` 
 when the user abbreviate commit ID with a unique prefix.
 The real Git is also utilizing this technique.
+When the user provide an abbreviated commit ID, Gitlet will go to the corresponding `.gitlet/objects/xx` directory
+and iterate through a list of file names in that directory in order to figure out the comprehensive commit ID.
 
 On the other hand, if `OPTIMIZATION` is set to `false`,
 all `HashObject` will be stored flatly under the `.gitlet/objects` directory and named after the corresponding ID.
 This set up is might be more convenient when digging into the object database for debugging purposes. 
+Due to performance concerns, referring commits with abbreviated IDs is not allowed when `OPTIMIZATION` is set to `false`.
 
 
 ### Initialize the repository

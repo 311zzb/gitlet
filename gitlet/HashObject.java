@@ -2,6 +2,7 @@ package gitlet;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.List;
 
 import static gitlet.Cache.*;
 import static gitlet.Repository.*;
@@ -18,7 +19,7 @@ import static gitlet.Utils.*;
 public class HashObject implements Serializable, Dumpable {
 
     /** Allow you to switch between flat OBJECTS directory and HashTable OBJECTS directory. */
-    private static final Boolean OPTIMIZATION = true;
+    private static final Boolean OPTIMIZATION = true; // true -> better performance; false -> easier debug
 
     /**
      * Get the SHA-1 of THIS.
@@ -48,7 +49,10 @@ public class HashObject implements Serializable, Dumpable {
         if (OPTIMIZATION) {
             File folder = optimizedObjectIDFolder(id);
             File file = optimizedObjectIDFile(id);
-            if (!folder.exists() || !file.exists()) {
+            if (id.length() < 40) {
+                file = optimizedObjectAbbrevIDFile(id);
+            } // Special case: if the given ID is abbreviated, use helper method to get the right file
+            if (!folder.exists() || file == null || !file.exists()) {
                 throw new GitletException("Failed to load HashObject " + id);
             } // Special case: throw an Exception if told to load an object that does not exist
             return readObject(file, HashObject.class);
@@ -110,5 +114,25 @@ public class HashObject implements Serializable, Dumpable {
      */
     static private File optimizedObjectIDFile(String id) {
         return join(optimizedObjectIDFolder(id), id.substring(2));
+    }
+
+    /**
+     * Helper method that return the file of a HashObject with the given abbreviated ID.
+     * Used in the optimized object database.
+     */
+    static private File optimizedObjectAbbrevIDFile(String id) {
+        File folder = optimizedObjectIDFolder(id);
+        String preFix = id.substring(2);
+        assert preFix.length() >= 4;
+        List<String> fileList = plainFilenamesIn(folder);
+        if (fileList == null) {
+            return null;
+        } // Special case: return null if the folder is empty
+        for (String fileName : fileList) {
+            if (fileName.startsWith(preFix)) {
+                return join(folder, fileName);
+            }
+        }
+        return null;
     }
 }

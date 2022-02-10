@@ -168,7 +168,7 @@ public class GitletTest {
         GitletExecute("add", "_hello.txt");
         GitletExecute("commit", "changed hello");
         String commitID = Cache.getCommit(getLatestCommitRef()).getParentCommitRef();
-        GitletExecute("checkout", commitID, "--", "_hello.txt"); // java gitlet.Main checkout [commit id] -- _hello.txt
+        GitletExecute("checkout", commitID.substring(0, 6), "--", "_hello.txt"); // java gitlet.Main checkout [abbreviated commit id] -- _hello.txt
         assertEquals("hello", readTestFile("_hello.txt"));
     }
 
