@@ -2,6 +2,7 @@ package gitlet;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -182,6 +183,52 @@ public class Repository {
         for (String CommitID : branchesCommitID) {
             log(CommitID);
         }
+    }
+
+    /* FIND COMMAND */
+
+    /** A list of commit IDs that have the designated commit message. */
+    private static final List<String> foundCommitID = new ArrayList<>();
+    /** A list of commit IDs that are already visited. */
+    private static final List<String> visitedFindCommitID = new ArrayList<>();
+
+    /**
+     * Execute the find command.
+     * 1. Get a list of commit IDs that are pointed by any branch
+     * 2. Recursively check the commits and their ascendants whether they have the designated commit message
+     *    (ignore those commits that have been visited base on their IDs)
+     * @param commitMessage the designated commit message.
+     */
+    public static void find(String commitMessage) {
+        List<String> branchesCommitID = loadAllBranches();
+        for (String CommitID : branchesCommitID) {
+            findCheck(CommitID, commitMessage);
+        }
+        if (foundCommitID.isEmpty()) {
+            throw new GitletException("Found no commit with that message.");
+        } // Special case: no such commit exists.
+        System.out.println("Commit ID(s) that match(es) the given message \"" + commitMessage + "\":");
+        for (String CommitID : foundCommitID) {
+            System.out.println(CommitID);
+        }
+    }
+
+    /**
+     * Recursively check if commit with CommitID and its ascendants have the designated commit message.
+     * @param CommitID the designated commit ID.
+     * @param commitMessage the matching commit message.
+     * TODO: test against branched repository
+     */
+    private static void findCheck(String CommitID, String commitMessage) {
+        if (CommitID == null || visitedFindCommitID.contains(CommitID)) {
+            return;
+        } // Special case: return if CommitID is null or already visited.
+        visitedFindCommitID.add(CommitID);
+        Commit commit = getCommit(CommitID);
+        if (commit.getMessage().equals(commitMessage)) {
+            foundCommitID.add(CommitID);
+        }
+        findCheck(commit.getParentCommitRef(), commitMessage);
     }
 
     /* CHECKOUT COMMAND */

@@ -186,10 +186,30 @@ public class GitletTest {
 
     /** Test for global-log command with branching. */
     @Test
-    public void globalLogTest() throws  IOException {
+    public void globalLogBranchTest() throws  IOException {
         // TODO
     }
 
+    /* FIND COMMAND */
+
+    /** Sanity test for find command. */
+    @Test
+    public void findSanityTest() throws IOException {
+        GitletExecute("init");
+
+        GitletExecute("commit", "dummy");
+        GitletExecute("commit", "dummy");
+        GitletExecute("commit", "not dummy");
+        GitletExecute("log");
+
+        GitletExecute("find", "dummy");
+    }
+
+    /** Test for find command with branching. */
+    @Test
+    public void findBranchTest() throws IOException {
+        // TODO
+    }
 
     /* CHECKOUT COMMAND */
 

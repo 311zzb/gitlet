@@ -93,6 +93,11 @@ public class Commit extends HashObject {
         System.out.println("treeRef: " + _treeRef);
     }
 
+    /** Get the message of this commit. */
+    String getMessage() {
+        return _message;
+    }
+
     /** Get the ID of the parent commit. */
     String getParentCommitRef() {
         return _parentCommitRef;

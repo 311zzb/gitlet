@@ -143,7 +143,14 @@ It also sets up persistence and do additional error checking.
       A Set that record the visited commits' IDs. No need to be persistent.
    2. `public static void globalLog()` 
       Print log information about all commits ever made. Implementation details in the Algorithms section.
-8. `checkout` command
+8. `find` command
+   1. `private static final List<String> foundCommitID` A list of commit IDs that have the designated commit message.
+   2. `private static final List<String> visitedFindCommitID` A list of commit IDs that are already visited.
+   3. `public static void find(String commitMessage)` 
+      Execute the `find` command. Implementation details in the Algorithms section.
+   4. `private static void findCheck(String CommitID, String commitMessage)`
+      Recursively check if commit with `CommitID` and its ascendants have the designated commit message.
+9. `checkout` command
    1. `public static void checkout1(String fileName)` 
       Execute checkout command usage 1 (checkout a file to the latest commit). 
       Implementation details in the Algorithms section.
@@ -152,10 +159,10 @@ It also sets up persistence and do additional error checking.
       Implementation details in the Algorithms section.
    3. `public static void checkout3(String branchName)`
       Execute checkout command usage 3 (checkout all files to the designated branch). TODO.
-9. misc
-   1. `private static void assertGITLET()` Assert the `CWD` contains a `.gitlet` directory.
-   2. `private static void overwriteCWDFile(String fileName, Blob overwriteSrc)`
-      Overwrite the file in `CWD` of designated file name with the content in the given `Blob` object.
+10. misc
+    1. `private static void assertGITLET()` Assert the `CWD` contains a `.gitlet` directory.
+    2. `private static void overwriteCWDFile(String fileName, Blob overwriteSrc)`
+       Overwrite the file in `CWD` of designated file name with the content in the given `Blob` object.
 
 ### Branch
 
@@ -256,12 +263,13 @@ as well as static method that carry out the procedure to make a new commit.
 7. `public String toString()` Content-addressable overriding `toString()` method.
 8. `String logString()` Return the log information of this `Commit`.
 9. `public void dump()` Print information of this `Commit` on `System.out`.
-10. `String getParentCommitRef()` Get the ID of the parent commit.
-11. `String getCommitTreeRef()` Get the ID of the associating `Tree` of this commit.
-12. `Tree getCommitTree()` Get the associating `Tree` of this commit.
-13. `String getCommitTreeBlobID(String fileName)` Get the ID of the `Blob` of a designated file name in this commit.
-14. `Boolean containsFile(String fileName)` Return whether this `Commit` contains a file with `fileName`.
-15. `static void mkCommit(String message)` Factory method. Make a new `Commit`.
+10. `String getMessage()` Get the message of this `Commit`.
+11. `String getParentCommitRef()` Get the ID of the parent commit.
+12. `String getCommitTreeRef()` Get the ID of the associating `Tree` of this commit.
+13. `Tree getCommitTree()` Get the associating `Tree` of this commit.
+14. `String getCommitTreeBlobID(String fileName)` Get the ID of the `Blob` of a designated file name in this commit.
+15. `Boolean containsFile(String fileName)` Return whether this `Commit` contains a file with `fileName`.
+16. `static void mkCommit(String message)` Factory method. Make a new `Commit`.
     Implementation details in the Algorithm section.
 
 ### Tree
@@ -350,13 +358,16 @@ This class contains JUnit tests for Gitlet.
    3. `public void normalLogTest()` Normal test for log command. Init, commit, commit, and log.
 6. `global-log` command
    1. `public void globalLogSanityTest()` Sanity test for global-log command.
-   2. `public void globalLogTest()` Test for global-log command with branching. Need implementation.
-7. `checkout` command
+   2. `public void globalLogBranchTest()` Test for global-log command with branching. Need implementation.
+7. `find` command
+   1. `public void findSanityTest()` Sanity test for find command.
+   2. `public void findBranchTest()` Test for find command with branching. Need implementation.
+8. `checkout` command
    1. `public void checkoutHeadFileSanityTest()` 
       Sanity test for checkout usage 1 (checkout a file to the latest commit).
    2. `public void checkoutCommitFileSanityTest()` 
       Sanity test for checkout usage 2 (checkout a file to the given commit).
-8. misc
+9. misc
    1. `private static void GitletExecute(String... command)` 
       Execute commands with Gitlet and clean the cache after execution.
       Special case: make sure there is no `.gitlet` directory before the init command. Implemented for testing purposes.
@@ -503,10 +514,18 @@ is avoided, and the amount of codes to implement the `rm` command is trivial.
    2. Print its log information
    3. Recursively print its ascendants' log information
 
-### Print global-log
+### Print global log
 
 1. Get a list of commit IDs that are pointed by any branch
 2. Print log information starting form each of the ID (ignore those commits that have been visited base on their IDs)
+
+### The `find` command
+
+This command has similar algorithm with the `global-log` command. 
+Both of these commands cover all commits ever made by the same manner.
+1. Get a list of commit IDs that are pointed by any branch
+2. Recursively check the commits and their ascendants whether they have the designated commit message
+(ignore those commits that have been visited base on their IDs)
 
 ### Checkout a file to `HEAD` commit
 
