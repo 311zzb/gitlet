@@ -104,6 +104,38 @@ public class GitletTest {
         GitletExecute("add", "_hello.txt");
     }
 
+    /* RM COMMAND */
+
+    /**
+     * The rm command should unstage the added file.
+     */
+    @Test
+    public void rmUnstageTest() throws IOException {
+        GitletExecute("init");
+
+        writeTestFile("_hello.txt", "hello");
+        GitletExecute("add", "_hello.txt");
+        GitletExecute("rm", "_hello.txt");
+    }
+
+    /**
+     * Add a file, commit, and rm it, commit again.
+     * The latest commit should have an empty commit tree.
+     * The file in the CWD should be deleted.
+     */
+    @Test
+    public void rmCommitTest() throws IOException {
+        GitletExecute("init");
+
+        writeTestFile("_hello.txt", "hello");
+        GitletExecute("add", "_hello.txt");
+        GitletExecute("commit", "added hello");
+
+        GitletExecute("rm", "_hello.txt");
+        GitletExecute("commit", "removed hello");
+    }
+
+
     /* LOG COMMAND */
 
     /** Sanity test for log command. */
@@ -177,6 +209,9 @@ public class GitletTest {
 
     /** Execute commands with Gitlet and clean the cache after execution. */
     private static void GitletExecute(String... command) throws IOException {
+        if (command[0].equals("init")) {
+            deleteDirectory(GITLET_DIR);
+        } // Special case: make sure there is no .gitlet directory before init command. Implemented for testing purposes.
         Main.main(command);
         cleanCache();
     }
@@ -191,5 +226,16 @@ public class GitletTest {
     private static String readTestFile(String fileName) {
         File file = join(CWD, fileName);
         return readContentsAsString(file);
+    }
+
+    /** Delete a directory recursively. */
+    private static void deleteDirectory(File directoryToBeDeleted) {
+        File[] allContents = directoryToBeDeleted.listFiles();
+        if (allContents != null) {
+            for (File file : allContents) {
+                deleteDirectory(file);
+            }
+        }
+        directoryToBeDeleted.delete();
     }
 }

@@ -56,6 +56,13 @@ public class Tree extends HashObject implements Iterable<String> {
     }
 
     /**
+     * Return true if a Tree contains a file with fileName.
+     */
+    boolean containsFile(String fileName) {
+        return _structure.containsKey(fileName);
+    }
+
+    /**
      * Record a fileName - Blob ID pair
      * @param fileName the name of the recording file
      * @param blobRef the hash pointer to a Blob
@@ -92,7 +99,13 @@ public class Tree extends HashObject implements Iterable<String> {
      */
     void updateWith(Tree updater) {
         for (String key : updater) {
-            this.putBlobID(key, updater.getBlobID(key));
+            String blobID = updater.getBlobID(key);
+            if (blobID == null) {
+                this.removeBlobID(key);
+            } // Special case: remove the corresponding pair from THIS if the value to a key in the updater is null
+            else {
+                this.putBlobID(key, blobID);
+            }
         }
     }
 
@@ -100,7 +113,7 @@ public class Tree extends HashObject implements Iterable<String> {
     /* STATIC METHODS */
 
     /**
-     * A packaged constructor for Tree.
+     * Factory method.
      * Creates an empty Tree, cache it and return its ID.
      * @return the new tree's ID
      */
@@ -110,7 +123,7 @@ public class Tree extends HashObject implements Iterable<String> {
     }
 
     /**
-     * Return the Tree of the latest commit.
+     * Factory method. Return the copy of the Tree of the latest commit if it exists.
      */
     static Tree getLatestCommitTree() {
         Commit latestCommit = getLatestCommit();
@@ -122,6 +135,7 @@ public class Tree extends HashObject implements Iterable<String> {
     }
 
     /**
+     * Factory method.
      * Return a Tree that capture the Tree from the latest commit as well as current addition and removal status.
      * 1. Get a copy of the Tree of the latest commit
      * 2. Get the staging area Tree
@@ -138,7 +152,7 @@ public class Tree extends HashObject implements Iterable<String> {
         return cacheAndQueueForWriteHashObject(tree);
     }
 
-    /** Return a deep-copy of the Tree in the latest commit. */
+    /** Factory method. Return a deep-copy of the Tree in the latest commit. */
     private static Tree copyLatestCommitTree() {
         Tree latestCommitTree = getLatestCommitTree();
         if (latestCommitTree == null) {

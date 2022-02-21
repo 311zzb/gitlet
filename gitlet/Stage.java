@@ -78,7 +78,7 @@ public class Stage {
         String currVerBlobID = mkBlob(fileName);
         Commit latestCommit = getLatestCommit();
         String prevVerBlobID = latestCommit.getCommitTreeBlobID(fileName);
-        if (currVerBlobID.equals(prevVerBlobID)) { // TODO: test this
+        if (currVerBlobID != null && currVerBlobID.equals(prevVerBlobID)) { // TODO: test this
             removeFromStage(fileName);
             return;
         }

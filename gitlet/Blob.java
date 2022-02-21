@@ -40,13 +40,16 @@ public class Blob extends HashObject {
     /* STATIC METHODS */
 
     /**
-     * Make a new Blob with a designated file.
+     * Factory method. Make a new Blob with a designated file.
      * Cache it and queue it for writing to filesystem.
      * @param fileName the designated file name
      * @return the ID of the new Blob
      */
     static String mkBlob(String fileName) {
         File file = join(CWD, fileName);
+        if (!file.exists()) {
+            return null;
+        } // Special case: adding a file that not exists means adding for removal
         String content = readContentsAsString(file);
         Blob blob = new Blob(content);
         return cacheAndQueueForWriteHashObject(blob);

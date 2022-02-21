@@ -117,10 +117,16 @@ public class Commit extends HashObject {
         return commitTree.getBlobID(fileName);
     }
 
+    /** Return whether this Commit contains a file with fileName. */
+    Boolean containsFile(String fileName) {
+        Tree commitTree = this.getCommitTree();
+        return commitTree.containsFile(fileName);
+    }
+
     /* STATIC METHODS */
 
     /**
-     * Make a new Commit.
+     * Factory method. Make a new Commit.
      * 1. Get the ID of the latest commit
      * 2. Make a commit tree by copying from the latest commit, and update it with the staging area
      * 3. Construct a new Commit object

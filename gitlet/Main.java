@@ -21,19 +21,23 @@ public class Main {
 
         switch (command) {
             case "init" -> {
-                assertArgsNum("init", operands, 0);
+                assertArgsNum(command, operands, 0);
                 Repository.init();
             }
             case "add" -> {
-                assertArgsNum("add", operands, 1);
+                assertArgsNum(command, operands, 1);
                 Repository.add(operands[0]);
             }
             case "commit" -> {
-                assertArgsNum("commit", operands, 1);
+                assertArgsNum(command, operands, 1);
                 Repository.commit(operands[0]);
             }
+            case "rm" -> {
+                assertArgsNum(command, operands, 1);
+                Repository.rm(operands[0]);
+            }
             case "log" -> {
-                assertArgsNum("log", operands, 0);
+                assertArgsNum(command, operands, 0);
                 Repository.log();
             }
             case "checkout" -> {

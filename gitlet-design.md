@@ -132,11 +132,13 @@ It also sets up persistence and do additional error checking.
       Execute the add command by adding a copy of the file as it currently exists to the staging area.
 4. `commit` command
    1. `public static void commit(String message)` Execute the commit command.
-5. `log` command
+5. `rm` command
+   1. `public static void rm(String fileName)` Execute the rm command. Implementation details in the Algorithms section.
+6. `log` command
    1. `public static void log()` Execute the log command. Implementation details in the Algorithms section.
    2. `private static void log(String CommitID)` 
       Print log information recursively. Starting from the commit with the given commit ID, to the initial commit.
-6. `checkout` command
+7. `checkout` command
    1. `public static void checkout1(String fileName)` 
       Execute checkout command usage 1 (checkout a file to the latest commit). 
       Implementation details in the Algorithms section.
@@ -145,7 +147,7 @@ It also sets up persistence and do additional error checking.
       Implementation details in the Algorithms section.
    3. `public static void checkout3(String branchName)`
       Execute checkout command usage 3 (checkout all files to the designated branch). TODO.
-7. misc
+8. misc
    1. `private static void assertGITLET()` Assert the `CWD` contains a `.gitlet` directory.
    2. `private static void overwriteCWDFile(String fileName, Blob overwriteSrc)`
       Overwrite the file in `CWD` of designated file name with the content in the given `Blob` object.
@@ -251,7 +253,8 @@ as well as static method that carry out the procedure to make a new commit.
 11. `String getCommitTreeRef()` Get the ID of the associating `Tree` of this commit.
 12. `Tree getCommitTree()` Get the associating `Tree` of this commit.
 13. `String getCommitTreeBlobID(String fileName)` Get the ID of the `Blob` of a designated file name in this commit.
-14. `static void mkCommit(String message)` A packaged constructor for `Commit`.
+14. `Boolean containsFile(String fileName)` Return whether this `Commit` contains a file with `fileName`.
+15. `static void mkCommit(String message)` Factory method. Make a new `Commit`.
     Implementation details in the Algorithm section.
 
 ### Tree
@@ -271,21 +274,25 @@ This class also contains `Tree` related static methods.
 4. `public String toString()` Content-addressable overriding `toString()` method.
 5. `public void dump()` Print information of this `Tree` on `System.out`.
 6. `boolean isEmpty()` Return whether this `Tree` is empty.
-7. `void putBlobID(String fileName, String blobRef)` Record a `fileName` - `blobID` pairs.
-8. `void removeBlobID(String fileName)` Remove an entry with `fileName` as the key from this `Tree`.
-9. `String getBlobID(String fileName)` Return the ID of a `Blob` according to a given `fileName` (if exists).
-10. `Blob getBlob(String fileName)` Return a `Blob` according to a given `fileName` (if exist).
-11. `public Iterator<String> iterator()` Returns an `Iterator` of this `Tree`, namely the `keySet()` of its `TreeMap`.
-12. `void updateWith(Tree updater)` Update this `Tree` with the entries in the given `Tree`.
-13. `static String mkNewEmptyTree()` A packaged constructor for `Tree`.
+7. `boolean containsFile(String fileName)` Return `true` if a `Tree` contains a file with `fileName`.
+8. `void putBlobID(String fileName, String blobRef)` Record a `fileName` - `blobID` pairs.
+9. `void removeBlobID(String fileName)` Remove an entry with `fileName` as the key from this `Tree`.
+10. `String getBlobID(String fileName)` Return the ID of a `Blob` according to a given `fileName` (if exists).
+11. `Blob getBlob(String fileName)` Return a `Blob` according to a given `fileName` (if exist).
+12. `public Iterator<String> iterator()` Returns an `Iterator` of this `Tree`, namely the `keySet()` of its `TreeMap`.
+13. `void updateWith(Tree updater)` 
+    Update this `Tree` with the entries in the given `Tree`.
+    Special case: remove the corresponding pair from `this` if the value to a key in the updater is `null`.
+14. `static String mkNewEmptyTree()` Factory method.
     Creates an empty `Tree`, cache it and return its ID.
-14. `static Tree getLatestCommitTree()` Return the associated `Tree` of the latest commit if exists.
-    Return `null` if there is no latest commit.
-15. `static String mkCommitTree()`
+15. `static Tree getLatestCommitTree()` Factory method. Return the copy of the `Tree` of the latest commit if exists.
+    Special case: return `null` if there is no latest commit.
+16. `static String mkCommitTree()`
+    Factory method.
     Return a `Tree` that capture the `Tree` from the latest commit as well as current addition and removal status.
     Implementation details in the Algorithm section.
-    Special cases: make a new empty tree if there is no Tree in the latest commit
-16. `private static Tree copyLatestCommitTree()` Return a deep-copy of the `Tree` in the latest commit.
+    Special cases: make a new empty tree if there is no `Tree` in the latest commit.
+17. `private static Tree copyLatestCommitTree()` Factory method. Return a deep-copy of the `Tree` in the latest commit.
 
 ### Blob
 
@@ -304,7 +311,8 @@ This class also has `Blob` related static methods.
 4. `public String toString()` Content-addressable overriding `toString()` method.
 5. `public void dump()` Print information of this `Tree` on `System.out`.
 6. `static String mkBlob(String fileName)`
-   Make a new `Blob` with a designated file. Cache it and queue it for writing to filesystem.
+   Factory method. Make a new `Blob` with a designated file. Cache it and queue it for writing to filesystem.
+   Special case: adding a file that not exists in the `CWD` means adding it for removal.
 
 ### GitletTest
 
@@ -323,21 +331,29 @@ This class contains JUnit tests for Gitlet.
    3. `public void commitAndAddTest()` Add a file, make a commit, and add another file.
    4. `public void addAndRestoreTest()` Make a commit, change the file and add, then change back and add. 
       The staging area should be empty.
-4. `log` command
+4. `rm` command
+   1. `public void rmUnstageTest()` The rm command should unstage the added file.
+   2. `public void rmCommitTest()`
+      Add a file, commit, and rm it, commit again.
+      The latest commit should have an empty commit tree.
+      The file in the `CWD` should be deleted.
+5. `log` command
    1. `public void logSanityTest()` Sanity test for log command. Init and log.
    2. `public void simpleLogTest()` Simple test for log command. Init, commit, and log.
    3. `public void normalLogTest()` Normal test for log command. Init, commit, commit, and log.
-5. `checkout` command
+6. `checkout` command
    1. `public void checkoutHeadFileSanityTest()` 
       Sanity test for checkout usage 1 (checkout a file to the latest commit).
    2. `public void checkoutCommitFileSanityTest()` 
       Sanity test for checkout usage 2 (checkout a file to the given commit).
-6. misc
+7. misc
    1. `private static void GitletExecute(String... command)` 
       Execute commands with Gitlet and clean the cache after execution.
+      Special case: make sure there is no `.gitlet` directory before the init command. Implemented for testing purposes.
    2. `private static void writeTestFile(String fileName, String content)`
       Write content into a designated file name. Overwriting or creating file as needed.
    3. `private static String readTestFile(String fileName)` Read the designated file as String and return it.
+   4. `private static void deleteDirectory(File directoryToBeDeleted)` Delete a directory recursively.
 
 
 ## Algorithms
@@ -436,7 +452,9 @@ A commit `Tree` is a `Tree` that every commit uses to record the associated file
 
 1. Get a copy of the `Tree` of the latest commit
 2. Get the staging area `Tree`
-3. Update that copy with the staging area
+3. Update that copy with the staging area 
+   (Special case: remove the corresponding pair from that copy if the value to a key in the staging area is `null`,
+   i.e., staged for removal)
 4. Cache it and queue it for writing
 
 ### Add a file to the staging area
@@ -447,6 +465,27 @@ A commit `Tree` is a `Tree` that every commit uses to record the associated file
    If the current version of the file is identical to the version in the latest commit (by comparing IDs),
    do not stage it, and remove it from the staging area if it is already there. End the execution.
 4. Modify cached staging area
+
+### The `rm` command
+
+1. Abort if the file is neither staged nor tracked by the head commit.
+2. If the file is currently staged for addition, unstage it.
+3. If the file is tracked in the current commit, stage it for removal and remove it from the `CWD`.
+
+When it comes to the design decision of representing "staged for removal", 
+the chosen solution is to treat pairs in the staging tree with `null` value as staged for removal.
+That is, when a file is staged for removal:
+1. It is deleted from the `CWD` if the user haven't done that.
+2. It is "added" to the staging area. 
+   Given the fact that there is no such file in the `CWD`, 
+   a {`fileName`, `null`} pair will be written into the staging area.
+3. When making a commit `Tree`, 
+   staged for removal file will be handled and the new commit `Tree` will not include the staged-for-removal files.
+
+In this manner, problems with naive approaches (such as introduce a "staging area for removal" `Tree`)
+is avoided, and the amount of codes to implement the `rm` command is trivial. 
+
+
 
 ### Print commit log
 
@@ -527,6 +566,12 @@ The `commit` command will modify persistence following the following rules (no p
 2. Overwrite the current branch's file, make it contains the new commit's ID
 3. Make a new staging area and overwrite the `STAGE` file
 4. Delete the previous staging area if it is not empty, and there is a commit already _(subtle bug may exist)_
+
+#### `rm` command
+
+The `rm` command will change the current staging area `Tree` 
+if the designated file is added (removing from the staging area)
+or exists in the head commit (staging for removal).
 
 #### `checkout` command
 

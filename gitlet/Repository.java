@@ -107,6 +107,32 @@ public class Repository {
         mkCommit(message);
     }
 
+    /* RM COMMAND */
+
+    /**
+     * Execute the rm command.
+     * 1. Abort if the file is neither staged nor tracked by the head commit.
+     * 2. If the file is currently staged for addition, unstage it.
+     * 3. If the file is tracked in the current commit, stage it for removal and remove it from the CWD.
+     * Stage for removal: add a {fileName : null} pair into the staging area.
+     * @param fileName the designated file name.
+     */
+    public static void rm(String fileName) {
+        assertGITLET();
+        Tree stage = getStage();
+        Commit head = getLatestCommit();
+        if (!stage.containsFile(fileName) && !head.containsFile(fileName)) {
+            throw new GitletException("No reason to remove the file.");
+        } // Special case: if the file is neither staged nor tracked by the head commit, print the error message
+        if (stage.containsFile(fileName)) {
+            removeFromStage(fileName);
+        }
+        if (head.containsFile(fileName)) {
+            restrictedDelete(fileName); // Remove file from CWD
+            addToStage(fileName); // Add {fileName - null} pair to the stage (sign for stage for removal)
+        }
+    }
+
     /* LOG COMMAND */
 
     /**
