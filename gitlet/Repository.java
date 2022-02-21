@@ -2,6 +2,9 @@ package gitlet;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static gitlet.Branch.*;
 import static gitlet.Cache.*;
@@ -153,12 +156,32 @@ public class Repository {
      * @param CommitID the given commit ID
      */
     private static void log(String CommitID) {
-        if (CommitID == null) {
+        if (CommitID == null || loggedCommitID.contains(CommitID)) {
             return;
-        }
+        } // Special case: return if the CommitID is null or already printed (useful for global-log command)
+        loggedCommitID.add(CommitID);
         Commit commit = getCommit(CommitID);
         System.out.println(commit.logString());
         log(commit.getParentCommitRef());
+    }
+
+    /* GLOBAL-LOG COMMAND */
+
+    /** A Set that record the visited commits' IDs. No need to be persistent. */
+    private static final Set<String> loggedCommitID = new HashSet<>();
+
+    /**
+     * Print log information about all commits ever made.
+     * 1. Get a list of commit IDs that are pointed by any branch
+     * 2. Print log information starting form each of the ID
+     *    (ignore those commits that have been visited base on their IDs)
+     * TODO: test this against branched repository
+     */
+    public static void globalLog() {
+        List<String> branchesCommitID = loadAllBranches();
+        for (String CommitID : branchesCommitID) {
+            log(CommitID);
+        }
     }
 
     /* CHECKOUT COMMAND */

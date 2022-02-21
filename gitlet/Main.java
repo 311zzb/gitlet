@@ -40,6 +40,10 @@ public class Main {
                 assertArgsNum(command, operands, 0);
                 Repository.log();
             }
+            case "global-log" -> {
+                assertArgsNum(command, operands, 0);
+                Repository.globalLog();
+            }
             case "checkout" -> {
                 switch (operands.length) {
                     case 1 -> {

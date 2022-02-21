@@ -1,7 +1,10 @@
 package gitlet;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import static gitlet.Cache.*;
 import static gitlet.Repository.BRANCHES_DIR;
@@ -28,6 +31,20 @@ public class Branch {
         } // Special case: loading a "no branch"
         File branchFile = join(BRANCHES_DIR, branchName);
         return readContentsAsString(branchFile);
+    }
+
+    /**
+     * Load all branch files from the filesystem.
+     * @return a List contains all commit IDs that are pointed by a branch.
+     */
+    static List<String> loadAllBranches() {
+        List<String> branches = plainFilenamesIn(BRANCHES_DIR);
+        assert branches != null;
+        List<String> branchesCommitID = new ArrayList<>();
+        for (String branch : branches) {
+            branchesCommitID.add(loadBranch(branch));
+        }
+        return branchesCommitID;
     }
 
     /**

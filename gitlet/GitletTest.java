@@ -169,6 +169,28 @@ public class GitletTest {
         GitletExecute("log");
     }
 
+
+    /* GLOBAL-LOG COMMAND */
+
+    /** Sanity test for global-log command. */
+    @Test
+    public void globalLogSanityTest() throws  IOException {
+        GitletExecute("init");
+
+        GitletExecute("commit", "dummy 1");
+        GitletExecute("commit", "dummy 2");
+        GitletExecute("commit", "dummy 3");
+
+        GitletExecute("global-log");
+    }
+
+    /** Test for global-log command with branching. */
+    @Test
+    public void globalLogTest() throws  IOException {
+        // TODO
+    }
+
+
     /* CHECKOUT COMMAND */
 
     /** Sanity test for checkout usage 1. */

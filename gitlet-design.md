@@ -138,7 +138,12 @@ It also sets up persistence and do additional error checking.
    1. `public static void log()` Execute the log command. Implementation details in the Algorithms section.
    2. `private static void log(String CommitID)` 
       Print log information recursively. Starting from the commit with the given commit ID, to the initial commit.
-7. `checkout` command
+7. `global-log` command
+   1. `private static final Set<String> loggedCommitID` 
+      A Set that record the visited commits' IDs. No need to be persistent.
+   2. `public static void globalLog()` 
+      Print log information about all commits ever made. Implementation details in the Algorithms section.
+8. `checkout` command
    1. `public static void checkout1(String fileName)` 
       Execute checkout command usage 1 (checkout a file to the latest commit). 
       Implementation details in the Algorithms section.
@@ -147,7 +152,7 @@ It also sets up persistence and do additional error checking.
       Implementation details in the Algorithms section.
    3. `public static void checkout3(String branchName)`
       Execute checkout command usage 3 (checkout all files to the designated branch). TODO.
-8. misc
+9. misc
    1. `private static void assertGITLET()` Assert the `CWD` contains a `.gitlet` directory.
    2. `private static void overwriteCWDFile(String fileName, Blob overwriteSrc)`
       Overwrite the file in `CWD` of designated file name with the content in the given `Blob` object.
@@ -163,16 +168,18 @@ This class will never be instantiated since there are only static methods.
 1. `static String loadBranch(String branchName)`
    Load a branch file from filesystem with designated name. Return null if the branch name is "" (nothing).
    Invoked by the Cache class.
-2. `static void writeBranch(String branchName)`
+2. `static List<String> loadAllBranches()`
+   Load all branch files from the filesystem. Return a `List` contains all commit IDs that are pointed by a branch.
+3. `static void writeBranch(String branchName)`
    Get a branch's information from cache and write it back to filesystem. Invoked by the Cache class.
-3. `static void mkNewBranch(String branchName, String commitID)`
+4. `static void mkNewBranch(String branchName, String commitID)`
    Make a new branch with designated name at the latest commit by caching it manually.
-4. `static void moveCurrBranch(String commitID)` Make the current branch pointing to a designated commit.
-5. `static String loadHEAD()`
+5. `static void moveCurrBranch(String commitID)` Make the current branch pointing to a designated commit.
+6. `static String loadHEAD()`
    Load the `HEAD` file and return the current branch's name. Invoked by the Cache class.
-6. `static void writeHEAD()`
+7. `static void writeHEAD()`
    Get the `HEAD` from cache and write it back to filesystem. Invoked by the Cache class.
-7. `static void moveHEAD(String branchName)` Make the `HEAD` pointing to a designated branch.
+8. `static void moveHEAD(String branchName)` Make the `HEAD` pointing to a designated branch.
 
 ### Stage
 
@@ -341,12 +348,15 @@ This class contains JUnit tests for Gitlet.
    1. `public void logSanityTest()` Sanity test for log command. Init and log.
    2. `public void simpleLogTest()` Simple test for log command. Init, commit, and log.
    3. `public void normalLogTest()` Normal test for log command. Init, commit, commit, and log.
-6. `checkout` command
+6. `global-log` command
+   1. `public void globalLogSanityTest()` Sanity test for global-log command.
+   2. `public void globalLogTest()` Test for global-log command with branching. Need implementation.
+7. `checkout` command
    1. `public void checkoutHeadFileSanityTest()` 
       Sanity test for checkout usage 1 (checkout a file to the latest commit).
    2. `public void checkoutCommitFileSanityTest()` 
       Sanity test for checkout usage 2 (checkout a file to the given commit).
-7. misc
+8. misc
    1. `private static void GitletExecute(String... command)` 
       Execute commands with Gitlet and clean the cache after execution.
       Special case: make sure there is no `.gitlet` directory before the init command. Implemented for testing purposes.
@@ -485,8 +495,6 @@ That is, when a file is staged for removal:
 In this manner, problems with naive approaches (such as introduce a "staging area for removal" `Tree`)
 is avoided, and the amount of codes to implement the `rm` command is trivial. 
 
-
-
 ### Print commit log
 
 1. Get the ID of the latest commit
@@ -494,6 +502,11 @@ is avoided, and the amount of codes to implement the `rm` command is trivial.
    1. Get the Commit object with the given CommitID
    2. Print its log information
    3. Recursively print its ascendants' log information
+
+### Print global-log
+
+1. Get a list of commit IDs that are pointed by any branch
+2. Print log information starting form each of the ID (ignore those commits that have been visited base on their IDs)
 
 ### Checkout a file to `HEAD` commit
 
