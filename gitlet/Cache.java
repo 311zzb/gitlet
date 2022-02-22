@@ -105,13 +105,23 @@ public class Cache {
     static void cacheBranch(String branchName, String commitID) {
         cachedBranches.put(branchName, commitID);
     }
-    /** Write back (update) all branches to filesystem. Invoked upon exit. */
+    static void wipeBranch(String branchName) {
+        cachedBranches.put(branchName, "");
+    }
+    /**
+     * Write back (update) all branches to filesystem. Invoked upon exit.
+     * If a branch's pointer is wiped out, delete the branch file in the filesystem.
+     */
     static void writeBackAllBranches() {
         for (String branchName : cachedBranches.keySet()) {
             if (branchName.equals("")) {
                 continue;
-            } // Special case: don't write back empty branch
-            writeBranch(branchName);
+            } // Special case: ignore branch with empty name.
+            if (cachedBranches.get(branchName).equals("")) { // wiped branches
+                deleteBranch(branchName);
+            } else {
+                writeBranch(branchName);
+            }
         }
     }
 

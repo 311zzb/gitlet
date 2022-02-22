@@ -72,6 +72,10 @@ public class Main {
                 assertArgsNum(command,operands, 1);
                 Repository.branch(operands[0]);
             }
+            case "rm-branch" -> {
+                assertArgsNum(command, operands, 1);
+                Repository.rmBranch(operands[0]);
+            }
 
             default -> throw new GitletException("Unexpected command: " + command);
         }

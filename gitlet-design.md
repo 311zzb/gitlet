@@ -62,15 +62,19 @@ from the cache.
        Deprecated `HashObject`s' IDs that are queued for deletion from filesystem.
    11. `static void queueForDeleteHashObject(String id)` Given Qa `HashObject`'s ID, queue it for deletion.
    12. `static void deleteAllQueuedHashObject()` Delete all queued-for-deletion `HashObject`s. Invoked upon exit.
-2. Caching `Branch`
+2. Caching Branches
    1. `static final Map<String, String> cachedBranches` A `Map` that stores cached branch name and commit ID pairs.
    2. `static String getBranch(String branchName)` Lazy loading and caching of branches.
    3. `static String getLatestCommitRef()`
       A method that lazy-load the ID of the latest commit by `getBranch(getHEAD())`.
    4. `static void cacheBranch(String branchName, String commitID)`
       Manually cache a `Branch` by putting a `branchName` - `commitID` pair into the cache.
-   5. `static void writeBackAllBranches()`
+   5. `static void wipeBranch(String branchName)`
+      Manually wipe the pointer of a designated branch.
+   6. `static void writeBackAllBranches()`
       Write back (update) all branches to filesystem. Invoked upon exit.
+      If a branch's pointer is wiped out, delete the branch file in the filesystem.
+      Special case: ignore branch with empty name.
 3. Caching `HEAD`
    1. `static String cachedHEAD` A `String` that stores cached `HEAD`, the current branch's name.
    2. `static String getHEAD()` Lazy loading and caching of `HEAD`.
@@ -85,7 +89,7 @@ from the cache.
    3. `static void cacheStageID(String newStageID)`
       Manually cache the `STAGE` by assigning the `cachedStageID` to a given `stageID`.
    4. `static void writeBackStageID()` Write back STAGE file. Invoked upon exit.
-5. Caching Stage
+5. Caching the Stage Area
    1. `static Tree cachedStage` A `Tree` that stores cached staging area.
    2. `static Tree getStage()` Get the `Tree` object representing the staging area utilizing `getTree(getStageID())`.
    3. `static void cacheStage(Tree stage)`
@@ -136,17 +140,17 @@ It also sets up persistence and do additional error checking.
    1. `public static void rm(String fileName)` Execute the rm command. Implementation details in the Algorithms section.
 6. `log` command
    1. `public static void log()` Execute the log command. Implementation details in the Algorithms section.
-   2. `private static void log(String CommitID)` 
+   2. `private static void log(String CommitID)`
       Print log information recursively. Starting from the commit with the given commit ID, to the initial commit.
 7. `global-log` command
-   1. `private static final Set<String> loggedCommitID` 
+   1. `private static final Set<String> loggedCommitID`
       A Set that record the visited commits' IDs. No need to be persistent.
-   2. `public static void globalLog()` 
+   2. `public static void globalLog()`
       Print log information about all commits ever made. Implementation details in the Algorithms section.
 8. `find` command
    1. `private static final List<String> foundCommitID` A list of commit IDs that have the designated commit message.
    2. `private static final List<String> visitedFindCommitID` A list of commit IDs that are already visited.
-   3. `public static void find(String commitMessage)` 
+   3. `public static void find(String commitMessage)`
       Execute the `find` command. Implementation details in the Algorithms section.
    4. `private static void findCheck(String CommitID, String commitMessage)`
       Recursively check if commit with `CommitID` and its ascendants have the designated commit message.
@@ -155,8 +159,8 @@ It also sets up persistence and do additional error checking.
    2. `private static void modificationStatus()` Print the "Modifications Not Staged For Commit" status. Need implementation.
    3. `private static void untrackedStatus()` Print the "Untracked Files" status. Need implementation.
 10. `checkout` command
-    1. `public static void checkout1(String fileName)` 
-       Execute checkout command usage 1 (checkout a file to the latest commit). 
+    1. `public static void checkout1(String fileName)`
+       Execute checkout command usage 1 (checkout a file to the latest commit).
        Implementation details in the Algorithms section.
     2. `public static void checkout2(String commitID, String fileName)`
        Execute checkout command usage 2 (checkout a file to the given commit).
@@ -166,7 +170,10 @@ It also sets up persistence and do additional error checking.
 11. `branch` command
     1. `public static void branch(String branchName)`
        Execute the branch command. Implementation details in the Algorithms section.
-12. misc
+12. `rm-branch` command
+    1. `public static void rmBranch(String branchName)`
+       Execute the rm-branch command. Implementation details in the Algorithms section.
+13. misc
     1. `private static void assertGITLET()` Assert the `CWD` contains a `.gitlet` directory.
     2. `private static void overwriteCWDFile(String fileName, Blob overwriteSrc)`
        Overwrite the file in `CWD` of designated file name with the content in the given `Blob` object.
@@ -187,14 +194,16 @@ This class will never be instantiated since there are only static methods.
 3. `static void branchStatus()` Print the "Branches" status. Implementation details in the Algorithms section.
 4. `static void writeBranch(String branchName)`
    Get a branch's information from cache and write it back to filesystem. Invoked by the Cache class.
-5. `static void mkNewBranch(String branchName, String commitID)`
+5. `static void deleteBranch(String branchName)`
+   Delete the designated branch in the filesystem. Invoked by the Cache class.
+6. `static void mkNewBranch(String branchName, String commitID)`
    Make a new branch with designated name at the latest commit by caching it manually.
-6. `static void moveCurrBranch(String commitID)` Make the current branch pointing to a designated commit.
-7. `static String loadHEAD()`
+7. `static void moveCurrBranch(String commitID)` Make the current branch pointing to a designated commit.
+8. `static String loadHEAD()`
    Load the `HEAD` file and return the current branch's name. Invoked by the Cache class.
-8. `static void writeHEAD()`
+9. `static void writeHEAD()`
    Get the `HEAD` from cache and write it back to filesystem. Invoked by the Cache class.
-9. `static void moveHEAD(String branchName)` Make the `HEAD` pointing to a designated branch.
+10. `static void moveHEAD(String branchName)` Make the `HEAD` pointing to a designated branch.
 
 ### Stage
 
@@ -220,10 +229,10 @@ This class will never be instantiated since there are only static methods.
    Add a file to the current staging area. Implementation details in the Algorithms section.
 7. `static void stageStatus()` Print the status information related with the staging area.
 8. `private static List<String> getSortedStageFileList()` Return a sorted list of file names in the staging area.
-9. `private static void stagedFilesStatus()` 
+9. `private static void stagedFilesStatus()`
    Print the "Staged Files" status. Implementation details in the Algorithms section.
 10. `private static void removedFilesStatus()`
-   Print the "Removed Files" status. Implementation details in the Algorithms section.
+    Print the "Removed Files" status. Implementation details in the Algorithms section.
 
 ### HashObject
 
@@ -249,7 +258,7 @@ and write to or delete from the object database a `HashObject`.
 8. `static private File optimizedObjectIDFile(String id)`
    Helper method that returns the file of a `HashObject` with the given ID.
    Used in the optimized object database.
-9. `static private File optimizedObjectAbbrevIDFile(String id)` 
+9. `static private File optimizedObjectAbbrevIDFile(String id)`
    Helper method that return the file of a `HashObject` with the given abbreviated ID.
    Used in the optimized object database.
 
@@ -311,7 +320,7 @@ This class also contains `Tree` related static methods.
 11. `String getBlobID(String fileName)` Return the ID of a `Blob` according to a given `fileName` (if exists).
 12. `Blob getBlob(String fileName)` Return a `Blob` according to a given `fileName` (if exist).
 13. `public Iterator<String> iterator()` Returns an `Iterator` of this `Tree`, namely the `keySet()` of its `TreeMap`.
-14. `void updateWith(Tree updater)` 
+14. `void updateWith(Tree updater)`
     Update this `Tree` with the entries in the given `Tree`.
     Special case: remove the corresponding pair from `this` if the value to a key in the updater is `null`.
 15. `static String mkNewEmptyTree()` Factory method.
@@ -360,7 +369,7 @@ This class contains JUnit tests for Gitlet.
    1. `public void commitSanityTest()` Sanity test for commit command.
    2. `public void dummyCommitTest()` Dummy commit test (commit without adding anything).
    3. `public void commitAndAddTest()` Add a file, make a commit, and add another file.
-   4. `public void addAndRestoreTest()` Make a commit, change the file and add, then change back and add. 
+   4. `public void addAndRestoreTest()` Make a commit, change the file and add, then change back and add.
       The staging area should be empty.
 4. `rm` command
    1. `public void rmUnstageTest()` The rm command should unstage the added file.
@@ -383,19 +392,22 @@ This class contains JUnit tests for Gitlet.
    2. `public void statusFullTest()` Comprehensive test for status command. Use two branches, stage and remove files.
    3. `public void statusExtraTest()` Test extra functions of status command.
 9. `checkout` command
-   1. `public void checkoutHeadFileSanityTest()` 
+   1. `public void checkoutHeadFileSanityTest()`
       Sanity test for checkout usage 1 (checkout a file to the latest commit).
-   2. `public void checkoutCommitFileSanityTest()` 
+   2. `public void checkoutCommitFileSanityTest()`
       Sanity test for checkout usage 2 (checkout a file to the given commit).
-10. misc
-    1. `private static void GitletExecute(String... command)` 
+10. `branch` command
+    1. `public void branchSanityTest()` Sanity test for branch command.
+11. `rm-branch` command
+    1. `public void rmBranchSanityTest()` Sanity test for rm-branch command.
+12. misc
+    1. `private static void GitletExecute(String... command)`
        Execute commands with Gitlet and clean the cache after execution.
        Special case: make sure there is no `.gitlet` directory before the init command. Implemented for testing purposes.
     2. `private static void writeTestFile(String fileName, String content)`
        Write content into a designated file name. Overwriting or creating file as needed.
     3. `private static String readTestFile(String fileName)` Read the designated file as String and return it.
     4. `private static void deleteDirectory(File directoryToBeDeleted)` Delete a directory recursively.
-
 
 ## Algorithms
 
@@ -449,12 +461,13 @@ To accomplish such requirements, ID of a `HashObject` is generated from applying
 And subclasses of the `HashObject` class overrides the default `toString()` method to make it content-addressable.
 
 ### Saving, loading, or deleting a `HashObject`
-If the static variable `OPTIMIZATION` in `HashObject` class is set to `true`, 
+
+If the static variable `OPTIMIZATION` in `HashObject` class is set to `true`,
 Gitlet will construct a `HashTable`-liked structure in the `.gitlet/objects` directory.
-That is, all `HashObject` (with a 40-character ID) will be stored under the `.gitlet/objects/xx` directory 
-and named after `xxx`, 
-where `xx` is the leading two characters of its ID and `xxx` is the left `38` characters. 
-The point of this optimization is speeding up retrieving `Commit` 
+That is, all `HashObject` (with a 40-character ID) will be stored under the `.gitlet/objects/xx` directory
+and named after `xxx`,
+where `xx` is the leading two characters of its ID and `xxx` is the left `38` characters.
+The point of this optimization is speeding up retrieving `Commit`
 when the user abbreviate commit ID with a unique prefix.
 The real Git is also utilizing this technique.
 When the user provide an abbreviated commit ID, Gitlet will go to the corresponding `.gitlet/objects/xx` directory
@@ -462,9 +475,8 @@ and iterate through a list of file names in that directory in order to figure ou
 
 On the other hand, if `OPTIMIZATION` is set to `false`,
 all `HashObject` will be stored flatly under the `.gitlet/objects` directory and named after the corresponding ID.
-This set up is might be more convenient when digging into the object database for debugging purposes. 
+This set up is might be more convenient when digging into the object database for debugging purposes.
 Due to performance concerns, referring commits with abbreviated IDs is not allowed when `OPTIMIZATION` is set to `false`.
-
 
 ### Initialize the repository
 
@@ -493,7 +505,7 @@ A commit `Tree` is a `Tree` that every commit uses to record the associated file
 
 1. Get a copy of the `Tree` of the latest commit
 2. Get the staging area `Tree`
-3. Update that copy with the staging area 
+3. Update that copy with the staging area
    (Special case: remove the corresponding pair from that copy if the value to a key in the staging area is `null`,
    i.e., staged for removal)
 4. Cache it and queue it for writing
@@ -513,18 +525,19 @@ A commit `Tree` is a `Tree` that every commit uses to record the associated file
 2. If the file is currently staged for addition, unstage it.
 3. If the file is tracked in the current commit, stage it for removal and remove it from the `CWD`.
 
-When it comes to the design decision of representing "staged for removal", 
+When it comes to the design decision of representing "staged for removal",
 the chosen solution is to treat pairs in the staging tree with `null` value as staged for removal.
 That is, when a file is staged for removal:
+
 1. It is deleted from the `CWD` if the user haven't done that.
-2. It is "added" to the staging area. 
-   Given the fact that there is no such file in the `CWD`, 
+2. It is "added" to the staging area.
+   Given the fact that there is no such file in the `CWD`,
    a {`fileName`, `null`} pair will be written into the staging area.
-3. When making a commit `Tree`, 
+3. When making a commit `Tree`,
    staged for removal file will be handled and the new commit `Tree` will not include the staged-for-removal files.
 
 In this manner, problems with naive approaches (such as introduce a "staging area for removal" `Tree`)
-is avoided, and the amount of codes to implement the `rm` command is trivial. 
+is avoided, and the amount of codes to implement the `rm` command is trivial.
 
 ### Print commit log
 
@@ -541,15 +554,17 @@ is avoided, and the amount of codes to implement the `rm` command is trivial.
 
 ### The `find` command
 
-This command has similar algorithm with the `global-log` command. 
+This command has similar algorithm with the `global-log` command.
 Both of these commands cover all commits ever made by the same manner.
+
 1. Get a list of commit IDs that are pointed by any branch
 2. Recursively check the commits and their ascendants whether they have the designated commit message
-(ignore those commits that have been visited base on their IDs)
+   (ignore those commits that have been visited base on their IDs)
 
 ### Print repository status
 
 The status information is consist of the following five parts.
+
 1. "Branches"
    1. Get a list of all branches by reading the filenames in the `.gitlet/branches` directory.
    2. Sort the list in lexicographical order.
@@ -580,13 +595,20 @@ The status information is consist of the following five parts.
 
 ### Create a new branch
 
-Creating new branches is carried out when `branch` or `init` command is given. 
-When creating new branches, the operation under the hood is no more than writing a `branchName` - `CommitID` pair 
-into the `cachedBranches` which is then written back to the filesystem upon exit. 
+Creating new branches is carried out when `branch` or `init` command is given.
+When creating new branches, the operation under the hood is no more than writing a `branchName` - `CommitID` pair
+into the `cachedBranches` which is then written back to the filesystem upon exit.
 The `CommitID` assigned to the new branch is always the latest commit (head commit) if there is one.
-For the default "master" branch which is created right before the initial commit, 
+For the default "master" branch which is created right before the initial commit,
 its corresponding is `null` at the very first (but pointed to the initial commit after the initial commit is created).
 
+### Remove a branch
+
+This command delete the branch with the given name. It does not delete any commits under that branch.
+
+1. Abort if the designated branch does not exist
+2. Abort if the designated branch is the current branch
+3. Wipe the branch's pointer in the cache and delete the branch file upon exit
 
 ## Persistence
 
@@ -600,8 +622,8 @@ CWD                                                      <==== Whatever the curr
     ├── objects                                          <==== The object database (all HashObject lives here)
     │   ├── d9                                           <==== Saves all HashObject with ID stating with "d9"
     │   │   ├── 91f6cad12cc1bfb64791e893fa01ac5bf8358e   <==== A saved HashObject, named after its ID without the first two letters
-    │   │   └── ...                                      
-    │   └── ...                                          
+    │   │   └── ...                                    
+    │   └── ...                                        
     └── branches                                         <==== Store all the branch references
         ├── master                                       <==== The default branch. Contains a hash pointer to a commit
         └── ...
@@ -643,7 +665,7 @@ The `commit` command will modify persistence following the following rules (no p
 
 #### `rm` command
 
-The `rm` command will change the current staging area `Tree` 
+The `rm` command will change the current staging area `Tree`
 if the designated file is added (removing from the staging area)
 or exists in the head commit (staging for removal).
 
@@ -656,3 +678,7 @@ This command will write the current working directory, but only read persistence
 When a branch is created, a `branchName` - `CommitID` pair will be written into the `cachedBranches` data structure.
 Upon exit, the `cachedBranches` will be written back to the filesystem, i.e. the persistence will be modified
 according to cached information.
+
+#### `rm-branch` command
+
+When a branch is removed, the corresponding file under the `.gitlet/branches` directory will be deleted.

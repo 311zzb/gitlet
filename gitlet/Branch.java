@@ -71,6 +71,16 @@ public class Branch {
     }
 
     /**
+     * Delete the designated branch in the filesystem.
+     * Invoked by the Cache class.
+     * @param branchName the designated branch name.
+     */
+    static void deleteBranch(String branchName) {
+        File branchFile = join(BRANCHES_DIR, branchName);
+        branchFile.delete();
+    }
+
+    /**
      * Make a new branch with designated name at the latest commit.
      * @param branchName the designated branch name
      */

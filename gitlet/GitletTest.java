@@ -287,6 +287,19 @@ public class GitletTest {
         GitletExecute("status");
     }
 
+    /* RM-BRANCH COMMAND */
+
+    /** Sanity test for rm-branch command. */
+    @Test
+    public void rmBranchSanityTest() throws IOException {
+        GitletExecute("init");
+
+        GitletExecute("branch", "cool-bean");
+        GitletExecute("branch", "hot-bean");
+        GitletExecute("rm-branch", "cool-bean");
+        GitletExecute("status");
+    }
+
 
     /* MISC */
 

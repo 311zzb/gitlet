@@ -316,6 +316,25 @@ public class Repository {
         mkNewBranch(branchName);
     }
 
+    /* RM-BRANCH COMMAND */
+
+    /**
+     * Execute the rm-branch command.
+     * Deletes the branch with the given name. This only means to delete the pointer associated with the branch.
+     * @param branchName the designated branch name.
+     */
+    public static void rmBranch(String branchName) {
+        assertGITLET();
+        File targetBranch = join(BRANCHES_DIR, branchName);
+        if (!targetBranch.exists()) {
+            throw new GitletException("A branch with that name does not exist.");
+        } // Special case: abort if a branch with the given name does not exist
+        if (branchName.equals(getHEAD())) {
+            throw new GitletException("Cannot remove the current branch.");
+        } // Special case: abort if try to remove the current branch
+        wipeBranch(branchName);
+    }
+
     /* MISC */
 
     /** Assert the CWD contains a .gitlet directory. */
