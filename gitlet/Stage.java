@@ -1,5 +1,9 @@
 package gitlet;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
 import static gitlet.Cache.*;
 import static gitlet.Repository.STAGE;
 import static gitlet.Tree.*;
@@ -83,5 +87,39 @@ public class Stage {
             return;
         }
         putInStage(fileName, currVerBlobID);
+    }
+
+    /** Print the status information related with the staging area. */
+    static void stageStatus() {
+        stagedFilesStatus();
+        removedFilesStatus();
+    }
+
+    /** Return a sorted list of file names in the staging area. */
+    private static List<String> getSortedStageFileList() {
+        Tree stage = getStage();
+        return stage.sortedFileList();
+    }
+
+    /** Print the "Staged Files" status. */
+    private static void stagedFilesStatus() {
+        System.out.println("=== Staged Files ===");
+        for (String fileName : getSortedStageFileList()) {
+            if (getStage().getBlobID(fileName) != null) {
+                System.out.println(fileName);
+            }
+        }
+        System.out.print("\n");
+    }
+
+    /** Print the "Removed Files" status. */
+    private static void removedFilesStatus() {
+        System.out.println("=== Removed Files ===");
+        for (String fileName : getSortedStageFileList()) {
+            if (getStage().getBlobID(fileName) == null) {
+                System.out.println(fileName);
+            }
+        }
+        System.out.print("\n");
     }
 }

@@ -231,6 +231,30 @@ public class Repository {
         findCheck(commit.getParentCommitRef(), commitMessage);
     }
 
+    /* STATUS COMMAND */
+
+    /** Execute the status command. */
+    public static void status() {
+        branchStatus();
+        stageStatus();
+        modificationStatus();
+        untrackedStatus();
+    }
+
+    /** Print the "Modifications Not Staged For Commit" status. */
+    private static void modificationStatus() {
+        System.out.println("=== Modifications Not Staged For Commit ===");
+        // TODO (extra credit)
+        System.out.print("\n");
+    }
+
+    /** Print the "Untracked Files" status. */
+    private static void untrackedStatus() {
+        System.out.println("=== Untracked Files ===");
+        // TODO (extra credit)
+        System.out.print("\n");
+    }
+
     /* CHECKOUT COMMAND */
 
     /**

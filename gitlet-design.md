@@ -150,16 +150,20 @@ It also sets up persistence and do additional error checking.
       Execute the `find` command. Implementation details in the Algorithms section.
    4. `private static void findCheck(String CommitID, String commitMessage)`
       Recursively check if commit with `CommitID` and its ascendants have the designated commit message.
-9. `checkout` command
-   1. `public static void checkout1(String fileName)` 
-      Execute checkout command usage 1 (checkout a file to the latest commit). 
-      Implementation details in the Algorithms section.
-   2. `public static void checkout2(String commitID, String fileName)`
-      Execute checkout command usage 2 (checkout a file to the given commit).
-      Implementation details in the Algorithms section.
-   3. `public static void checkout3(String branchName)`
-      Execute checkout command usage 3 (checkout all files to the designated branch). TODO.
-10. misc
+9. `status` command
+   1. `public static void status()` Execute the status command. Implementation details in the Algorithms section.
+   2. `private static void modificationStatus()` Print the "Modifications Not Staged For Commit" status. Need implementation.
+   3. `private static void untrackedStatus()` Print the "Untracked Files" status. Need implementation.
+10. `checkout` command
+    1. `public static void checkout1(String fileName)` 
+       Execute checkout command usage 1 (checkout a file to the latest commit). 
+       Implementation details in the Algorithms section.
+    2. `public static void checkout2(String commitID, String fileName)`
+       Execute checkout command usage 2 (checkout a file to the given commit).
+       Implementation details in the Algorithms section.
+    3. `public static void checkout3(String branchName)`
+       Execute checkout command usage 3 (checkout all files to the designated branch). TODO.
+11. misc
     1. `private static void assertGITLET()` Assert the `CWD` contains a `.gitlet` directory.
     2. `private static void overwriteCWDFile(String fileName, Blob overwriteSrc)`
        Overwrite the file in `CWD` of designated file name with the content in the given `Blob` object.
@@ -177,16 +181,17 @@ This class will never be instantiated since there are only static methods.
    Invoked by the Cache class.
 2. `static List<String> loadAllBranches()`
    Load all branch files from the filesystem. Return a `List` contains all commit IDs that are pointed by a branch.
-3. `static void writeBranch(String branchName)`
+3. `static void branchStatus()` Print the "Branches" status. Implementation details in the Algorithms section.
+4. `static void writeBranch(String branchName)`
    Get a branch's information from cache and write it back to filesystem. Invoked by the Cache class.
-4. `static void mkNewBranch(String branchName, String commitID)`
+5. `static void mkNewBranch(String branchName, String commitID)`
    Make a new branch with designated name at the latest commit by caching it manually.
-5. `static void moveCurrBranch(String commitID)` Make the current branch pointing to a designated commit.
-6. `static String loadHEAD()`
+6. `static void moveCurrBranch(String commitID)` Make the current branch pointing to a designated commit.
+7. `static String loadHEAD()`
    Load the `HEAD` file and return the current branch's name. Invoked by the Cache class.
-7. `static void writeHEAD()`
+8. `static void writeHEAD()`
    Get the `HEAD` from cache and write it back to filesystem. Invoked by the Cache class.
-8. `static void moveHEAD(String branchName)` Make the `HEAD` pointing to a designated branch.
+9. `static void moveHEAD(String branchName)` Make the `HEAD` pointing to a designated branch.
 
 ### Stage
 
@@ -210,6 +215,12 @@ This class will never be instantiated since there are only static methods.
 5. `static void mkNewStage()` Make a new stage (a `Tree` object) and cache its ID.
 6. `static void addToStage(String fileName)`
    Add a file to the current staging area. Implementation details in the Algorithms section.
+7. `static void stageStatus()` Print the status information related with the staging area.
+8. `private static List<String> getSortedStageFileList()` Return a sorted list of file names in the staging area.
+9. `private static void stagedFilesStatus()` 
+   Print the "Staged Files" status. Implementation details in the Algorithms section.
+10. `private static void removedFilesStatus()`
+   Print the "Removed Files" status. Implementation details in the Algorithms section.
 
 ### HashObject
 
@@ -290,24 +301,26 @@ This class also contains `Tree` related static methods.
 5. `public void dump()` Print information of this `Tree` on `System.out`.
 6. `boolean isEmpty()` Return whether this `Tree` is empty.
 7. `boolean containsFile(String fileName)` Return `true` if a `Tree` contains a file with `fileName`.
-8. `void putBlobID(String fileName, String blobRef)` Record a `fileName` - `blobID` pairs.
-9. `void removeBlobID(String fileName)` Remove an entry with `fileName` as the key from this `Tree`.
-10. `String getBlobID(String fileName)` Return the ID of a `Blob` according to a given `fileName` (if exists).
-11. `Blob getBlob(String fileName)` Return a `Blob` according to a given `fileName` (if exist).
-12. `public Iterator<String> iterator()` Returns an `Iterator` of this `Tree`, namely the `keySet()` of its `TreeMap`.
-13. `void updateWith(Tree updater)` 
+8. `List<String> sortedFileList()`
+   Return the sorted list of file names in this `Tree` following a Java string-comparison order.
+9. `void putBlobID(String fileName, String blobRef)` Record a `fileName` - `blobID` pairs.
+10. `void removeBlobID(String fileName)` Remove an entry with `fileName` as the key from this `Tree`.
+11. `String getBlobID(String fileName)` Return the ID of a `Blob` according to a given `fileName` (if exists).
+12. `Blob getBlob(String fileName)` Return a `Blob` according to a given `fileName` (if exist).
+13. `public Iterator<String> iterator()` Returns an `Iterator` of this `Tree`, namely the `keySet()` of its `TreeMap`.
+14. `void updateWith(Tree updater)` 
     Update this `Tree` with the entries in the given `Tree`.
     Special case: remove the corresponding pair from `this` if the value to a key in the updater is `null`.
-14. `static String mkNewEmptyTree()` Factory method.
+15. `static String mkNewEmptyTree()` Factory method.
     Creates an empty `Tree`, cache it and return its ID.
-15. `static Tree getLatestCommitTree()` Factory method. Return the copy of the `Tree` of the latest commit if exists.
+16. `static Tree getLatestCommitTree()` Factory method. Return the copy of the `Tree` of the latest commit if exists.
     Special case: return `null` if there is no latest commit.
-16. `static String mkCommitTree()`
+17. `static String mkCommitTree()`
     Factory method.
     Return a `Tree` that capture the `Tree` from the latest commit as well as current addition and removal status.
     Implementation details in the Algorithm section.
     Special cases: make a new empty tree if there is no `Tree` in the latest commit.
-17. `private static Tree copyLatestCommitTree()` Factory method. Return a deep-copy of the `Tree` in the latest commit.
+18. `private static Tree copyLatestCommitTree()` Factory method. Return a deep-copy of the `Tree` in the latest commit.
 
 ### Blob
 
@@ -362,19 +375,23 @@ This class contains JUnit tests for Gitlet.
 7. `find` command
    1. `public void findSanityTest()` Sanity test for find command.
    2. `public void findBranchTest()` Test for find command with branching. Need implementation.
-8. `checkout` command
+8. `status` command
+   1. `public void statusBasicTest()` Basic test for status command.
+   2. `public void statusFullTest()` Comprehensive test for status command. Use two branches, stage and remove files.
+   3. `public void statusExtraTest()` Test extra functions of status command.
+9. `checkout` command
    1. `public void checkoutHeadFileSanityTest()` 
       Sanity test for checkout usage 1 (checkout a file to the latest commit).
    2. `public void checkoutCommitFileSanityTest()` 
       Sanity test for checkout usage 2 (checkout a file to the given commit).
-9. misc
-   1. `private static void GitletExecute(String... command)` 
-      Execute commands with Gitlet and clean the cache after execution.
-      Special case: make sure there is no `.gitlet` directory before the init command. Implemented for testing purposes.
-   2. `private static void writeTestFile(String fileName, String content)`
-      Write content into a designated file name. Overwriting or creating file as needed.
-   3. `private static String readTestFile(String fileName)` Read the designated file as String and return it.
-   4. `private static void deleteDirectory(File directoryToBeDeleted)` Delete a directory recursively.
+10. misc
+    1. `private static void GitletExecute(String... command)` 
+       Execute commands with Gitlet and clean the cache after execution.
+       Special case: make sure there is no `.gitlet` directory before the init command. Implemented for testing purposes.
+    2. `private static void writeTestFile(String fileName, String content)`
+       Write content into a designated file name. Overwriting or creating file as needed.
+    3. `private static String readTestFile(String fileName)` Read the designated file as String and return it.
+    4. `private static void deleteDirectory(File directoryToBeDeleted)` Delete a directory recursively.
 
 
 ## Algorithms
@@ -526,6 +543,22 @@ Both of these commands cover all commits ever made by the same manner.
 1. Get a list of commit IDs that are pointed by any branch
 2. Recursively check the commits and their ascendants whether they have the designated commit message
 (ignore those commits that have been visited base on their IDs)
+
+### Print repository status
+
+The status information is consist of the following five parts.
+1. "Branches"
+   1. Get a list of all branches by reading the filenames in the `.gitlet/branches` directory.
+   2. Sort the list in lexicographical order.
+   3. Print the header and all branches, print an asterisk before printing the current branch.
+2. "Staged Files" and "Removed Files"
+   1. Get the current staging area, and get a lexicographical sorted list of filenames it currently holds.
+   2. If a filename has an empty corresponding `BlobID` in the staging area, print it under "Removed Files";
+      if a filename has a valid corresponding `BlobID` in the staging area, print it under "Staged Files".
+3. "Modifications Not Staged For Commit"
+   1. Under construction
+4. "Untracked Files"
+   1. Under construction
 
 ### Checkout a file to `HEAD` commit
 

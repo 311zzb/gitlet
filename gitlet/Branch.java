@@ -1,10 +1,7 @@
 package gitlet;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 import static gitlet.Cache.*;
 import static gitlet.Repository.BRANCHES_DIR;
@@ -45,6 +42,22 @@ public class Branch {
             branchesCommitID.add(loadBranch(branch));
         }
         return branchesCommitID;
+    }
+
+    /** Print the "Branches" status. */
+    static void branchStatus() {
+        List<String> branches = plainFilenamesIn(BRANCHES_DIR);
+        assert branches != null;
+        branches.sort(Comparator.comparing((String x) -> x));
+        System.out.println("=== Branches ===");
+        for (String branch : branches) {
+            if (branch.equals(getHEAD())) {
+                System.out.println("*" + branch);
+            } else {
+                System.out.println(branch);
+            }
+        }
+        System.out.print("\n");
     }
 
     /**

@@ -48,6 +48,10 @@ public class Main {
                 assertArgsNum(command, operands, 1);
                 Repository.find(operands[0]);
             }
+            case "status" -> {
+                assertArgsNum(command, operands, 0);
+                Repository.status();
+            }
             case "checkout" -> {
                 switch (operands.length) {
                     case 1 -> {

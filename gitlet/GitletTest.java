@@ -211,6 +211,35 @@ public class GitletTest {
         // TODO
     }
 
+    /* STATUS COMMAND */
+
+    /** Basic test for status command. */
+    @Test
+    public void statusBasicTest() throws IOException {
+        GitletExecute("init");
+
+        writeTestFile("_hello.txt", "hello");
+        GitletExecute("add", "_hello.txt");
+        GitletExecute("commit", "added hello");
+        writeTestFile("_bye.txt", "bye");
+        GitletExecute("add", "_bye.txt");
+        GitletExecute("rm", "_hello.txt");
+
+        GitletExecute("status");
+    }
+
+    /** Comprehensive test for status command. Use 2 branches, stage and remove files. */
+    @Test
+    public void statusFullTest() throws IOException {
+        // TODO
+    }
+
+    /** Test extra functions of status command. */
+    @Test
+    public void statusExtraTest() throws IOException {
+        // TODO (extra)
+    }
+
     /* CHECKOUT COMMAND */
 
     /** Sanity test for checkout usage 1. */

@@ -1,8 +1,7 @@
 package gitlet;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
+
 import static gitlet.Cache.*;
 
 /**
@@ -60,6 +59,13 @@ public class Tree extends HashObject implements Iterable<String> {
      */
     boolean containsFile(String fileName) {
         return _structure.containsKey(fileName);
+    }
+
+    /** Return the sorted list of file names in this Tree. */
+    List<String> sortedFileList() {
+        List<String> files = new ArrayList<>(this._structure.keySet());
+        files.sort(Comparator.comparing((String x) -> x));
+        return files;
     }
 
     /**
