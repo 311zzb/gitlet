@@ -3,6 +3,7 @@ package gitlet;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 import static gitlet.Branch.*;
 import static gitlet.Cache.*;
@@ -122,10 +123,16 @@ public class Commit extends HashObject {
         return commitTree.getBlobID(fileName);
     }
 
-    /** Return whether this Commit contains a file with fileName. */
-    Boolean containsFile(String fileName) {
+    /** Return whether this Commit tracks a file with fileName. */
+    Boolean trackedFile(String fileName) {
         Tree commitTree = this.getCommitTree();
         return commitTree.containsFile(fileName);
+    }
+
+    /** Return a string list of tracked files of this commit. */
+    List<String> trackedFiles() {
+        Tree commitTree = this.getCommitTree();
+        return commitTree.trackedFiles();
     }
 
     /* STATIC METHODS */

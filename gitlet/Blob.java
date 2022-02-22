@@ -13,7 +13,7 @@ public class Blob extends HashObject {
 
     private final String _content;
 
-    private Blob(String content) {
+    Blob(String content) {
         _content = content;
     }
 

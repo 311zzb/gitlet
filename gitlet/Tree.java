@@ -1,8 +1,11 @@
 package gitlet;
 
+import java.io.File;
 import java.util.*;
 
 import static gitlet.Cache.*;
+import static gitlet.Repository.CWD;
+import static gitlet.Utils.*;
 
 /**
  * Represent a Gitlet Tree, corresponding to UNIX directory entries.
@@ -62,9 +65,9 @@ public class Tree extends HashObject implements Iterable<String> {
     }
 
     /** Return the sorted list of file names in this Tree. */
-    List<String> sortedFileList() {
+    List<String> trackedFiles() {
         List<String> files = new ArrayList<>(this._structure.keySet());
-        files.sort(Comparator.comparing((String x) -> x));
+        Repository.sortLexico(files);
         return files;
     }
 
@@ -167,4 +170,22 @@ public class Tree extends HashObject implements Iterable<String> {
             return new Tree(latestCommitTree);
         }
     }
+
+    /** Return a temporary Tree that capture information of files in CWD. */
+    static Tree CWDFiles() {
+        List<String> files = plainFilenamesIn(CWD);
+        if (files == null) {
+            return new Tree();
+        } // Special case: return an empty if CWD is empty.
+        Tree tree = new Tree();
+        for (String file : files) {
+            String content = readContentsAsString(join(CWD, file));
+            Blob blob = new Blob(content);
+            tree.putBlobID(file, blob.id());
+        }
+        return tree;
+    }
+
+
+
 }

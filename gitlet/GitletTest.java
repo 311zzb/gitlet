@@ -228,16 +228,28 @@ public class GitletTest {
         GitletExecute("status");
     }
 
-    /** Comprehensive test for status command. Use 2 branches, stage and remove files. */
+    /** Test extra functions ("Modification Not Staged For Commit") of status command. */
+    @Test
+    public void statusModificationTest() throws IOException {
+        // TODO (extra)
+    }
+
+    /** Test extra functions ("Untracked Files") of status command. */
+    @Test
+    public void statusUntrackedTest() throws IOException {
+        GitletExecute("init");
+
+        writeTestFile("_hello.txt", "hello");
+        GitletExecute("add", "_hello.txt");
+        GitletExecute("commit", "added hello");
+        writeTestFile("_bye.txt", "bye");
+        GitletExecute("status");
+    }
+
+    /** Comprehensive test for status command. */
     @Test
     public void statusFullTest() throws IOException {
         // TODO
-    }
-
-    /** Test extra functions of status command. */
-    @Test
-    public void statusExtraTest() throws IOException {
-        // TODO (extra)
     }
 
     /* CHECKOUT COMMAND */

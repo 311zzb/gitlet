@@ -4,8 +4,7 @@ import java.io.File;
 import java.util.*;
 
 import static gitlet.Cache.*;
-import static gitlet.Repository.BRANCHES_DIR;
-import static gitlet.Repository.HEAD;
+import static gitlet.Repository.*;
 import static gitlet.Utils.*;
 
 /**
@@ -48,7 +47,7 @@ public class Branch {
     static void branchStatus() {
         List<String> branches = plainFilenamesIn(BRANCHES_DIR);
         assert branches != null;
-        branches.sort(Comparator.comparing((String x) -> x));
+        sortLexico(branches);
         System.out.println("=== Branches ===");
         for (String branch : branches) {
             if (branch.equals(getHEAD())) {

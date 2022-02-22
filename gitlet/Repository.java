@@ -2,10 +2,7 @@ package gitlet;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static gitlet.Branch.*;
 import static gitlet.Cache.*;
@@ -124,14 +121,14 @@ public class Repository {
     public static void rm(String fileName) {
         assertGITLET();
         Tree stage = getStage();
-        Commit head = getLatestCommit();
-        if (!stage.containsFile(fileName) && !head.containsFile(fileName)) {
+        Commit headCommit = getLatestCommit();
+        if (!stage.containsFile(fileName) && !headCommit.trackedFile(fileName)) {
             throw new GitletException("No reason to remove the file.");
         } // Special case: if the file is neither staged nor tracked by the head commit, print the error message
         if (stage.containsFile(fileName)) {
             removeFromStage(fileName);
         }
-        if (head.containsFile(fileName)) {
+        if (headCommit.trackedFile(fileName)) {
             restrictedDelete(fileName); // Remove file from CWD
             addToStage(fileName); // Add {fileName - null} pair to the stage (sign for stage for removal)
         }
@@ -254,9 +251,26 @@ public class Repository {
     /** Print the "Untracked Files" status. */
     private static void untrackedStatus() {
         System.out.println("=== Untracked Files ===");
-        // TODO (extra credit)
+        for (String fileName : untrackedFiles()) {
+            System.out.println(fileName);
+        }
         System.out.print("\n");
     }
+
+    /** Return a list of files that is untracked (neither staged for addition nor tracked by the head commit). */
+    private static List<String> untrackedFiles() {
+        Tree CWDFiles = Tree.CWDFiles();
+        Commit headCommit = getLatestCommit();
+        List<String> list = new ArrayList<>();
+        for (String fileName : CWDFiles) {
+            if (!isStagedForAdd(fileName) && !headCommit.trackedFile(fileName)) {
+                list.add(fileName);
+            }
+        }
+        sortLexico(list);
+        return list;
+    }
+
 
     /* CHECKOUT COMMAND */
 
@@ -353,5 +367,13 @@ public class Repository {
         String overwriteContent = overwriteSrc.getContent();
         File file = join(CWD, fileName);
         writeContents(file, overwriteContent);
+    }
+
+    /**
+     * Sort a string List in lexicographical order in place.
+     * @param list the given list
+     */
+    static void sortLexico(List<String> list) {
+        list.sort(Comparator.comparing((String x) -> x));
     }
 }

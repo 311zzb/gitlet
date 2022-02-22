@@ -1,7 +1,5 @@
 package gitlet;
 
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 import static gitlet.Cache.*;
@@ -98,7 +96,7 @@ public class Stage {
     /** Return a sorted list of file names in the staging area. */
     private static List<String> getSortedStageFileList() {
         Tree stage = getStage();
-        return stage.sortedFileList();
+        return stage.trackedFiles();
     }
 
     /** Print the "Staged Files" status. */
@@ -121,5 +119,11 @@ public class Stage {
             }
         }
         System.out.print("\n");
+    }
+
+    /** Return true if a designated file is staged for addition. */
+    static boolean isStagedForAdd(String fileName) {
+        Tree stage = getStage();
+        return stage.containsFile(fileName) && !stage.getBlobID(fileName).equals("");
     }
 }

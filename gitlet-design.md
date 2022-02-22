@@ -157,7 +157,9 @@ It also sets up persistence and do additional error checking.
 9. `status` command
    1. `public static void status()` Execute the status command. Implementation details in the Algorithms section.
    2. `private static void modificationStatus()` Print the "Modifications Not Staged For Commit" status. Need implementation.
-   3. `private static void untrackedStatus()` Print the "Untracked Files" status. Need implementation.
+   3. `private static void untrackedStatus()` Print the "Untracked Files" status.
+   4. `private static List<String> untrackedFiles()`
+      Return a list of files that is untracked (neither staged for addition nor tracked by the head commit).
 10. `checkout` command
     1. `public static void checkout1(String fileName)`
        Execute checkout command usage 1 (checkout a file to the latest commit).
@@ -177,6 +179,7 @@ It also sets up persistence and do additional error checking.
     1. `private static void assertGITLET()` Assert the `CWD` contains a `.gitlet` directory.
     2. `private static void overwriteCWDFile(String fileName, Blob overwriteSrc)`
        Overwrite the file in `CWD` of designated file name with the content in the given `Blob` object.
+    3. `static void sortLexico(List<String> list)` Sort a string `List` in lexicographical order in place.
 
 ### Branch
 
@@ -233,6 +236,8 @@ This class will never be instantiated since there are only static methods.
    Print the "Staged Files" status. Implementation details in the Algorithms section.
 10. `private static void removedFilesStatus()`
     Print the "Removed Files" status. Implementation details in the Algorithms section.
+11. `static boolean isStagedForAdd(String fileName)`
+    Return `true` if a designated file is staged for addition.
 
 ### HashObject
 
@@ -291,8 +296,9 @@ as well as static method that carry out the procedure to make a new commit.
 12. `String getCommitTreeRef()` Get the ID of the associating `Tree` of this commit.
 13. `Tree getCommitTree()` Get the associating `Tree` of this commit.
 14. `String getCommitTreeBlobID(String fileName)` Get the ID of the `Blob` of a designated file name in this commit.
-15. `Boolean containsFile(String fileName)` Return whether this `Commit` contains a file with `fileName`.
-16. `static void mkCommit(String message)` Factory method. Make a new `Commit`.
+15. `Boolean trackedFile(String fileName)` Return whether this `Commit` contains a file with `fileName`.
+16. `List<String> trackedFiles()` Return a string `List` of tracked files of this commit.
+17. `static void mkCommit(String message)` Factory method. Make a new `Commit`.
     Implementation details in the Algorithm section.
 
 ### Tree
@@ -313,7 +319,7 @@ This class also contains `Tree` related static methods.
 5. `public void dump()` Print information of this `Tree` on `System.out`.
 6. `boolean isEmpty()` Return whether this `Tree` is empty.
 7. `boolean containsFile(String fileName)` Return `true` if a `Tree` contains a file with `fileName`.
-8. `List<String> sortedFileList()`
+8. `List<String> trackedFiles()`
    Return the sorted list of file names in this `Tree` following a Java string-comparison order.
 9. `void putBlobID(String fileName, String blobRef)` Record a `fileName` - `blobID` pairs.
 10. `void removeBlobID(String fileName)` Remove an entry with `fileName` as the key from this `Tree`.
@@ -333,6 +339,7 @@ This class also contains `Tree` related static methods.
     Implementation details in the Algorithm section.
     Special cases: make a new empty tree if there is no `Tree` in the latest commit.
 18. `private static Tree copyLatestCommitTree()` Factory method. Return a deep-copy of the `Tree` in the latest commit.
+19. `static Teww CWDFiles()` Return a temporary `Tree` that capture information of files in `CWD`.
 
 ### Blob
 
@@ -345,7 +352,7 @@ This class also has `Blob` related static methods.
 #### Fields
 
 1. `private final String _content` The instance variable that hold the content of a version of a file.
-2. `private Blob(String content)` The private constructor of `Blob`.
+2. `Blob(String content)` The private constructor of `Blob`.
    No "naked" instantiation of `Blob` is allowed.
 3. `String getContent()` Unlocks the content of a `Blob`.
 4. `public String toString()` Content-addressable overriding `toString()` method.
@@ -389,8 +396,10 @@ This class contains JUnit tests for Gitlet.
    2. `public void findBranchTest()` Test for find command with branching. Need implementation.
 8. `status` command
    1. `public void statusBasicTest()` Basic test for status command.
-   2. `public void statusFullTest()` Comprehensive test for status command. Use two branches, stage and remove files.
-   3. `public void statusExtraTest()` Test extra functions of status command.
+   2. `public void statusModificationTest()`
+      Test extra functions ("Modification Not Staged For Commit") of status command.
+   3. `public void statusUntrackedTest()` Test extra functions ("Untracked Files") of status command.
+   4. `public void statusFullTest()` Comprehensive test for status command.
 9. `checkout` command
    1. `public void checkoutHeadFileSanityTest()`
       Sanity test for checkout usage 1 (checkout a file to the latest commit).
@@ -576,7 +585,17 @@ The status information is consist of the following five parts.
 3. "Modifications Not Staged For Commit"
    1. Under construction
 4. "Untracked Files"
-   1. Under construction
+   1. Get a list of all untracked files. A file is untracked if it is neither staged for addition nor tracked by the head commit.
+   2. Print the file names.
+
+### Get a list of untracked files
+
+1. Get the information of files in the `CWD` as a `Tree` object.
+2. Get the head `Commit` object.
+3. Iterate through the file names in the `CWD`, add it to a list of untracked files if it:
+   1. is not staged for addition (not contained in the staging area or its corresponding `Blob` ID is empty)
+   2. is not tracked by the head commit
+4. Sort the untracked files list in lexicographical order
 
 ### Checkout a file to `HEAD` commit
 
