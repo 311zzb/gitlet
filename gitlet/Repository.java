@@ -179,6 +179,7 @@ public class Repository {
      * TODO: test this against branched repository
      */
     public static void globalLog() {
+        assertGITLET();
         List<String> branchesCommitID = loadAllBranches();
         for (String CommitID : branchesCommitID) {
             log(CommitID);
@@ -200,6 +201,7 @@ public class Repository {
      * @param commitMessage the designated commit message.
      */
     public static void find(String commitMessage) {
+        assertGITLET();
         List<String> branchesCommitID = loadAllBranches();
         for (String CommitID : branchesCommitID) {
             findCheck(CommitID, commitMessage);
@@ -235,6 +237,7 @@ public class Repository {
 
     /** Execute the status command. */
     public static void status() {
+        assertGITLET();
         branchStatus();
         stageStatus();
         modificationStatus();
@@ -295,6 +298,22 @@ public class Repository {
      */
     public static void checkout3(String branchName) {
         // TODO: checkout command usage 3
+    }
+
+    /* BRANCH COMMAND */
+
+    /**
+     * Execute the branch command.
+     * Create a new branch with the given name, and points it at the current head commit.
+     * @param branchName the designated branch name.
+     */
+    public static void branch(String branchName) {
+        assertGITLET();
+        File newBranch = join(BRANCHES_DIR, branchName);
+        if (newBranch.exists()) {
+            throw new GitletException("A branch with that name already exists.");
+        } // Special case: abort if a branch with the given name already exists
+        mkNewBranch(branchName);
     }
 
     /* MISC */

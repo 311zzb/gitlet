@@ -275,6 +275,18 @@ public class GitletTest {
         assertEquals("hello", readTestFile("_hello.txt"));
     }
 
+    /* BRANCH COMMAND */
+
+    /** Sanity test for branch command. */
+    @Test
+    public void branchSanityTest() throws IOException {
+        GitletExecute("init");
+
+        GitletExecute("branch", "cool-bean");
+        GitletExecute("branch", "hot-bean");
+        GitletExecute("status");
+    }
+
 
     /* MISC */
 

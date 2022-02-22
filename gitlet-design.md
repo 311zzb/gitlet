@@ -163,7 +163,10 @@ It also sets up persistence and do additional error checking.
        Implementation details in the Algorithms section.
     3. `public static void checkout3(String branchName)`
        Execute checkout command usage 3 (checkout all files to the designated branch). TODO.
-11. misc
+11. `branch` command
+    1. `public static void branch(String branchName)`
+       Execute the branch command. Implementation details in the Algorithms section.
+12. misc
     1. `private static void assertGITLET()` Assert the `CWD` contains a `.gitlet` directory.
     2. `private static void overwriteCWDFile(String fileName, Blob overwriteSrc)`
        Overwrite the file in `CWD` of designated file name with the content in the given `Blob` object.
@@ -575,8 +578,14 @@ The status information is consist of the following five parts.
 
 1. xxx
 
-### 
+### Create a new branch
 
+Creating new branches is carried out when `branch` or `init` command is given. 
+When creating new branches, the operation under the hood is no more than writing a `branchName` - `CommitID` pair 
+into the `cachedBranches` which is then written back to the filesystem upon exit. 
+The `CommitID` assigned to the new branch is always the latest commit (head commit) if there is one.
+For the default "master" branch which is created right before the initial commit, 
+its corresponding is `null` at the very first (but pointed to the initial commit after the initial commit is created).
 
 
 ## Persistence
@@ -598,7 +607,7 @@ CWD                                                      <==== Whatever the curr
         └── ...
 ```
 
-### Command
+### Commands
 
 #### `init` command
 
@@ -641,3 +650,9 @@ or exists in the head commit (staging for removal).
 #### `checkout` command
 
 This command will write the current working directory, but only read persistence.
+
+#### `branch` command
+
+When a branch is created, a `branchName` - `CommitID` pair will be written into the `cachedBranches` data structure.
+Upon exit, the `cachedBranches` will be written back to the filesystem, i.e. the persistence will be modified
+according to cached information.

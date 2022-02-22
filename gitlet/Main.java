@@ -68,6 +68,10 @@ public class Main {
                     default -> throw new GitletException("Invalid number of arguments for: checkout.");
                 }
             }
+            case "branch" -> {
+                assertArgsNum(command,operands, 1);
+                Repository.branch(operands[0]);
+            }
 
             default -> throw new GitletException("Unexpected command: " + command);
         }
