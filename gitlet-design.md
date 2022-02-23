@@ -553,13 +553,13 @@ A commit `Tree` is a `Tree` that every commit uses to record the associated file
 3. If the file is tracked in the current commit, stage it for removal and remove it from the `CWD`.
 
 When it comes to the design decision of representing "staged for removal",
-the chosen solution is to treat pairs in the staging tree with `null` value as staged for removal.
+the chosen solution is to treat pairs in the staging tree with `""` (an empty `String`) value as staged for removal.
 That is, when a file is staged for removal:
 
 1. It is deleted from the `CWD` if the user haven't done that.
 2. It is "added" to the staging area.
    Given the fact that there is no such file in the `CWD`,
-   a {`fileName`, `null`} pair will be written into the staging area.
+   a {`fileName` - `""`} pair will be written into the staging area.
 3. When making a commit `Tree`,
    staged for removal file will be handled and the new commit `Tree` will not include the staged-for-removal files.
 
@@ -598,7 +598,7 @@ The status information is consist of the following five parts.
    3. Print the header and all branches, print an asterisk before printing the current branch.
 2. "Staged Files" and "Removed Files"
    1. Get the current staging area, and get a lexicographical sorted list of filenames it currently holds.
-   2. If a filename has an empty corresponding `BlobID` in the staging area, print it under "Removed Files";
+   2. If a `filename` has an empty corresponding `BlobID` in the staging area, print it under "Removed Files";
       if a filename has a valid corresponding `BlobID` in the staging area, print it under "Staged Files".
 3. "Modifications Not Staged For Commit"
    1. Under construction

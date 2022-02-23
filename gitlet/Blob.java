@@ -48,7 +48,7 @@ public class Blob extends HashObject {
     static String mkBlob(String fileName) {
         File file = join(CWD, fileName);
         if (!file.exists()) {
-            return null;
+            return "";
         } // Special case: adding a file that not exists means adding for removal
         String content = readContentsAsString(file);
         Blob blob = new Blob(content);

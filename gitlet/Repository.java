@@ -132,7 +132,7 @@ public class Repository {
         }
         if (headCommit.trackedFile(fileName)) {
             restrictedDelete(fileName); // Remove file from CWD
-            addToStage(fileName); // Add {fileName - null} pair to the stage (sign for stage for removal)
+            addToStage(fileName); // Add {fileName - ""} pair to the stage (sign for stage for removal)
         }
     }
 

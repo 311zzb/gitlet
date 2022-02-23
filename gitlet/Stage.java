@@ -103,7 +103,7 @@ public class Stage {
     private static void stagedFilesStatus() {
         System.out.println("=== Staged Files ===");
         for (String fileName : getSortedStageFileList()) {
-            if (getStage().getBlobID(fileName) != null) {
+            if (!getStage().getBlobID(fileName).equals("")) {
                 System.out.println(fileName);
             }
         }
@@ -114,7 +114,7 @@ public class Stage {
     private static void removedFilesStatus() {
         System.out.println("=== Removed Files ===");
         for (String fileName : getSortedStageFileList()) {
-            if (getStage().getBlobID(fileName) == null) {
+            if (getStage().getBlobID(fileName).equals("")) {
                 System.out.println(fileName);
             }
         }
