@@ -169,17 +169,23 @@ It also sets up persistence and do additional error checking.
        Implementation details in the Algorithms section.
     3. `public static void checkout3(String branchName)`
        Execute checkout command usage 3 (checkout all files to the designated branch). TODO.
+    4. `private static void checkoutCommitFile(Commit commit, String fileName)`
+       A private helper method that checkout a file with `fileName` from a given commit.
 11. `branch` command
     1. `public static void branch(String branchName)`
        Execute the branch command. Implementation details in the Algorithms section.
 12. `rm-branch` command
     1. `public static void rmBranch(String branchName)`
        Execute the rm-branch command. Implementation details in the Algorithms section.
-13. misc
+13. `reset` command
+    1. `public static void reset(String commitID)` 
+       Execute the reset command. Implementation details in the Algorithms section.
+14. misc
     1. `private static void assertGITLET()` Assert the `CWD` contains a `.gitlet` directory.
     2. `private static void overwriteCWDFile(String fileName, Blob overwriteSrc)`
        Overwrite the file in `CWD` of designated file name with the content in the given `Blob` object.
     3. `static void sortLexico(List<String> list)` Sort a string `List` in lexicographical order in place.
+    4. `private static void deleteCWDFiles()` Delete all files in the `CWD`.
 
 ### Branch
 
@@ -629,6 +635,15 @@ This command delete the branch with the given name. It does not delete any commi
 2. Abort if the designated branch is the current branch
 3. Wipe the branch's pointer in the cache and delete the branch file upon exit
 
+### Reset to a designated commit
+
+1. Perform the checks: the commit with the designated ID exists, and there is no working untracked file
+2. Remove all files in the CWD
+3. Checkout all files tracked in that commit
+4. Move the current branch to that commit
+
+Better implementation might be available once checkout branch function is implemented.
+
 ## Persistence
 
 The directory structure looks like this:
@@ -701,3 +716,7 @@ according to cached information.
 #### `rm-branch` command
 
 When a branch is removed, the corresponding file under the `.gitlet/branches` directory will be deleted.
+
+#### `reset` command
+
+This command will write the current working directory, but only read persistence.

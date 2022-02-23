@@ -299,11 +299,7 @@ public class Repository {
         if (commit == null) {
             throw new GitletException("No commit with that id exists.");
         } // Special case: abort if there is no commit with the given commit ID
-        Blob blob = getBlob(commit.getCommitTreeBlobID(fileName));
-        if (blob == null) {
-            throw new GitletException("File does not exist in that commit.");
-        } // Special case: abort if such file does not exist in that commit
-        overwriteCWDFile(fileName, blob);
+        checkoutCommitFile(commit, fileName);
     }
 
     /**
@@ -312,6 +308,15 @@ public class Repository {
      */
     public static void checkout3(String branchName) {
         // TODO: checkout command usage 3
+    }
+
+    /** A private helper method that checkout a file with fileName from a given commit. */
+    private static void checkoutCommitFile(Commit commit, String fileName) {
+        Blob blob = getBlob(commit.getCommitTreeBlobID(fileName));
+        if (blob == null) {
+            throw new GitletException("File does not exist in that commit.");
+        } // Special case: abort if such file does not exist in that commit
+        overwriteCWDFile(fileName, blob);
     }
 
     /* BRANCH COMMAND */
@@ -349,6 +354,32 @@ public class Repository {
         wipeBranch(branchName);
     }
 
+    /* RESET COMMAND */
+
+    /**
+     * Execute the reset command.
+     * 1. Perform the checks: the commit with the designated ID exists, and there is no working untracked file
+     * 2. Remove all files in the CWD
+     * 3. Checkout all files tracked in that commit
+     * 4. Move the current branch to that commit
+     */
+    public static void reset(String commitID) { // TODO: optimize the implementation with checkout3()
+        assertGITLET();
+        Commit commit = getCommit(commitID);
+        if (commit == null) {
+            throw new GitletException("No commit with that id exists.");
+        } // Special case: abort if no commit with the given id exists.
+        if (!untrackedFiles().isEmpty()) {
+            throw new GitletException("There is an untracked file in the way; delete it, or add and commit it first.");
+        } // Special case: abort if a working file is untracked.
+        deleteCWDFiles();
+        for (String fileName : commit.trackedFiles()) {
+            checkoutCommitFile(commit, fileName);
+        }
+        moveCurrBranch(commitID);
+    }
+
+
     /* MISC */
 
     /** Assert the CWD contains a .gitlet directory. */
@@ -375,5 +406,17 @@ public class Repository {
      */
     static void sortLexico(List<String> list) {
         list.sort(Comparator.comparing((String x) -> x));
+    }
+
+    /** Delete all files in the CWD. */
+    private static void deleteCWDFiles() {
+        List<String> files = plainFilenamesIn(CWD);
+        if (files == null) {
+            return;
+        } // Special case: return if the CWD is empty.
+        for (String fileName : files) {
+            File file = join(CWD, fileName);
+            file.delete();
+        }
     }
 }

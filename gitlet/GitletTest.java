@@ -312,6 +312,10 @@ public class GitletTest {
         GitletExecute("status");
     }
 
+    /* RESET COMMAND */
+    // Not applicable for JUnit tests.
+
+
 
     /* MISC */
 
