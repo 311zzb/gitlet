@@ -327,7 +327,20 @@ public class GitletTest {
     }
 
     /* RESET COMMAND */
-    // Not applicable for JUnit tests.
+
+    /** Sanity test for reset command. */
+    @Test
+    public void resetSanityTest() throws IOException {
+        GitletExecute("init");
+
+        writeTestFile("_hello.txt", "hello");
+        GitletExecute("add", "_hello.txt");
+        GitletExecute("commit", "added hello");
+
+        String commitID = Cache.getCommit(getLatestCommitRef()).getParentCommitRef();
+        GitletExecute("reset", commitID);
+        GitletExecute("log");
+    }
 
 
 

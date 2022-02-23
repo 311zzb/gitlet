@@ -169,9 +169,12 @@ It also sets up persistence and do additional error checking.
        Implementation details in the Algorithms section.
     3. `public static void checkout3(String branchName)`
        Execute checkout command usage 3 (checkout all files to the designated branch).
-    4. `private static void checkoutAllCommitFile(String commitID)`
+       Implementation details in the Algorithms section.
+    4. `private static void checkoutToCommit(String commitID)`
+       A private helper method that checkout to a `Commit` (with designated ID).
+    5. `private static void checkoutAllCommitFile(String commitID)`
        A private helper method that checkout all files that a `Commit` (with designated ID) tracked.
-    5. `private static void checkoutCommitFile(Commit commit, String fileName)`
+    6. `private static void checkoutCommitFile(Commit commit, String fileName)`
        A private helper method that checkout a file with `fileName` from a given `Commit`.
 11. `branch` command
     1. `public static void branch(String branchName)`
@@ -182,6 +185,7 @@ It also sets up persistence and do additional error checking.
 13. `reset` command
     1. `public static void reset(String commitID)` 
        Execute the reset command. Implementation details in the Algorithms section.
+       Abbreviated commit ID will be handled, and branches will always point to full IDs.
 14. misc
     1. `private static void assertGITLET()` Assert the `CWD` contains a `.gitlet` directory.
     2. `private static void overwriteCWDFile(String fileName, Blob overwriteSrc)`
@@ -421,7 +425,9 @@ This class contains JUnit tests for Gitlet.
     1. `public void branchSanityTest()` Sanity test for branch command.
 11. `rm-branch` command
     1. `public void rmBranchSanityTest()` Sanity test for rm-branch command.
-12. misc
+12. `reset` command
+    1. `public void resetSanityTest()` Sanity test for reset command.
+13. misc
     1. `private static void GitletExecute(String... command)`
        Execute commands with Gitlet and clean the cache after execution.
        Special case: make sure there is no `.gitlet` directory before the init command. Implemented for testing purposes.
@@ -620,14 +626,18 @@ The status information is consist of the following five parts.
 2. Get the designated file's `Blob` object form that commit
 3. Overwrite the file with that name in the `CWD`
 
-### Checkout all files to a designated branch
+### Checkout to a designated branch
 
 1. Perform checks: Gitlet will abort if no branch with the given name exists, or that branch is the current branch,
    or a working file is untracked.
-2. Delete all files in the `CWD`.
-3. Checkout all files tracked by that commit.
-4. Move the head pointer to that branch.
-5. Clean the staging area.
+2. Move the HEAD to that branch.
+3. Checkout to the commit that the branch is pointing to.
+
+### Checkout to a designated commit
+
+1. Delete all files in the `CWD`.
+2. Checkout all files tracked by that commit.
+3. Clean the staging area.
 
 ### Create a new branch
 
@@ -648,12 +658,9 @@ This command delete the branch with the given name. It does not delete any commi
 
 ### Reset to a designated commit
 
-1. Perform the checks: the commit with the designated ID exists, and there is no working untracked file
-2. Remove all files in the CWD
-3. Checkout all files tracked in that commit
-4. Move the current branch to that commit
-
-Better implementation might be available once checkout branch function is implemented.
+1. Perform the checks: the commit with the designated ID exists, and there is no working untracked file.
+2. Checkout to the designated commit.
+3. Move the current branch to that commit (The biggest difference between `reset` and `checkout [branch name]` command). 
 
 ## Persistence
 

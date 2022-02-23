@@ -310,10 +310,8 @@ public class Repository {
     /**
      * Execute checkout command usage 3 (checkout all files to the designated branch).
      * 1. Perform checks
-     * 2. Delete all files in the CWD
-     * 3. Checkout all files tracked by that commit
-     * 4. Move the HEAD to that branch
-     * 5. Clean the staging area
+     * 2. Move the HEAD to that branch
+     * 3. Checkout to the commit that the branch is pointing to
      * @param branchName the designated branch name
      */
     public static void checkout3(String branchName) {
@@ -326,10 +324,20 @@ public class Repository {
         if (!untrackedFiles().isEmpty()) {
             throw new GitletException("There is an untracked file in the way; delete it, or add and commit it first.");
         } // Special case: abort if a working file is untracked.
-        deleteCWDFiles();
         String commitID = getBranch(branchName);
-        checkoutAllCommitFile(commitID);
+        checkoutToCommit(commitID);
         moveHEAD(branchName);
+    }
+
+    /**
+     * A private helper method that checkout to a Commit (with designated ID).
+     * 1. Delete all files in the CWD
+     * 2. Checkout all files tracked by that commit
+     * 3. Clean the staging area
+     */
+    private static void checkoutToCommit(String commitID) {
+        deleteCWDFiles();
+        checkoutAllCommitFile(commitID);
         mkNewStage();
     }
 
@@ -389,11 +397,10 @@ public class Repository {
     /**
      * Execute the reset command.
      * 1. Perform the checks: the commit with the designated ID exists, and there is no working untracked file
-     * 2. Remove all files in the CWD
-     * 3. Checkout all files tracked in that commit
-     * 4. Move the current branch to that commit
+     * 2. Checkout to the designated commit
+     * 3. Move the current branch to that commit
      */
-    public static void reset(String commitID) { // TODO: optimize the implementation with checkout3()
+    public static void reset(String commitID) {
         assertGITLET();
         Commit commit = getCommit(commitID);
         if (commit == null) {
@@ -402,11 +409,9 @@ public class Repository {
         if (!untrackedFiles().isEmpty()) {
             throw new GitletException("There is an untracked file in the way; delete it, or add and commit it first.");
         } // Special case: abort if a working file is untracked.
-        deleteCWDFiles();
-        for (String fileName : commit.trackedFiles()) {
-            checkoutCommitFile(commit, fileName);
-        }
-        moveCurrBranch(commitID);
+        checkoutToCommit(commitID);
+        String fullCommitID = commit.id(); // This prevents an abbreviated ID been written to branch files
+        moveCurrBranch(fullCommitID);
     }
 
 
