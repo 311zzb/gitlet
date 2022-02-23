@@ -32,8 +32,8 @@ public class Repository {
     static final File OBJECTS_DIR = join(GITLET_DIR, "objects");
     /** The branches directory. */
     static final File BRANCHES_DIR = join(GITLET_DIR, "branches");
-    // TODO: delete this ↓
-    static final List<String> debugCWDFiles = Arrays.asList("gitlet-design.md", "Makefile", "pom.xml");
+    // A list of files that should be ignored when counting untracked files or delete all CWD files.
+    static final List<String> debugCWDFiles = Arrays.asList("gitlet-design.md", "Makefile", "pom.xml"); // TODO: delete this
 
 
     /* INIT COMMAND */
