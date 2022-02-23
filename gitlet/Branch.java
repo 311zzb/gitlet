@@ -24,9 +24,17 @@ public class Branch {
     static String loadBranch(String branchName) {
         if (Objects.equals(branchName, "")) {
             return null;
-        } // Special case: loading a "no branch"
+        } // Special case: loading a "no branch".
         File branchFile = join(BRANCHES_DIR, branchName);
+        if (!branchFile.exists()) {
+            return null;
+        } // Special case: loading a branch that do not exist.
         return readContentsAsString(branchFile);
+    }
+
+    /** Return true if a branch exists. */
+    static boolean existBranch(String branchName) {
+        return getBranch(branchName) != null;
     }
 
     /**

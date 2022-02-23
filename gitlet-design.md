@@ -168,9 +168,11 @@ It also sets up persistence and do additional error checking.
        Execute checkout command usage 2 (checkout a file to the given commit).
        Implementation details in the Algorithms section.
     3. `public static void checkout3(String branchName)`
-       Execute checkout command usage 3 (checkout all files to the designated branch). TODO.
-    4. `private static void checkoutCommitFile(Commit commit, String fileName)`
-       A private helper method that checkout a file with `fileName` from a given commit.
+       Execute checkout command usage 3 (checkout all files to the designated branch).
+    4. `private static void checkoutAllCommitFile(String commitID)`
+       A private helper method that checkout all files that a `Commit` (with designated ID) tracked.
+    5. `private static void checkoutCommitFile(Commit commit, String fileName)`
+       A private helper method that checkout a file with `fileName` from a given `Commit`.
 11. `branch` command
     1. `public static void branch(String branchName)`
        Execute the branch command. Implementation details in the Algorithms section.
@@ -196,23 +198,25 @@ This class will never be instantiated since there are only static methods.
 #### Fields
 
 1. `static String loadBranch(String branchName)`
-   Load a branch file from filesystem with designated name. Return null if the branch name is "" (nothing).
+   Load a branch file from filesystem with designated name. 
+   Return null if the branch name is "" (nothing) or there is no branch with the designated branch name.
    Invoked by the Cache class.
-2. `static List<String> loadAllBranches()`
+2. `static boolean existBranch(String branchName)` Return `true` if a branch exists.
+3. `static List<String> loadAllBranches()`
    Load all branch files from the filesystem. Return a `List` contains all commit IDs that are pointed by a branch.
-3. `static void branchStatus()` Print the "Branches" status. Implementation details in the Algorithms section.
-4. `static void writeBranch(String branchName)`
+4. `static void branchStatus()` Print the "Branches" status. Implementation details in the Algorithms section.
+5. `static void writeBranch(String branchName)`
    Get a branch's information from cache and write it back to filesystem. Invoked by the Cache class.
-5. `static void deleteBranch(String branchName)`
+6. `static void deleteBranch(String branchName)`
    Delete the designated branch in the filesystem. Invoked by the Cache class.
-6. `static void mkNewBranch(String branchName, String commitID)`
+7. `static void mkNewBranch(String branchName, String commitID)`
    Make a new branch with designated name at the latest commit by caching it manually.
-7. `static void moveCurrBranch(String commitID)` Make the current branch pointing to a designated commit.
-8. `static String loadHEAD()`
+8. `static void moveCurrBranch(String commitID)` Make the current branch pointing to a designated commit.
+9. `static String loadHEAD()`
    Load the `HEAD` file and return the current branch's name. Invoked by the Cache class.
-9. `static void writeHEAD()`
-   Get the `HEAD` from cache and write it back to filesystem. Invoked by the Cache class.
-10. `static void moveHEAD(String branchName)` Make the `HEAD` pointing to a designated branch.
+10. `static void writeHEAD()`
+    Get the `HEAD` from cache and write it back to filesystem. Invoked by the Cache class.
+11. `static void moveHEAD(String branchName)` Make the `HEAD` pointing to a designated branch.
 
 ### Stage
 
@@ -411,6 +415,8 @@ This class contains JUnit tests for Gitlet.
       Sanity test for checkout usage 1 (checkout a file to the latest commit).
    2. `public void checkoutCommitFileSanityTest()`
       Sanity test for checkout usage 2 (checkout a file to the given commit).
+   3. `public void checkoutBranchSanityTest()`
+      Sanity test for checkout usage 3 (checkout to a branch).
 10. `branch` command
     1. `public void branchSanityTest()` Sanity test for branch command.
 11. `rm-branch` command
@@ -616,7 +622,12 @@ The status information is consist of the following five parts.
 
 ### Checkout all files to a designated branch
 
-1. xxx
+1. Perform checks: Gitlet will abort if no branch with the given name exists, or that branch is the current branch,
+   or a working file is untracked.
+2. Delete all files in the `CWD`.
+3. Checkout all files tracked by that commit.
+4. Move the head pointer to that branch.
+5. Clean the staging area.
 
 ### Create a new branch
 
@@ -706,6 +717,7 @@ or exists in the head commit (staging for removal).
 #### `checkout` command
 
 This command will write the current working directory, but only read persistence.
+An exception is that when checking out to a branch, the staging area will be cleared.
 
 #### `branch` command
 
@@ -719,4 +731,4 @@ When a branch is removed, the corresponding file under the `.gitlet/branches` di
 
 #### `reset` command
 
-This command will write the current working directory, but only read persistence.
+This command will write the current working directory and clear the staging area.

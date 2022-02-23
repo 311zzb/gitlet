@@ -287,6 +287,20 @@ public class GitletTest {
         assertEquals("hello", readTestFile("_hello.txt"));
     }
 
+    /** Sanity test for checkout usage 3. */
+    @Test
+    public void checkoutBranchSanityTest() throws IOException {
+        GitletExecute("init");
+
+        writeTestFile("_hello.txt", "hello");
+        GitletExecute("add", "_hello.txt");
+        GitletExecute("commit", "added hello");
+
+        GitletExecute("branch", "cool-bean");
+        GitletExecute("checkout", "cool-bean");
+        GitletExecute("status");
+    }
+
     /* BRANCH COMMAND */
 
     /** Sanity test for branch command. */

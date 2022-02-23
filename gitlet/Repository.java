@@ -32,6 +32,8 @@ public class Repository {
     static final File OBJECTS_DIR = join(GITLET_DIR, "objects");
     /** The branches directory. */
     static final File BRANCHES_DIR = join(GITLET_DIR, "branches");
+    // TODO: delete this ↓
+    static final List<String> debugCWDFiles = Arrays.asList("gitlet-design.md", "Makefile", "pom.xml");
 
 
     /* INIT COMMAND */
@@ -263,6 +265,9 @@ public class Repository {
         Commit headCommit = getLatestCommit();
         List<String> list = new ArrayList<>();
         for (String fileName : CWDFiles) {
+            if (debugCWDFiles.contains(fileName)) {
+                continue;
+            } // Ignore development files
             if (!isStagedForAdd(fileName) && !headCommit.trackedFile(fileName)) {
                 list.add(fileName);
             }
@@ -304,13 +309,39 @@ public class Repository {
 
     /**
      * Execute checkout command usage 3 (checkout all files to the designated branch).
+     * 1. Perform checks
+     * 2. Delete all files in the CWD
+     * 3. Checkout all files tracked by that commit
+     * 4. Move the HEAD to that branch
+     * 5. Clean the staging area
      * @param branchName the designated branch name
      */
     public static void checkout3(String branchName) {
-        // TODO: checkout command usage 3
+        if (!existBranch(branchName)) {
+            throw new GitletException("No such branch exists.");
+        } // Special case: abort if no branch with that name exists.
+        if (branchName.equals(getHEAD())) {
+            throw new GitletException("No need to checkout the current branch.");
+        } // Special case: abort if that branch is the current branch.
+        if (!untrackedFiles().isEmpty()) {
+            throw new GitletException("There is an untracked file in the way; delete it, or add and commit it first.");
+        } // Special case: abort if a working file is untracked.
+        deleteCWDFiles();
+        String commitID = getBranch(branchName);
+        checkoutAllCommitFile(commitID);
+        moveHEAD(branchName);
+        mkNewStage();
     }
 
-    /** A private helper method that checkout a file with fileName from a given commit. */
+    /** A private helper method that checkout all files that a Commit (with designated ID) tracked. */
+    private static void checkoutAllCommitFile(String commitID) {
+        Commit commit = getCommit(commitID);
+        for (String fileName : commit.trackedFiles()) {
+            checkoutCommitFile(commit, fileName);
+        }
+    }
+
+    /** A private helper method that checkout a file with fileName from a given Commit. */
     private static void checkoutCommitFile(Commit commit, String fileName) {
         Blob blob = getBlob(commit.getCommitTreeBlobID(fileName));
         if (blob == null) {
@@ -328,8 +359,7 @@ public class Repository {
      */
     public static void branch(String branchName) {
         assertGITLET();
-        File newBranch = join(BRANCHES_DIR, branchName);
-        if (newBranch.exists()) {
+        if (existBranch(branchName)) {
             throw new GitletException("A branch with that name already exists.");
         } // Special case: abort if a branch with the given name already exists
         mkNewBranch(branchName);
@@ -415,6 +445,9 @@ public class Repository {
             return;
         } // Special case: return if the CWD is empty.
         for (String fileName : files) {
+            if (debugCWDFiles.contains(fileName)) {
+                continue;
+            } // Ignore development files
             File file = join(CWD, fileName);
             file.delete();
         }
