@@ -93,8 +93,8 @@ public class Stage {
         removedFilesStatus();
     }
 
-    /** Return a sorted list of file names in the staging area. */
-    private static List<String> getSortedStageFileList() {
+    /** Return a sorted List of file names in the current staging area. */
+    static List<String> stagedFiles() {
         Tree stage = getStage();
         return stage.trackedFiles();
     }
@@ -102,7 +102,7 @@ public class Stage {
     /** Print the "Staged Files" status. */
     private static void stagedFilesStatus() {
         System.out.println("=== Staged Files ===");
-        for (String fileName : getSortedStageFileList()) {
+        for (String fileName : stagedFiles()) {
             if (!getStage().getBlobID(fileName).equals("")) {
                 System.out.println(fileName);
             }
@@ -113,7 +113,7 @@ public class Stage {
     /** Print the "Removed Files" status. */
     private static void removedFilesStatus() {
         System.out.println("=== Removed Files ===");
-        for (String fileName : getSortedStageFileList()) {
+        for (String fileName : stagedFiles()) {
             if (getStage().getBlobID(fileName).equals("")) {
                 System.out.println(fileName);
             }
@@ -125,5 +125,11 @@ public class Stage {
     static boolean isStagedForAdd(String fileName) {
         Tree stage = getStage();
         return stage.containsFile(fileName) && !stage.getBlobID(fileName).equals("");
+    }
+
+    /** Return true if a designated file is staged for removal. */
+    static boolean isStagedForRemoval(String fileName) {
+        Tree stage = getStage();
+        return stage.containsFile(fileName) && stage.getBlobID(fileName).equals("");
     }
 }

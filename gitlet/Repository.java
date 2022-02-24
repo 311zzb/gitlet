@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
+import static gitlet.Blob.*;
 import static gitlet.Branch.*;
 import static gitlet.Cache.*;
 import static gitlet.Commit.*;
@@ -83,7 +84,7 @@ public class Repository {
     /**
      * Execute the add command.
      * 1. Add a copy of the file as it currently exists to the staging area
-     * 2. Remove the file from staging for removal if it was at the time of the command // TODO
+     * 2. Remove the file from staging for removal if it was at the time of the command
      * @param fileName the designated file name
      */
     public static void add(String fileName) {
@@ -175,7 +176,6 @@ public class Repository {
      * 1. Get a list of commit IDs that are pointed by any branch
      * 2. Print log information starting form each of the ID
      *    (ignore those commits that have been visited base on their IDs)
-     * TODO: test this against branched repository
      */
     public static void globalLog() {
         assertGITLET();
@@ -246,9 +246,87 @@ public class Repository {
     /** Print the "Modifications Not Staged For Commit" status. */
     private static void modificationStatus() {
         System.out.println("=== Modifications Not Staged For Commit ===");
-        // TODO (extra credit)
+        for (String fileName : modifiedNotStagedFiles()) {
+            System.out.println(fileName);
+        }
         System.out.print("\n");
     }
+
+    /**
+     * A private helper method that construct a list of "modified but not staged" files.
+     * 1. Get a Set of all file names that should be checked.
+     * 2. Check each file name and fill a List for "modified but not staged files".
+     * 3. Return the list.
+     */
+    private static List<String> modifiedNotStagedFiles() {
+        Set<String> files = focusFiles();
+        List<String> modifiedFiles = new ArrayList<>();
+        for (String fileName : files) {
+            if (modifiedNotStagedFiles1(fileName) || modifiedNotStagedFiles2(fileName)) {
+                modifiedFiles.add(fileName + " (modified)");
+            } else if (modifiedNotStagedFiles3(fileName) || modifiedNotStagedFiles4(fileName)) {
+                modifiedFiles.add(fileName + " (deleted)");
+            }
+        }
+        sortLexico(modifiedFiles);
+        return modifiedFiles;
+    }
+    // Return a string Set that contains all file names that should be checked (CWD + Stage + Head Commit).
+    private static Set<String> focusFiles() {
+        Set<String> CWDFilesSet = CWDFilesSet();
+        Set<String> stageFilesSet = new TreeSet<>(stagedFiles());
+        Set<String> headCommitFilesSet = new TreeSet<>(getLatestCommit().trackedFiles());
+        Set<String> focusFilesSet = new TreeSet<>();
+        focusFilesSet.addAll(CWDFilesSet);
+        focusFilesSet.addAll(stageFilesSet);
+        focusFilesSet.addAll(headCommitFilesSet);
+        return focusFilesSet;
+    }
+    // Tracked in the current commit, changed in the working directory, but not staged (modified).
+    private static boolean modifiedNotStagedFiles1(String fileName) {
+        return trackedInHeadCommit(fileName) &&
+                !notInCWD(fileName) &&
+                changedInCWD(fileName) &&
+                !isStagedForAdd(fileName);
+    }
+    // Staged for addition, but with different contents than in the working directory (modified).
+    private static boolean modifiedNotStagedFiles2(String fileName) {
+        return isStagedForAdd(fileName) &&
+                !notInCWD(fileName) &&
+                addDiffContent(fileName);
+    }
+    // Staged for addition, but deleted in the working directory (deleted).
+    private static boolean modifiedNotStagedFiles3(String fileName) {
+        return isStagedForAdd(fileName) &&
+                notInCWD(fileName);
+    }
+    // Not staged for removal, but tracked in the current commit and deleted from the working directory (deleted).
+    private static boolean modifiedNotStagedFiles4(String fileName) {
+        return !isStagedForRemoval(fileName) &&
+                trackedInHeadCommit(fileName) &&
+                notInCWD(fileName);
+    }
+
+    // Return true if a file is tracked in the head commit.
+    static boolean trackedInHeadCommit(String fileName) {
+        Commit headCommit = getLatestCommit();
+        return headCommit.trackedFile(fileName);
+    }
+    // Return true if a file is changed in CWD (different from its version in the head commit).
+    static boolean changedInCWD(String fileName) {
+        Commit headCommit = getLatestCommit();
+        return !headCommit.getCommitTreeBlobID(fileName).equals(currFileID(fileName));
+    }
+    // Return true if a file's version in the stage is different from the working one.
+    static boolean addDiffContent(String fileName) {
+        Tree stage = getStage();
+        return !stage.getBlobID(fileName).equals(currFileID(fileName));
+    }
+    // Return true if a file is not in CWD.
+    static boolean notInCWD(String fileName) {
+        return !join(CWD, fileName).exists();
+    }
+
 
     /** Print the "Untracked Files" status. */
     private static void untrackedStatus() {
@@ -261,13 +339,13 @@ public class Repository {
 
     /** Return a list of files that is untracked (neither staged for addition nor tracked by the head commit). */
     private static List<String> untrackedFiles() {
-        Tree CWDFiles = Tree.CWDFiles();
+        Set<String> CWDFilesList = CWDFilesSet();
         Commit headCommit = getLatestCommit();
         List<String> list = new ArrayList<>();
-        for (String fileName : CWDFiles) {
+        for (String fileName : CWDFilesList) {
             if (debugCWDFiles.contains(fileName)) {
                 continue;
-            } // Ignore development files
+            } // Ignore development files todo: delete this
             if (!isStagedForAdd(fileName) && !headCommit.trackedFile(fileName)) {
                 list.add(fileName);
             }
@@ -445,16 +523,22 @@ public class Repository {
 
     /** Delete all files in the CWD. */
     private static void deleteCWDFiles() {
-        List<String> files = plainFilenamesIn(CWD);
-        if (files == null) {
-            return;
-        } // Special case: return if the CWD is empty.
+        Set<String> files = CWDFilesSet();
         for (String fileName : files) {
             if (debugCWDFiles.contains(fileName)) {
                 continue;
-            } // Ignore development files
+            } // Ignore development files todo: delete this
             File file = join(CWD, fileName);
             file.delete();
         }
+    }
+
+    /** Return a Set of all files' names in the CWD. */
+    private static Set<String> CWDFilesSet() {
+        List<String> CWDFilesList = plainFilenamesIn(CWD);
+        if (CWDFilesList == null) {
+            return new TreeSet<>();
+        }
+        return new TreeSet<>(CWDFilesList);
     }
 }

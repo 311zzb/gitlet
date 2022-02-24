@@ -54,4 +54,15 @@ public class Blob extends HashObject {
         Blob blob = new Blob(content);
         return cacheAndQueueForWriteHashObject(blob);
     }
+
+    /** Return the ID of a designated file's Blob without cache or saving a Blob. */
+    static String currFileID(String fileName) {
+        File file = join(CWD, fileName);
+        if (!file.exists()) {
+            return "";
+        }
+        String content = readContentsAsString(file);
+        Blob blob = new Blob(content);
+        return blob.id();
+    }
 }

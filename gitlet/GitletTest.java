@@ -228,10 +228,29 @@ public class GitletTest {
         GitletExecute("status");
     }
 
-    /** Test extra functions ("Modification Not Staged For Commit") of status command. */
+    /** Test extra functions ("Modification Not Staged For Commit") condition 3 of status command. */
     @Test
-    public void statusModificationTest() throws IOException {
-        // TODO (extra)
+    public void statusModification3Test() throws IOException {
+        GitletExecute("init");
+
+        writeTestFile("_hello.txt", "hello");
+        GitletExecute("add", "_hello.txt");
+
+        deleteTestFile("_hello.txt");
+        GitletExecute("status");
+    }
+
+    /** Test extra functions ("Modification Not Staged For Commit") condition 4 of status command. */
+    @Test
+    public void statusModification4Test() throws IOException {
+        GitletExecute("init");
+
+        writeTestFile("_hello.txt", "hello");
+        GitletExecute("add", "_hello.txt");
+        GitletExecute("commit", "added hello");
+
+        deleteTestFile("_hello.txt");
+        GitletExecute("status");
     }
 
     /** Test extra functions ("Untracked Files") of status command. */
@@ -244,12 +263,6 @@ public class GitletTest {
         GitletExecute("commit", "added hello");
         writeTestFile("_bye.txt", "bye");
         GitletExecute("status");
-    }
-
-    /** Comprehensive test for status command. */
-    @Test
-    public void statusFullTest() throws IOException {
-        // TODO
     }
 
     /* CHECKOUT COMMAND */
@@ -359,6 +372,12 @@ public class GitletTest {
     private static void writeTestFile(String fileName, String content) {
         File file = join(CWD, fileName);
         writeContents(file, content);
+    }
+
+    /** Delete the file with the designated name. */
+    private static void deleteTestFile(String fileName) {
+        File file = join(CWD, fileName);
+        file.delete();
     }
 
     /** Read the designated file as String and return it. */

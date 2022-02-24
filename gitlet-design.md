@@ -44,6 +44,7 @@ from the cache.
       Lazy loading and caching of HashObjects.
       Being `private` because a `HashObject` will never be requested as `HashObject`
       (as `Commit` or `Tree` or `Blob` instead).
+      Special case: return `null` if requesting a commit with `null` or `""`.
    3. `static Commit getCommit(String id)`
       A method that lazy-load a `Commit` with `id` utilizing `getHashObject(String id)`.
    4. `static Tree getTree(String id)`
@@ -156,10 +157,35 @@ It also sets up persistence and do additional error checking.
       Recursively check if commit with `CommitID` and its ascendants have the designated commit message.
 9. `status` command
    1. `public static void status()` Execute the status command. Implementation details in the Algorithms section.
-   2. `private static void modificationStatus()` Print the "Modifications Not Staged For Commit" status. Need implementation.
-   3. `private static void untrackedStatus()` Print the "Untracked Files" status.
-   4. `private static List<String> untrackedFiles()`
-      Return a list of files that is untracked (neither staged for addition nor tracked by the head commit).
+   2. "Modifications Not Staged For Commit"
+      1. `private static void modificationStatus()` Print the "Modifications Not Staged For Commit" status.
+      2. `private static List<String> modifiedNotStagedFiles()`
+         A private helper method that construct a list of "modified but not staged" files.
+         Implementation details in the Algorithms section.
+      3. `private static Set<String> focusFiles()`
+         Return a string `Set` that contains all file names that should be checked 
+         (file names in the CWD or the Stage or tracked by the Head Commit).
+      4. `private static boolean modifiedNotStagedFiles1(String fileName)`
+         Return `true` if a file is tracked in the current commit, changed in the working directory, but not staged (modified).
+      5. `private static boolean modifiedNotStagedFiles2(String fileName)`
+         Return `true` if a file is staged for addition, but with different contents than in the working directory (modified).
+      6. `private static boolean modifiedNotStagedFiles3(String fileName)`
+         Return `true` if a file is staged for addition, but deleted in the working directory (deleted).
+      7. `private static boolean modifiedNotStagedFiles4(String fileName)`
+         Return `true` if a file is not staged for removal, 
+         but tracked in the current commit and deleted from the working directory (deleted).
+      8. `static boolean trackedInHeadCommit(String fileName)`
+         Return `true` if a file is tracked in the head commit.
+      9. `static boolean changedInCWD(String fileName)`
+         Return `true` if a file is changed in the `CWD` (different from its version in the head commit).
+      10. `static boolean addDiffContent(String fileName)`
+          Return `true` if a file's version in the stage is different from the working one.
+      11. `static boolean notInCWD(String fileName)`
+          Return `true` if a file is not in the `CWD`.
+   3. "Untracked Files"
+      1. `private static void untrackedStatus()` Print the "Untracked Files" status.
+      2. `private static List<String> untrackedFiles()`
+         Return a list of files that is untracked (neither staged for addition nor tracked by the head commit).
 10. `checkout` command
     1. `public static void checkout1(String fileName)`
        Execute checkout command usage 1 (checkout a file to the latest commit).
@@ -192,6 +218,7 @@ It also sets up persistence and do additional error checking.
        Overwrite the file in `CWD` of designated file name with the content in the given `Blob` object.
     3. `static void sortLexico(List<String> list)` Sort a string `List` in lexicographical order in place.
     4. `private static void deleteCWDFiles()` Delete all files in the `CWD`.
+    5. `private static Set<String> CWDFilesSet()` Return a Set of all files' names in the `CWD`.
 
 ### Branch
 
@@ -245,13 +272,13 @@ This class will never be instantiated since there are only static methods.
 6. `static void addToStage(String fileName)`
    Add a file to the current staging area. Implementation details in the Algorithms section.
 7. `static void stageStatus()` Print the status information related with the staging area.
-8. `private static List<String> getSortedStageFileList()` Return a sorted list of file names in the staging area.
+8. `private static List<String> stagedFiles()` Return a sorted List of file names in the current staging area.
 9. `private static void stagedFilesStatus()`
    Print the "Staged Files" status. Implementation details in the Algorithms section.
 10. `private static void removedFilesStatus()`
     Print the "Removed Files" status. Implementation details in the Algorithms section.
-11. `static boolean isStagedForAdd(String fileName)`
-    Return `true` if a designated file is staged for addition.
+11. `static boolean isStagedForAdd(String fileName)` Return `true` if a designated file is staged for _addition_.
+12. `static boolean isStagedForRemoval(String fileName)` Return `true` if a designated file is staged for _removal_.
 
 ### HashObject
 
@@ -374,6 +401,8 @@ This class also has `Blob` related static methods.
 6. `static String mkBlob(String fileName)`
    Factory method. Make a new `Blob` with a designated file. Cache it and queue it for writing to filesystem.
    Special case: adding a file that not exists in the `CWD` means adding it for removal.
+7. `static String currFileID(String fileName)`
+   Return the `ID` of a designated file's `Blob` without cache or saving a `Blob`.
 
 ### GitletTest
 
@@ -410,10 +439,11 @@ This class contains JUnit tests for Gitlet.
    2. `public void findBranchTest()` Test for find command with branching. Need implementation.
 8. `status` command
    1. `public void statusBasicTest()` Basic test for status command.
-   2. `public void statusModificationTest()`
-      Test extra functions ("Modification Not Staged For Commit") of status command.
-   3. `public void statusUntrackedTest()` Test extra functions ("Untracked Files") of status command.
-   4. `public void statusFullTest()` Comprehensive test for status command.
+   2. `public void statusModification3Test()`
+      Test extra functions ("Modification Not Staged For Commit") condition 3 of status command.
+   3. `public void statusModification4Test()`
+      Test extra functions ("Modification Not Staged For Commit") condition 4 of status command.
+   4. `public void statusUntrackedTest()` Test extra functions ("Untracked Files") of status command.
 9. `checkout` command
    1. `public void checkoutHeadFileSanityTest()`
       Sanity test for checkout usage 1 (checkout a file to the latest commit).
@@ -433,8 +463,9 @@ This class contains JUnit tests for Gitlet.
        Special case: make sure there is no `.gitlet` directory before the init command. Implemented for testing purposes.
     2. `private static void writeTestFile(String fileName, String content)`
        Write content into a designated file name. Overwriting or creating file as needed.
-    3. `private static String readTestFile(String fileName)` Read the designated file as String and return it.
-    4. `private static void deleteDirectory(File directoryToBeDeleted)` Delete a directory recursively.
+    3. `private static void deleteTestFile(String fileName)` Delete the file with the designated name.
+    4. `private static String readTestFile(String fileName)` Read the designated file as String and return it.
+    5. `private static void deleteDirectory(File directoryToBeDeleted)` Delete a directory recursively.
 
 ## Algorithms
 
@@ -601,10 +632,22 @@ The status information is consist of the following five parts.
    2. If a `filename` has an empty corresponding `BlobID` in the staging area, print it under "Removed Files";
       if a filename has a valid corresponding `BlobID` in the staging area, print it under "Staged Files".
 3. "Modifications Not Staged For Commit"
-   1. Under construction
+   1. Get a Set of all file names that should be checked (file names in the `CWD`, the staging area, and the head commit).
+   2. Check each file name and fill a List for "modified but not staged files". 
+      Conditions are described below.
+      1. Record the file name concatenates ` (modified)` if it satisfies condition 1 or 2.
+      2. Record the file name concatenates ` (deleted)` if it satisfies condition 3 or 4.
+         A file name is either marked as modified or marked as deleted or not marked.
+   3. Print the List.
 4. "Untracked Files"
    1. Get a list of all untracked files. A file is untracked if it is neither staged for addition nor tracked by the head commit.
    2. Print the file names.
+
+Conditions for "Modifications Not Staged For Commit":
+1. Tracked in the current commit, changed in the working directory, but not staged.
+2. Staged for addition, but with different contents than in the working directory.
+3. Staged for addition, but deleted in the working directory.
+4. Not staged for removal, but tracked in the current commit and deleted from the working directory.
 
 ### Get a list of untracked files
 

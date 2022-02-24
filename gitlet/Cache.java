@@ -29,9 +29,9 @@ public class Cache {
     static final Map<String, HashObject> cachedHashObjects = new TreeMap<>();
     /** Lazy loading and caching of HashObjects. */
     private static HashObject getHashObject(String id) {
-        if (id == null) {
+        if (id == null || id.equals("")) {
             return null;
-        } // Special case: Get null HashObject
+        } // Special case: Get null or "" HashObject
         if (!cachedHashObjects.containsKey(id)) {
             cachedHashObjects.put(id, loadHashObject(id));
         }
