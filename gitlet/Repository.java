@@ -274,11 +274,7 @@ public class Repository {
         Set<String> CWDFilesSet = CWDFilesSet();
         Set<String> stageFilesSet = new TreeSet<>(stagedFiles());
         Set<String> headCommitFilesSet = new TreeSet<>(getLatestCommit().trackedFiles());
-        Set<String> focusFilesSet = new TreeSet<>();
-        focusFilesSet.addAll(CWDFilesSet);
-        focusFilesSet.addAll(stageFilesSet);
-        focusFilesSet.addAll(headCommitFilesSet);
-        return focusFilesSet;
+        return combineSets(CWDFilesSet, stageFilesSet, headCommitFilesSet);
     }
     // Tracked in the current commit, changed in the working directory, but not staged (modified).
     private static boolean modifiedNotStagedFiles1(String fileName) {
@@ -536,5 +532,15 @@ public class Repository {
             return new TreeSet<>();
         }
         return new TreeSet<>(CWDFilesList);
+    }
+
+    /** Generic method to merge (union) multiple sets in Java. */
+    @SafeVarargs
+    private static<T> Set<T> combineSets(Set<T>... sets) {
+        Set<T> collection = new HashSet<>();
+        for (Set<T> e: sets) {
+            collection.addAll(e);
+        }
+        return collection;
     }
 }

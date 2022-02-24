@@ -219,6 +219,7 @@ It also sets up persistence and do additional error checking.
     3. `static void sortLexico(List<String> list)` Sort a string `List` in lexicographical order in place.
     4. `private static void deleteCWDFiles()` Delete all files in the `CWD`.
     5. `private static Set<String> CWDFilesSet()` Return a Set of all files' names in the `CWD`.
+    6. `private static<T> Set<T> combineSets(Set<T>... sets)` Generic method to merge (union) multiple sets in Java.
 
 ### Branch
 
