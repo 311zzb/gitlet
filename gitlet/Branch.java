@@ -16,6 +16,8 @@ import static gitlet.Utils.*;
  */
 public class Branch {
 
+    /* STATIC METHODS ------------------------------------------------------------------------------------------------*/
+
     /**
      * Load a branch file from filesystem with designated name.
      * @param branchName the designated branch name

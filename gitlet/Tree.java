@@ -119,7 +119,7 @@ public class Tree extends HashObject implements Iterable<String> {
     }
 
 
-    /* STATIC METHODS */
+    /* STATIC METHODS ------------------------------------------------------------------------------------------------*/
 
     /**
      * Factory method.

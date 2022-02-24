@@ -18,7 +18,7 @@ import static org.junit.Assert.*;
  */
 public class GitletTest {
 
-    /* INIT COMMAND */
+    /* INIT COMMAND --------------------------------------------------------------------------------------------------*/
 
     /** Sanity test for init command. */
     @Test
@@ -26,7 +26,7 @@ public class GitletTest {
         GitletExecute("init");
     }
 
-    /* ADD COMMAND */
+    /* ADD COMMAND ---------------------------------------------------------------------------------------------------*/
 
     /** Sanity test for add command. */
     @Test
@@ -49,7 +49,7 @@ public class GitletTest {
         GitletExecute("add", "_bye.txt");
     }
 
-    /* COMMIT COMMAND */
+    /* COMMIT COMMAND ------------------------------------------------------------------------------------------------*/
 
     /** Sanity test for commit command. */
     @Test
@@ -104,7 +104,7 @@ public class GitletTest {
         GitletExecute("add", "_hello.txt");
     }
 
-    /* RM COMMAND */
+    /* RM COMMAND ----------------------------------------------------------------------------------------------------*/
 
     /**
      * The rm command should unstage the added file.
@@ -136,7 +136,7 @@ public class GitletTest {
     }
 
 
-    /* LOG COMMAND */
+    /* LOG COMMAND ---------------------------------------------------------------------------------------------------*/
 
     /** Sanity test for log command. */
     @Test
@@ -170,7 +170,7 @@ public class GitletTest {
     }
 
 
-    /* GLOBAL-LOG COMMAND */
+    /* GLOBAL-LOG COMMAND --------------------------------------------------------------------------------------------*/
 
     /** Sanity test for global-log command. */
     @Test
@@ -190,7 +190,7 @@ public class GitletTest {
         // TODO
     }
 
-    /* FIND COMMAND */
+    /* FIND COMMAND --------------------------------------------------------------------------------------------------*/
 
     /** Sanity test for find command. */
     @Test
@@ -211,7 +211,7 @@ public class GitletTest {
         // TODO
     }
 
-    /* STATUS COMMAND */
+    /* STATUS COMMAND ------------------------------------------------------------------------------------------------*/
 
     /** Basic test for status command. */
     @Test
@@ -265,7 +265,7 @@ public class GitletTest {
         GitletExecute("status");
     }
 
-    /* CHECKOUT COMMAND */
+    /* CHECKOUT COMMAND ----------------------------------------------------------------------------------------------*/
 
     /** Sanity test for checkout usage 1. */
     @Test
@@ -314,7 +314,7 @@ public class GitletTest {
         GitletExecute("status");
     }
 
-    /* BRANCH COMMAND */
+    /* BRANCH COMMAND ------------------------------------------------------------------------------------------------*/
 
     /** Sanity test for branch command. */
     @Test
@@ -326,7 +326,7 @@ public class GitletTest {
         GitletExecute("status");
     }
 
-    /* RM-BRANCH COMMAND */
+    /* RM-BRANCH COMMAND ---------------------------------------------------------------------------------------------*/
 
     /** Sanity test for rm-branch command. */
     @Test
@@ -339,7 +339,7 @@ public class GitletTest {
         GitletExecute("status");
     }
 
-    /* RESET COMMAND */
+    /* RESET COMMAND -------------------------------------------------------------------------------------------------*/
 
     /** Sanity test for reset command. */
     @Test
@@ -356,8 +356,7 @@ public class GitletTest {
     }
 
 
-
-    /* MISC */
+    /* MISC ----------------------------------------------------------------------------------------------------------*/
 
     /** Execute commands with Gitlet and clean the cache after execution. */
     private static void GitletExecute(String... command) throws IOException {

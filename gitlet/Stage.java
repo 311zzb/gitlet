@@ -17,6 +17,9 @@ import static gitlet.Blob.*;
  */
 public class Stage {
 
+    /* STATIC METHODS ------------------------------------------------------------------------------------------------*/
+
+
     /**
      * Return the ID of the current staging area (a Tree object). Invoked by the Cache class.
      */

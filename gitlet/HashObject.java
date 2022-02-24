@@ -38,7 +38,7 @@ public class HashObject implements Serializable, Dumpable {
         System.out.println("This is a HashObject.");
     }
 
-    /* STATIC METHODS */
+    /* STATIC METHODS ------------------------------------------------------------------------------------------------*/
 
     /**
      * Load a type object with its ID.

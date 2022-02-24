@@ -1,6 +1,5 @@
 package gitlet;
 
-import java.io.IOException;
 
 /**
  * Driver class for Gitlet, a subset of the Git version-control system.
@@ -11,7 +10,8 @@ import java.io.IOException;
  */
 public class Main {
 
-    /** Usage: java gitlet.Main ARGS, where ARGS contains
+    /**
+     * Usage: java gitlet.Main ARGS, where ARGS contains
      *  <COMMAND> <OPERAND1> <OPERAND2> ... 
      */
     public static void main(String[] args) {
@@ -85,6 +85,8 @@ public class Main {
         }
         Cache.writeBack();
     }
+
+    /* HELPER METHODS ------------------------------------------------------------------------------------------------*/
 
     /**
      * Throw a GitletException if args don't have exactly n elements.

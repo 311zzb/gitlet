@@ -36,8 +36,7 @@ public class Blob extends HashObject {
         System.out.println(_content);
     }
 
-
-    /* STATIC METHODS */
+    /* STATIC METHODS ------------------------------------------------------------------------------------------------*/
 
     /**
      * Factory method. Make a new Blob with a designated file.

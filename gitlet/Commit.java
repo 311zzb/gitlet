@@ -135,7 +135,7 @@ public class Commit extends HashObject {
         return commitTree.trackedFiles();
     }
 
-    /* STATIC METHODS */
+    /* STATIC METHODS ------------------------------------------------------------------------------------------------*/
 
     /**
      * Factory method. Make a new Commit.

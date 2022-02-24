@@ -36,8 +36,7 @@ public class Repository {
     // A list of files that should be ignored when counting untracked files or delete all CWD files.
     static final List<String> debugCWDFiles = Arrays.asList("gitlet-design.md", "Makefile", "pom.xml"); // TODO: delete this
 
-
-    /* INIT COMMAND */
+    /* INIT COMMAND --------------------------------------------------------------------------------------------------*/
 
     /**
      * Execute the init command.
@@ -78,8 +77,7 @@ public class Repository {
         STAGE.createNewFile();
     }
 
-
-    /* ADD COMMAND */
+    /* ADD COMMAND ---------------------------------------------------------------------------------------------------*/
 
     /**
      * Execute the add command.
@@ -111,7 +109,7 @@ public class Repository {
         mkCommit(message);
     }
 
-    /* RM COMMAND */
+    /* RM COMMAND ----------------------------------------------------------------------------------------------------*/
 
     /**
      * Execute the rm command.
@@ -137,7 +135,7 @@ public class Repository {
         }
     }
 
-    /* LOG COMMAND */
+    /* LOG COMMAND ---------------------------------------------------------------------------------------------------*/
 
     /**
      * Execute the log command.
@@ -166,7 +164,7 @@ public class Repository {
         log(commit.getParentCommitRef());
     }
 
-    /* GLOBAL-LOG COMMAND */
+    /* GLOBAL-LOG COMMAND --------------------------------------------------------------------------------------------*/
 
     /** A Set that record the visited commits' IDs. No need to be persistent. */
     private static final Set<String> loggedCommitID = new HashSet<>();
@@ -185,7 +183,7 @@ public class Repository {
         }
     }
 
-    /* FIND COMMAND */
+    /* FIND COMMAND --------------------------------------------------------------------------------------------------*/
 
     /** A list of commit IDs that have the designated commit message. */
     private static final List<String> foundCommitID = new ArrayList<>();
@@ -232,7 +230,7 @@ public class Repository {
         findCheck(commit.getParentCommitRef(), commitMessage);
     }
 
-    /* STATUS COMMAND */
+    /* STATUS COMMAND ------------------------------------------------------------------------------------------------*/
 
     /** Execute the status command. */
     public static void status() {
@@ -354,8 +352,7 @@ public class Repository {
         return list;
     }
 
-
-    /* CHECKOUT COMMAND */
+    /* CHECKOUT COMMAND ----------------------------------------------------------------------------------------------*/
 
     /**
      * Execute checkout command usage 1 (checkout a file to the latest commit).
@@ -436,7 +433,7 @@ public class Repository {
         overwriteCWDFile(fileName, blob);
     }
 
-    /* BRANCH COMMAND */
+    /* BRANCH COMMAND ------------------------------------------------------------------------------------------------*/
 
     /**
      * Execute the branch command.
@@ -451,7 +448,7 @@ public class Repository {
         mkNewBranch(branchName);
     }
 
-    /* RM-BRANCH COMMAND */
+    /* RM-BRANCH COMMAND ---------------------------------------------------------------------------------------------*/
 
     /**
      * Execute the rm-branch command.
@@ -470,7 +467,7 @@ public class Repository {
         wipeBranch(branchName);
     }
 
-    /* RESET COMMAND */
+    /* RESET COMMAND -------------------------------------------------------------------------------------------------*/
 
     /**
      * Execute the reset command.
@@ -492,8 +489,7 @@ public class Repository {
         moveCurrBranch(fullCommitID);
     }
 
-
-    /* MISC */
+    /* MISC ----------------------------------------------------------------------------------------------------------*/
 
     /** Assert the CWD contains a .gitlet directory. */
     private static void assertGITLET() {

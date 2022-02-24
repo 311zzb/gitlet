@@ -23,7 +23,7 @@ import static gitlet.Stage.*;
  */
 public class Cache {
 
-    /* CACHING OBJECT */
+    /* CACHING OBJECT ------------------------------------------------------------------------------------------------*/
 
     /** A Map that stores cached ID and HashObject pairs. */
     static final Map<String, HashObject> cachedHashObjects = new TreeMap<>();
@@ -85,9 +85,7 @@ public class Cache {
         }
     }
 
-
-
-    /* CACHING BRANCH */
+    /* CACHING BRANCH ------------------------------------------------------------------------------------------------*/
 
     /** Cached branches. */
     static final Map<String, String> cachedBranches = new TreeMap<>();
@@ -125,8 +123,7 @@ public class Cache {
         }
     }
 
-
-    /* CACHING HEAD */
+    /* CACHING HEAD --------------------------------------------------------------------------------------------------*/
 
     static String cachedHEAD = null;
     /** Lazy loading and caching of HEAD (the current branch's branch name).
@@ -145,8 +142,7 @@ public class Cache {
         writeHEAD();
     }
 
-
-    /* CACHING STAGE ID */
+    /* CACHING STAGE ID ----------------------------------------------------------------------------------------------*/
 
     static String cachedStageID = null;
     /**
@@ -167,8 +163,7 @@ public class Cache {
         writeStageID(getStageID());
     }
 
-
-    /* CACHING STAGE */
+    /* CACHING STAGE -------------------------------------------------------------------------------------------------*/
 
     /** Cached staging area. */
     static Tree cachedStage = null;
@@ -209,7 +204,7 @@ public class Cache {
     }
 
 
-    /* MISC */
+    /* MISC ----------------------------------------------------------------------------------------------------------*/
 
     /**
      * Write back all caches. Invoked upon exit.
