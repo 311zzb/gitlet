@@ -160,8 +160,8 @@ public class Commit extends HashObject {
     String getFileContent(String fileName) {
         Blob blob = getBlob(getBlobID(fileName));
         if (blob == null) {
-            return null;
-        } // Special case: return null if there is no corresponding Blob.
+            return "";
+        } // Special case: return an empty String if there is no corresponding Blob.
         return blob.getContent();
     }
 

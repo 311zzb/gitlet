@@ -366,7 +366,7 @@ as well as static method that carry out the procedure to make a new commit.
 15. `Tree getCommitTree()` Get the associating `Tree` of this commit.
 16. `String getBlobID(String fileName)` Get the ID of the `Blob` of a designated file name in this commit.
 17. `String getFileContent(String fileName)` Return the content of a designated file name in this commit.
-    Special case: return null if there is no corresponding `Blob`.
+    Special case: return an empty `String` if there is no corresponding `Blob`.
 18. `Boolean trackedFile(String fileName)` Return whether this `Commit` contains a file with `fileName`.
 19. `Set<String> trackedFiles()` Return a string `Set` of tracked files of this commit.
 20. `Set<String> ancestor()` Return a string `Set` of all ancestors' ID of this commit.
@@ -500,6 +500,8 @@ This class contains JUnit tests and some helper methods for Gitlet.
 14. Auto grader debug tests
     1. `public void test20_status_after_commit()`
     2. `public void test24_global_log_prev()`
+    3. `public void test29_bad_checkouts_err()`
+    4. `public void test35_merge_rm_conflicts()`
 15. misc
     1. `private static void GitletExecute(String... command)`
        Execute commands with Gitlet and clean the cache after execution.

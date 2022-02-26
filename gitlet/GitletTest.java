@@ -513,6 +513,38 @@ public class GitletTest {
 
     }
 
+    @Test
+    public void test35_merge_rm_conflicts() throws IOException {
+        GitletExecute("init");
+        writeAndAdd("f.txt", "This is a wug.\n");
+        writeAndAdd("g.txt", "This is not a wug.\n");
+        GitletExecute("commit", "Two files");
+
+        GitletExecute("branch", "other");
+        writeAndAdd("h.txt", "Another wug.\n");
+        GitletExecute("rm", "g.txt");
+        writeAndAdd("f.txt", "Another wug.\n");
+        GitletExecute("commit", "Add h.txt, remove g.txt, and change f.txt");
+
+        GitletExecute("checkout", "other");
+        GitletExecute("rm", "f.txt");
+        writeAndAdd("k.txt", "And yet another wug.\n");
+        GitletExecute("commit", "Add k.txt and remove f.txt");
+
+        GitletExecute("checkout", "master");
+        String masterHead = getBranch("master");
+
+        GitletExecute("merge", "other");
+
+        assertFileNotExist("g.txt");
+        assertFile("h.txt", "Another wug.\n");
+        assertFile("k.txt", "And yet another wug.\n");
+        assertFile("f.txt", "<<<<<<< HEAD\nAnother wug.\n=======\n>>>>>>>");
+
+        GitletExecute("log");
+        GitletExecute("status");
+    }
+
     /* MISC ----------------------------------------------------------------------------------------------------------*/
 
     /** Execute commands with Gitlet and clean the cache after execution. */
@@ -568,5 +600,11 @@ public class GitletTest {
         }
         String fileContent = readContentsAsString(file);
         assertEquals(content, fileContent);
+    }
+
+    /** Assert a designated file does not exist. */
+    private static void assertFileNotExist(String fileName) {
+        File file = join(CWD, fileName);
+        assertFalse(file.exists());
     }
 }
