@@ -47,10 +47,12 @@ from the cache.
       Special case: return `null` if requesting a commit with `null` or `""`.
    3. `static Commit getCommit(String id)`
       A method that lazy-load a `Commit` with `id` utilizing `getHashObject(String id)`.
+      Special case: print and exit if requested a Commit that does not exist.
    4. `static Tree getTree(String id)`
       A method that lazy-load a `Tree` with `id` utilizing `getHashObject(String id)`.
    5. `static Blob getBlob(String id)`
       A method that lazy-load a `Blob` with `id` utilizing `getHashObject(String id)`.
+      Special case: return a Blob with null content if requested a Blob that does not exist.
    6. `static Commit getLatestCommit()` Get the `Commit` object of the latest commit utilizing `getCommit(String id)`.
    7. `static final Set<String> queuedForWriteHashObjects`
       New HashObjects' IDs that are queued for writing to filesystem.
@@ -319,6 +321,7 @@ and write to or delete from the object database a `HashObject`.
 2. `String id()` Get the SHA-1 of `THIS`.
 3. `public void dump()` Print the type of this object on System.out.
 4. `static HashObject loadHashObject(String id)` Load a type object with its ID.
+   Special case: return `null` if told to load an object that does not exist.
 5. `static void writeCachedHashObject(String id)` Write a cached HashObject with ID in cachedObjects to filesystem.
 6. `static void deleteHashObject(String id)` Delete a HashObject from filesystem.
 7. `static private File optimizedObjectIDFolder(String id)`

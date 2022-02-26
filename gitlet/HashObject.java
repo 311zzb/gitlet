@@ -51,16 +51,16 @@ public class HashObject implements Serializable, Dumpable {
             File file = optimizedObjectIDFile(id);
             if (id.length() < 40) {
                 file = optimizedObjectAbbrevIDFile(id);
-            } // Special case: if the given ID is abbreviated, use helper method to get the right file
+            } // Special case: if the given ID is abbreviated, use helper method to get the right file.
             if (!folder.exists() || file == null || !file.exists()) {
-                throw new GitletException("Failed to load HashObject " + id);
-            } // Special case: throw an Exception if told to load an object that does not exist
+                return null;
+            } // Special case: return null if told to load an object that does not exist.
             return readObject(file, HashObject.class);
         } else {
             File dest = join(OBJECTS_DIR, id);
             if (!dest.exists()) {
-                throw new GitletException("Failed to load HashObject " + id);
-            } // Special case: throw an Exception if told to load an object that does not exist
+                return null;
+            } // Special case: return null if told to load an object that does not exist.
             return readObject(dest, HashObject.class);
         }
 

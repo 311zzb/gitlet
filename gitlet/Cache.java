@@ -4,6 +4,7 @@ import java.util.*;
 
 import static gitlet.Branch.*;
 import static gitlet.HashObject.*;
+import static gitlet.Repository.printAndExit;
 import static gitlet.Stage.*;
 
 /**
@@ -38,13 +39,21 @@ public class Cache {
         return cachedHashObjects.get(id);
     }
     static Commit getCommit(String id) {
-        return (Commit) getHashObject(id);
+        Commit commit = (Commit) getHashObject(id);
+        if (commit == null) {
+            printAndExit("No commit with that id exists.");
+        } // Special case: print and exit if requested a Commit that does not exist.
+        return commit;
     }
     static Tree getTree(String id) {
         return (Tree) getHashObject(id);
     }
     static Blob getBlob(String id) {
-        return (Blob) getHashObject(id);
+        Blob blob = (Blob) getHashObject(id);
+        if (blob == null) {
+            return new Blob(null);
+        } // Special case: return a Blob with null content if requested a Blob that does not exist.
+        return blob;
     }
 
     /** Get the Commit object of the latest commit. */
