@@ -21,7 +21,7 @@ public class Branch {
     /**
      * Load a branch file from filesystem with designated name.
      * @param branchName the designated branch name
-     * @return the pointed Commit ID, null if the branch name is "" (nothing)
+     * @return the pointed Commit ID, null if the branch name is "" (nothing) or there is no such branch.
      */
     static String loadBranch(String branchName) {
         if (Objects.equals(branchName, "")) {
@@ -94,7 +94,7 @@ public class Branch {
      * @param branchName the designated branch name
      */
     static void mkNewBranch(String branchName) {
-        cacheBranch(branchName, getLatestCommitRef());
+        cacheBranch(branchName, getLatestCommitID());
     }
 
     /**

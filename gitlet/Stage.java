@@ -82,7 +82,7 @@ public class Stage {
     static void addToStage(String fileName) {
         String currVerBlobID = mkBlob(fileName);
         Commit latestCommit = getLatestCommit();
-        String prevVerBlobID = latestCommit.getCommitTreeBlobID(fileName);
+        String prevVerBlobID = latestCommit.getBlobID(fileName);
         if (currVerBlobID != null && currVerBlobID.equals(prevVerBlobID)) { // TODO: test this
             removeFromStage(fileName);
             return;

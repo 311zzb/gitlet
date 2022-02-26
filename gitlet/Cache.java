@@ -49,7 +49,7 @@ public class Cache {
 
     /** Get the Commit object of the latest commit. */
     static Commit getLatestCommit() {
-        return getCommit(getLatestCommitRef());
+        return getCommit(getLatestCommitID());
     }
 
 
@@ -97,7 +97,7 @@ public class Cache {
         }
         return cachedBranches.get(branchName);
     }
-    static String getLatestCommitRef() {
+    static String getLatestCommitID() {
         return getBranch(getHEAD());
     }
     static void cacheBranch(String branchName, String commitID) {
@@ -182,7 +182,7 @@ public class Cache {
         String prevStageID = getStageID();
         if (
                 getLatestCommit() != null &&
-                !prevStageID.equals(getLatestCommit().getCommitTreeRef()) &&
+                !prevStageID.equals(getLatestCommit().getCommitTreeID()) &&
                 !getStage().isEmpty()) {
             queueForDeleteHashObject(getStageID());
         } /*

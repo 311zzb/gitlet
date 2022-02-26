@@ -144,7 +144,7 @@ public class Repository {
      */
     public static void log() {
         assertGITLET();
-        log(getLatestCommitRef());
+        log(getLatestCommitID());
     }
 
     /**
@@ -161,7 +161,7 @@ public class Repository {
         loggedCommitID.add(CommitID);
         Commit commit = getCommit(CommitID);
         System.out.println(commit.logString());
-        log(commit.getParentCommitRef());
+        log(commit.getParentCommitID());
     }
 
     /* GLOBAL-LOG COMMAND --------------------------------------------------------------------------------------------*/
@@ -227,7 +227,7 @@ public class Repository {
         if (commit.getMessage().equals(commitMessage)) {
             foundCommitID.add(CommitID);
         }
-        findCheck(commit.getParentCommitRef(), commitMessage);
+        findCheck(commit.getParentCommitID(), commitMessage);
     }
 
     /* STATUS COMMAND ------------------------------------------------------------------------------------------------*/
@@ -257,7 +257,7 @@ public class Repository {
      * 3. Return the list.
      */
     private static List<String> modifiedNotStagedFiles() {
-        Set<String> files = focusFiles();
+        Set<String> files = modifiedStatusFocusFiles();
         List<String> modifiedFiles = new ArrayList<>();
         for (String fileName : files) {
             if (modifiedNotStagedFiles1(fileName) || modifiedNotStagedFiles2(fileName)) {
@@ -270,7 +270,7 @@ public class Repository {
         return modifiedFiles;
     }
     // Return a string Set that contains all file names that should be checked (CWD + Stage + Head Commit).
-    private static Set<String> focusFiles() {
+    private static Set<String> modifiedStatusFocusFiles() {
         Set<String> CWDFilesSet = CWDFilesSet();
         Set<String> stageFilesSet = new TreeSet<>(stagedFiles());
         Set<String> headCommitFilesSet = new TreeSet<>(getLatestCommit().trackedFiles());
@@ -309,7 +309,7 @@ public class Repository {
     // Return true if a file is changed in CWD (different from its version in the head commit).
     static boolean changedInCWD(String fileName) {
         Commit headCommit = getLatestCommit();
-        return !headCommit.getCommitTreeBlobID(fileName).equals(currFileID(fileName));
+        return !headCommit.getBlobID(fileName).equals(currFileID(fileName));
     }
     // Return true if a file's version in the stage is different from the working one.
     static boolean addDiffContent(String fileName) {
@@ -357,7 +357,7 @@ public class Repository {
      * @param fileName the designated file name
      */
     public static void checkout1(String fileName) {
-        String latestCommitRef = getLatestCommitRef();
+        String latestCommitRef = getLatestCommitID();
         checkout2(latestCommitRef, fileName);
     }
 
@@ -422,7 +422,7 @@ public class Repository {
 
     /** A private helper method that checkout a file with fileName from a given Commit. */
     private static void checkoutCommitFile(Commit commit, String fileName) {
-        Blob blob = getBlob(commit.getCommitTreeBlobID(fileName));
+        Blob blob = getBlob(commit.getBlobID(fileName));
         if (blob == null) {
             throw new GitletException("File does not exist in that commit.");
         } // Special case: abort if such file does not exist in that commit
@@ -485,6 +485,162 @@ public class Repository {
         moveCurrBranch(fullCommitID);
     }
 
+    /* MERGE COMMAND -------------------------------------------------------------------------------------------------*/
+
+    /**
+     * Execute the merge command (merge files from the given branch into the current branch).
+     * 1. Get the latest Commit object of the current branch, the given branch, and the common ancestors (split commit).
+     * 2. Calculate which files will be changed in what manners, and perform checks.
+     * 3. Modify the CWD following the result from step 2, staging for addition or removal as we go.
+     * 4. Make a merge commit.
+     * @param branchName the designated branch.
+     */
+    public static void merge(String branchName) {
+        assertGITLET();
+        String currCommitID = getLatestCommitID();
+        String otherCommitID = getBranch(branchName);
+        Commit currCommit = getCommit(currCommitID);
+        Commit otherCommit = getCommit(otherCommitID);
+        Commit splitCommit = lca(currCommit, otherCommit);
+        Map<String, Set<String>> mergeModifications = mergeWillModify(splitCommit, currCommit, otherCommit);
+        mergeModifyCWD(currCommit, otherCommit, mergeModifications);
+        Boolean conflicted = !mergeModifications.get("conflict").isEmpty();
+        mkMergeCommit(branchName, conflicted);
+    }
+
+    /** Modify files in the CWD (either use the version in the other branch, or make a conflict file) accordingly. */
+    private static void mergeModifyCWD(Commit curr,
+                                       Commit other,
+                                       Map<String, Set<String>> mergeModifications) {
+        Set<String> useOtherFiles = mergeModifications.get("other");
+        Set<String> conflictFiles = mergeModifications.get("conflict");
+        useOther(useOtherFiles, other);
+        makeConflict(conflictFiles, curr, other);
+    }
+
+    /** Modify all conflict files and add them to the stage. */
+    private static void makeConflict(Set<String> files, Commit curr, Commit other) {
+        for (String fileName : files) {
+            File file = join(CWD, fileName);
+            String conflictContent = makeConflictContent(fileName, curr, other);
+            writeContents(file, conflictContent);
+            add(fileName);
+        }
+    }
+
+    /** Return the right content for a conflict file after merging. */
+    private static String makeConflictContent(String fileName, Commit curr, Commit other) {
+        String currContent = curr.getFileContent(fileName);
+        String otherContent = other.getFileContent(fileName);
+        return "<<<<<<< HEAD\n" + currContent + "=======\n" + otherContent + ">>>>>>>\n";
+    }
+
+    /**
+     * Modify files in CWD to their versions in the other commit, and stage the change (add or rm).
+     * @param files a Set of file names that should be modified.
+     * @param other the other commit.
+     */
+    private static void useOther(Set<String> files, Commit other) {
+        for (String fileName : files) {
+            File file = join(CWD, fileName);
+            Blob otherFileBlob = getBlob(other.getBlobID(fileName));
+            if (otherFileBlob == null) { // the file is removed in the other branch.
+                rm(fileName);
+            }
+            else {
+                String otherContent = otherFileBlob.getContent();
+                writeContents(file, otherContent);
+                add(fileName);
+            }
+        }
+    }
+
+    /**
+     * Perform the checks for the merge command and return a Map of necessary modifications.
+     * @return a Map that guides merging.
+     * "other" maps to a List of file names that should use the version in the other branch.
+     * "conflict" maps to a List of files that is conflicted.
+     */
+    private static Map<String, Set<String>> mergeWillModify(Commit split, Commit curr, Commit other) {
+        mergeChecks1(split, curr, other);
+        Set<String> mergeFocusFiles = combineSets(
+                split.trackedFiles(),
+                curr.trackedFiles(),
+                other.trackedFiles());
+        Map<String, Set<String>> mergeWillModify = mergeLogic(mergeFocusFiles, split, curr, other);
+        Set<String> changingFiles = combineSets(mergeWillModify.get("other"), mergeWillModify.get("conflict"));
+        mergeChecks2(changingFiles);
+        return mergeWillModify;
+    }
+
+    /** A private helper method that captures the logic of the merge command. */
+    private static Map<String, Set<String>> mergeLogic(Set<String> focusFiles, Commit split, Commit curr, Commit other) {
+        Map<String, Set<String>> map = new HashMap<>();
+        map.put("other", new HashSet<>());
+        map.put("conflict", new HashSet<>());
+        for (String file : focusFiles) {
+            String splitVer = split.getBlobID(file);
+            String currVer = curr.getBlobID(file);
+            String otherVer = other.getBlobID(file);
+            if (stringEqual(splitVer, currVer)) {
+                map.get("other").add(file);
+            } else if (stringEqual(splitVer, otherVer)) { // do nothing
+            } else if (stringEqual(currVer, otherVer)) { // do nothing
+            } else {
+                map.get("conflict").add(file);
+            }
+        }
+        return map;
+    }
+
+    /** Perform checks for the merge command. */
+    private static void mergeChecks1(Commit split, Commit curr, Commit other) {
+        if (other == null) {
+            throw new GitletException("A branch with that name does not exist.");
+        } // Abort merging if a branch with the given name does not exist.
+        if (!stagedFiles().isEmpty()) {
+            throw new GitletException("You have uncommitted changes.");
+        } // Abort merging if there are staged additions or removals present.
+        if (stringEqual(curr.id(), other.id())) {
+            throw new GitletException("Cannot merge a branch with itself.");
+        } // Abort merging if attempting to merge a branch with itself.
+        if (stringEqual(split.id(), other.id())) {
+            System.out.println("Given branch is an ancestor of the current branch.");
+            System.exit(0);
+        } // Exit if the split point is the same commit as the given branch. The merge is complete.
+        if (stringEqual(split.id(), curr.id())) {
+            fastForward(other);
+            System.out.println("Current branch fast-forwarded.");
+            System.exit(0);
+        } // Fast-forward and exit if the split point is the same commit as the current branch.
+    }
+
+    /**
+     * Fast-forward the current branch to the designated commit.
+     * Only called when the split commit is the same as the current commit.
+     * */
+    private static void fastForward(Commit other) {
+        String commitID = other.id();
+        checkoutToCommit(commitID);
+        moveCurrBranch(commitID);
+    }
+
+    /** Perform checks for the merge command. */
+    private static void mergeChecks2(Set<String> changingFiles) {
+        List<String> untrackedFiles = untrackedFiles();
+        List<String> modifiedNotStagedFiles = modifiedNotStagedFiles();
+        for (String file: changingFiles) {
+            if (untrackedFiles.contains(file)) {
+                throw new GitletException(
+                        "There is an untracked file in the way; delete it, or add and commit it first.");
+            } // Abort merging if an untracked file in the current commit would be overwritten or deleted by the merge.
+            if (modifiedNotStagedFiles.contains(file)) {
+                throw new GitletException(
+                        "There is an unstaged change in the way; revoke it, or add and commit it first.");
+            } // Abort merging if there are unstaged changes to file that would be changed by the merge.
+        }
+    }
+
     /* MISC ----------------------------------------------------------------------------------------------------------*/
 
     /** Assert the CWD contains a .gitlet directory. */
@@ -514,7 +670,7 @@ public class Repository {
     }
 
     /** Delete all files in the CWD. */
-    private static void deleteCWDFiles() {
+    static void deleteCWDFiles() {
         Set<String> files = CWDFilesSet();
         for (String fileName : files) {
             if (debugCWDFiles.contains(fileName)) {
@@ -542,5 +698,13 @@ public class Repository {
             collection.addAll(e);
         }
         return collection;
+    }
+
+    /** Return true if two Strings are equal. Two nulls are considered as equal as well. */
+    private static boolean stringEqual(String s1, String s2) {
+        if (s1 == null && s2 == null) {
+            return true;
+        }
+        return s1 != null && s1.equals(s2);
     }
 }

@@ -5,10 +5,9 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 
-import static gitlet.Cache.getLatestCommitRef;
+import static gitlet.Cache.*;
 import static gitlet.Repository.*;
 import static gitlet.Utils.*;
-import static gitlet.Cache.cleanCache;
 import static org.junit.Assert.*;
 
 /**
@@ -295,7 +294,7 @@ public class GitletTest {
         assertEquals("hello world", readTestFile("_hello.txt"));
         GitletExecute("add", "_hello.txt");
         GitletExecute("commit", "changed hello");
-        String commitID = Cache.getCommit(getLatestCommitRef()).getParentCommitRef();
+        String commitID = Cache.getCommit(getLatestCommitID()).getParentCommitID();
         GitletExecute("checkout", commitID.substring(0, 6), "--", "_hello.txt"); // java gitlet.Main checkout [abbreviated commit id] -- _hello.txt
         assertEquals("hello", readTestFile("_hello.txt"));
     }
@@ -350,17 +349,115 @@ public class GitletTest {
         GitletExecute("add", "_hello.txt");
         GitletExecute("commit", "added hello");
 
-        String commitID = Cache.getCommit(getLatestCommitRef()).getParentCommitRef();
+        String commitID = Cache.getCommit(getLatestCommitID()).getParentCommitID();
         GitletExecute("reset", commitID);
         GitletExecute("log");
     }
 
+    /* MERGE COMMAND -------------------------------------------------------------------------------------------------*/
+
+    /** Test the lca method. */
+    @Test
+    public void lcaTest() throws IOException {
+        GitletExecute("init");
+        GitletExecute("branch", "hot-bean");
+        GitletExecute("commit", "done something");
+        GitletExecute("checkout", "hot-bean");
+        GitletExecute("commit", "done something else");
+        Commit commit1 = getCommit(getBranch("master"));
+        Commit commit2 = getCommit(getBranch("hot-bean"));
+        GitletExecute("global-log");
+        System.out.println(Commit.lca(commit1, commit2).id()); // Should be the ID of the initial commit.
+    }
+
+    /** A sanity test for the merge command. */
+    @Test
+    public void mergeSanityTest() throws IOException {
+        GitletExecute("init");
+
+        GitletExecute("branch", "hot-bean");
+        GitletExecute("checkout", "hot-bean");
+
+        writeTestFile("_hello.txt", "hello");
+        GitletExecute("add", "_hello.txt");
+        GitletExecute("commit", "added hello");
+
+        GitletExecute("checkout", "master");
+        writeTestFile("_bye.txt", "bye");
+        GitletExecute("add", "_bye.txt");
+        GitletExecute("commit", "added bye");
+
+        GitletExecute("merge", "hot-bean");
+        GitletExecute("global-log");
+    }
+
+    /** Test merging two branches with conflict. */
+    @Test
+    public void mergeConflictTest() throws IOException {
+        GitletExecute("init");
+        GitletExecute("branch", "cool-bean");
+
+        writeAndAdd("conflict", "CONFLICT\n");
+        GitletExecute("commit", "CONFLICT commit");
+
+        GitletExecute("checkout", "cool-bean");
+        writeAndAdd("conflict", "!CONFLICT\n");
+        GitletExecute("commit", "!CONFLICT commit");
+
+        GitletExecute("merge", "master");
+        GitletExecute("log");
+    }
+
+    /** A hard (and comprehensive) test for the merge command. */
+    @Test
+    public void mergeTest() throws IOException {
+        GitletExecute("init");
+        writeAndAdd("a", "A");
+        writeAndAdd("b", "B");
+        writeAndAdd("c", "C");
+        writeAndAdd("d", "D");
+        writeAndAdd("e", "E");
+        writeAndAdd("conflict", "Hi mom");
+        GitletExecute("commit", "split commit");
+        GitletExecute("branch", "branch1");
+
+        writeAndAdd("a", "!A");
+        writeAndAdd("b", "B");
+        GitletExecute("rm", "c");
+        GitletExecute("rm", "d");
+        writeAndAdd("e", "E");
+        writeAndAdd("f", "!F");
+        writeAndAdd("conflict", "CONFLICT\n");
+        GitletExecute("commit", "master commit");
+
+        GitletExecute("checkout", "branch1");
+        writeAndAdd("a", "A");
+        writeAndAdd("b", "!B");
+        GitletExecute("rm", "c");
+        writeAndAdd("d", "D");
+        GitletExecute("rm", "e");
+        writeAndAdd("g", "G");
+        writeAndAdd("conflict", "!CONFLICT\n");
+        GitletExecute("commit", "branch1 commit");
+
+        GitletExecute("merge", "master");
+
+        assertFile("a", "!A");
+        assertFile("b", "!B");
+        assertFile("c", null);
+        assertFile("d", null);
+        assertFile("e", null);
+        assertFile("f", "!F");
+        assertFile("g", "G");
+        assertFile("conflict", "<<<<<<< HEAD\n!CONFLICT\n=======\nCONFLICT\n>>>>>>>\n");
+    }
 
     /* MISC ----------------------------------------------------------------------------------------------------------*/
 
     /** Execute commands with Gitlet and clean the cache after execution. */
     private static void GitletExecute(String... command) throws IOException {
         if (command[0].equals("init")) {
+            Repository.deleteCWDFiles();
             deleteDirectory(GITLET_DIR);
         } // Special case: make sure there is no .gitlet directory before init command. Implemented for testing purposes.
         Main.main(command);
@@ -394,5 +491,21 @@ public class GitletTest {
             }
         }
         directoryToBeDeleted.delete();
+    }
+
+    /** Write a test file with the designated file name and content, then add it to the stage. */
+    private static void writeAndAdd(String fileName, String content) throws IOException {
+        writeTestFile(fileName, content);
+        GitletExecute("add", fileName);
+    }
+
+    /** Assert a designated file has the designated content. */
+    private static void assertFile(String fileName, String content) {
+        File file = join(CWD, fileName);
+        if (!file.exists() && content == null) {
+            return;
+        }
+        String fileContent = readContentsAsString(file);
+        assertEquals(content, fileContent);
     }
 }

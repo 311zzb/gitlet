@@ -1,6 +1,5 @@
 package gitlet;
 
-import java.io.File;
 import java.util.*;
 
 import static gitlet.Cache.*;
@@ -139,7 +138,7 @@ public class Tree extends HashObject implements Iterable<String> {
         if (latestCommit == null) {
             return null;
         } // Special case: return null if there is no latest commit.
-        String latestCommitTreeRef = latestCommit.getCommitTreeRef();
+        String latestCommitTreeRef = latestCommit.getCommitTreeID();
         return getTree(latestCommitTreeRef);
     }
 
@@ -185,7 +184,4 @@ public class Tree extends HashObject implements Iterable<String> {
         }
         return tree;
     }
-
-
-
 }

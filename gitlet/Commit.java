@@ -3,7 +3,8 @@ package gitlet;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import static gitlet.Branch.*;
 import static gitlet.Cache.*;
@@ -32,16 +33,16 @@ public class Commit extends HashObject {
     private final String _treeRef;
 
     /**
-     * The constructor of `Commit` class. This method is `private`
+     * The constructor of the Commit class. This method is `private`
      * because no "naked" instantiation of `Commit` is allowed outside the `Commit` class.
      * Additionally, the time stamp is set to 1970.01.01 for initial commit.
-     * @param parentCommitRef the hash of parent commit
+     * @param parentCommitID the hash of parent commit
      * @param message the message come with the commit
      * @param treeRef the corresponding tree's hash
      */
-    private Commit(String parentCommitRef, String message, String treeRef) {
-        this._parentCommitRef = parentCommitRef;
-        this._parentCommitMergeRef = null; // TODO: merge command
+    private Commit(String parentCommitID, String message, String treeRef) {
+        this._parentCommitRef = parentCommitID;
+        this._parentCommitMergeRef = null;
         this._message = message;
         this._treeRef = treeRef;
         if (message.equals("initial commit")) {
@@ -49,6 +50,15 @@ public class Commit extends HashObject {
         } else {
             this._timeStamp = new Date(System.currentTimeMillis());
         }
+    }
+
+    /** Constructor for merge commits. */
+    private Commit(String firstCommitID, String secondCommitID, String message, String treeRef) {
+        this._parentCommitRef = firstCommitID;
+        this._parentCommitMergeRef = secondCommitID;
+        this._message = message;
+        this._treeRef = treeRef;
+        this._timeStamp = new Date(System.currentTimeMillis());
     }
 
     /**
@@ -73,7 +83,7 @@ public class Commit extends HashObject {
                     "commit " + this.id() + "\n" +
                     "Date: " + timeStampString + "\n" +
                     _message + "\n";
-        } else { // TODO: test merge commits handling
+        } else {
             return  "===\n" +
                     "commit " + this.id() + "\n" +
                     "Merge: " + _parentCommitRef.substring(0, 7) + " " + _parentCommitMergeRef.substring(0, 7) + "\n" +
@@ -100,27 +110,37 @@ public class Commit extends HashObject {
     }
 
     /** Get the ID of the parent commit. */
-    String getParentCommitRef() {
+    String getParentCommitID() {
         return _parentCommitRef;
+    }
+
+    /** Get the Commit object of the parent commit. */
+    Commit getParentCommit() {
+        return getCommit(getParentCommitID());
     }
 
     /**
      * Get the ID of the associating Tree of this commit.
      */
-    String getCommitTreeRef() {
+    String getCommitTreeID() {
         return _treeRef;
     }
 
     /** Get the associating Tree of this commit. */
     Tree getCommitTree() {
-        String commitTreeRef = getCommitTreeRef();
+        String commitTreeRef = getCommitTreeID();
         return getTree(commitTreeRef);
     }
 
     /** Get the ID of the Blob of a designated file name in this commit. */
-    String getCommitTreeBlobID(String fileName) {
+    String getBlobID(String fileName) {
         Tree commitTree = this.getCommitTree();
         return commitTree.getBlobID(fileName);
+    }
+
+    /** Return the content of a designated file name in this commit. */
+    String getFileContent(String fileName) {
+        return getBlob(getBlobID(fileName)).getContent();
     }
 
     /** Return whether this Commit tracks a file with fileName. */
@@ -129,10 +149,21 @@ public class Commit extends HashObject {
         return commitTree.containsFile(fileName);
     }
 
-    /** Return a string list of tracked files of this commit. */
-    List<String> trackedFiles() {
+    /** Return a string Set of tracked files of this commit. */
+    Set<String> trackedFiles() {
         Tree commitTree = this.getCommitTree();
-        return commitTree.trackedFiles();
+        return new HashSet<>(commitTree.trackedFiles());
+    }
+
+    /** Return a string Set of all ancestors' ID of this commit. */
+    Set<String> ancestor() {
+        Commit curr = this;
+        Set<String> set = new HashSet<>();
+        while (curr != null) {
+            set.add(curr.id());
+            curr = curr.getParentCommit();
+        }
+        return set;
     }
 
     /* STATIC METHODS ------------------------------------------------------------------------------------------------*/
@@ -147,13 +178,44 @@ public class Commit extends HashObject {
      * 6. Make a new staging area
      */
     static void mkCommit(String message) {
-        String parentCommitRef = getLatestCommitRef();
+        String parentCommitID = getLatestCommitID();
         String treeRef = mkCommitTree();
-        Commit newCommit = new Commit(parentCommitRef, message, treeRef);
+        Commit newCommit = new Commit(parentCommitID, message, treeRef);
         String newCommitID = cacheAndQueueForWriteHashObject(newCommit);
         moveCurrBranch(newCommitID);
         mkNewStage();
     }
 
+    /** Factory method. Make a new merge Commit. */
+    static void mkMergeCommit(String givenBranchName, Boolean conflicted) {
+        String firstParentID = getLatestCommitID();
+        String secondParentID = getBranch(givenBranchName);
+        String currBranchName = getHEAD();
+        String treeRef = mkCommitTree();
+        String message = "Merged " + givenBranchName + " into " + currBranchName + ".";
+        Commit newCommit = new Commit(firstParentID, secondParentID, message, treeRef);
+        String newCommitID = cacheAndQueueForWriteHashObject(newCommit);
+        moveCurrBranch(newCommitID);
+        mkNewStage();
+        if (conflicted) {
+            System.out.println("Encountered a merge conflict.");
+        }
+    }
 
+    /**
+     * Return the latest common ancestor (LCA) of two commits.
+     * @param commit1 the first commit object.
+     * @param commit2 the second commit object.
+     * @return the commit ID of the LCA.
+     */
+    static Commit lca(Commit commit1, Commit commit2) {
+        Set<String> set = new HashSet<>(commit1.ancestor());
+        while (commit2 != null) {
+            if (set.contains(commit2.id())) {
+                return commit2;
+            }
+            commit2 = commit2.getParentCommit();
+        }
+        return null;
+    }
 }

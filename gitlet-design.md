@@ -66,7 +66,7 @@ from the cache.
 2. Caching Branches
    1. `static final Map<String, String> cachedBranches` A `Map` that stores cached branch name and commit ID pairs.
    2. `static String getBranch(String branchName)` Lazy loading and caching of branches.
-   3. `static String getLatestCommitRef()`
+   3. `static String getLatestCommitID()`
       A method that lazy-load the ID of the latest commit by `getBranch(getHEAD())`.
    4. `static void cacheBranch(String branchName, String commitID)`
       Manually cache a `Branch` by putting a `branchName` - `commitID` pair into the cache.
@@ -162,7 +162,7 @@ It also sets up persistence and do additional error checking.
       2. `private static List<String> modifiedNotStagedFiles()`
          A private helper method that construct a list of "modified but not staged" files.
          Implementation details in the Algorithms section.
-      3. `private static Set<String> focusFiles()`
+      3. `private static Set<String> modifiedStatusFocusFiles()`
          Return a string `Set` that contains all file names that should be checked 
          (file names in the CWD or the Stage or tracked by the Head Commit).
       4. `private static boolean modifiedNotStagedFiles1(String fileName)`
@@ -212,14 +212,37 @@ It also sets up persistence and do additional error checking.
     1. `public static void reset(String commitID)` 
        Execute the reset command. Implementation details in the Algorithms section.
        Abbreviated commit ID will be handled, and branches will always point to full IDs.
-14. misc
+14. `merge` command
+    1. `public static void merge(String branchName)`
+       Execute the merge command (merge files from the given branch into the current branch).
+       Implementation details in the Algorithms section.
+    2. `private static void mergeModifyCWD(Commit curr, Commit other, Map<String, Set<String>> mergeModifications)`
+       Modify files in the `CWD` (either use the version in the other branch, or make a conflict file) accordingly.
+    3. `private static void makeConflict(Set<String> files, Commit curr, Commit other)`
+       Modify all conflict files and add them to the stage.
+    4. `private static String makeConflictContent(String fileName, Commit curr, Commit other)`
+       Return the right content for a conflict file after merging.
+    5. `private static void useOther(Set<String> files, Commit other)`
+       Modify files in `CWD` to their versions in the other commit, and stage the change (add or rm).
+    6. `private static Map<String, Set<String>> mergeWillModify(Commit split, Commit curr, Commit other)`
+       Perform the checks for the merge command and return a `Map` of necessary modifications.
+    7. `private static Map<String, Set<String>> mergeLogic(Set<String> focusFiles, Commit split, Commit curr, Commit other)`
+       A private helper method that captures the logic of the merge command.
+    8. `private static void mergeChecks1(Commit curr, Commit other)` Perform checks for the merge command.
+    9. `private static void fastForward(Commit other)`
+       Fast-forward the current branch to the designated commit.
+       Only called when the split commit is the same as the current commit.
+    10. `private static void mergeChecks2(Set<String> changingFiles)` Perform checks for the merge command.
+15. misc
     1. `private static void assertGITLET()` Assert the `CWD` contains a `.gitlet` directory.
     2. `private static void overwriteCWDFile(String fileName, Blob overwriteSrc)`
        Overwrite the file in `CWD` of designated file name with the content in the given `Blob` object.
     3. `static void sortLexico(List<String> list)` Sort a string `List` in lexicographical order in place.
-    4. `private static void deleteCWDFiles()` Delete all files in the `CWD`.
+    4. `static void deleteCWDFiles()` Delete all files in the `CWD`.
     5. `private static Set<String> CWDFilesSet()` Return a Set of all files' names in the `CWD`.
     6. `private static<T> Set<T> combineSets(Set<T>... sets)` Generic method to merge (union) multiple sets in Java.
+    7. `private static boolean stringEqual(String s1, String s2)`
+       Return `true` if two `Strings` are equal. Two `null`s are considered as equal as well.
 
 ### Branch
 
@@ -231,7 +254,7 @@ This class will never be instantiated since there are only static methods.
 
 1. `static String loadBranch(String branchName)`
    Load a branch file from filesystem with designated name. 
-   Return null if the branch name is "" (nothing) or there is no branch with the designated branch name.
+   Return `null` if the branch name is `""` (nothing) or there is no branch.
    Invoked by the Cache class.
 2. `static boolean existBranch(String branchName)` Return `true` if a branch exists.
 3. `static List<String> loadAllBranches()`
@@ -326,22 +349,30 @@ as well as static method that carry out the procedure to make a new commit.
 3. `private final String _parentCommitMergeRef` The ID of the other parent (if any). Not implemented yet.
 4. `private final Date _timeStamp` A time stamp of the commit been made.
 5. `private final String _treeRef` The ID of the associated `Tree` object.
-6. `private Commit(String parentCommitRef, String message, String treeRef)`
+6. `private Commit(String parentCommitID, String message, String treeRef)`
    The constructor of `Commit` class. This method is `private`
    because no "naked" instantiation of `Commit` is allowed outside the `Commit` class.
    Additionally, the time stamp is set to 1970.01.01 for initial commit.
-7. `public String toString()` Content-addressable overriding `toString()` method.
-8. `String logString()` Return the log information of this `Commit`.
-9. `public void dump()` Print information of this `Commit` on `System.out`.
-10. `String getMessage()` Get the message of this `Commit`.
-11. `String getParentCommitRef()` Get the ID of the parent commit.
-12. `String getCommitTreeRef()` Get the ID of the associating `Tree` of this commit.
-13. `Tree getCommitTree()` Get the associating `Tree` of this commit.
-14. `String getCommitTreeBlobID(String fileName)` Get the ID of the `Blob` of a designated file name in this commit.
-15. `Boolean trackedFile(String fileName)` Return whether this `Commit` contains a file with `fileName`.
-16. `List<String> trackedFiles()` Return a string `List` of tracked files of this commit.
-17. `static void mkCommit(String message)` Factory method. Make a new `Commit`.
+7. `private Commit(String firstCommitID, String secondCommitID, String message, String treeRef)`
+   Constructor for merge commits.
+8. `public String toString()` Content-addressable overriding `toString()` method.
+9. `String logString()` Return the log information of this `Commit`.
+10. `public void dump()` Print information of this `Commit` on `System.out`.
+11. `String getMessage()` Get the message of this `Commit`.
+12. `String getParentCommitID()` Get the ID of the parent commit.
+13. `Commit getParentCommit()` Get the `Commit` object of the parent commit.
+14. `String getCommitTreeID()` Get the ID of the associating `Tree` of this commit.
+15. `Tree getCommitTree()` Get the associating `Tree` of this commit.
+16. `String getBlobID(String fileName)` Get the ID of the `Blob` of a designated file name in this commit.
+17. `String getFileContent(String fileName)` Return the content of a designated file name in this commit.
+18. `Boolean trackedFile(String fileName)` Return whether this `Commit` contains a file with `fileName`.
+19. `Set<String> trackedFiles()` Return a string `Set` of tracked files of this commit.
+20. `Set<String> ancestor()` Return a string `Set` of all ancestors' ID of this commit.
+21. `static void mkCommit(String message)` Factory method. Make a new `Commit`.
     Implementation details in the Algorithm section.
+22. `static void mkMergeCommit(String givenBranchName, Boolean conflicted)`
+    Factory method. Make a new merge Commit.
+23. `static Commit lca(Commit commit1, Commit commit2)` Return the latest common ancestor (LCA) of two `Commit`s.
 
 ### Tree
 
@@ -458,7 +489,12 @@ This class contains JUnit tests for Gitlet.
     1. `public void rmBranchSanityTest()` Sanity test for rm-branch command.
 12. `reset` command
     1. `public void resetSanityTest()` Sanity test for reset command.
-13. misc
+13. `merge` command
+    1. `public void lcaTest()` Test the lca method.
+    2. `public void mergeSanityTest()` A sanity test for the merge command.
+    3. `public void mergeConflictTest()` Test merging two branches with conflict.
+    4. `public void mergeTest()` A hard (and comprehensive) test for the merge command.
+14. misc
     1. `private static void GitletExecute(String... command)`
        Execute commands with Gitlet and clean the cache after execution.
        Special case: make sure there is no `.gitlet` directory before the init command. Implemented for testing purposes.
@@ -467,6 +503,10 @@ This class contains JUnit tests for Gitlet.
     3. `private static void deleteTestFile(String fileName)` Delete the file with the designated name.
     4. `private static String readTestFile(String fileName)` Read the designated file as String and return it.
     5. `private static void deleteDirectory(File directoryToBeDeleted)` Delete a directory recursively.
+    6. `private static void writeAndAdd(String fileName, String content)`
+       Write a test file with the designated file name and content, then add it to the stage.
+    7. `private static void assertFile(String fileName, String content)`
+       Assert a designated file has the designated content.
 
 ## Algorithms
 
@@ -542,7 +582,7 @@ Due to performance concerns, referring commits with abbreviated IDs is not allow
 1. Set up the repository
 2. Create an initial commit
 
-### Set up the repository
+#### Set up the repository
 
 1. Set up persistence directories
 2. Make the default branch "master" which is pointing null for now (no pun intended)
@@ -558,7 +598,7 @@ Due to performance concerns, referring commits with abbreviated IDs is not allow
 5. Move the current branch pointing the new commit
 6. Make a new staging area
 
-### Make a commit `Tree`
+#### Make a commit `Tree`
 
 A commit `Tree` is a `Tree` that every commit uses to record the associated file names and file versions (`Blob`).
 
@@ -569,7 +609,7 @@ A commit `Tree` is a `Tree` that every commit uses to record the associated file
    i.e., staged for removal)
 4. Cache it and queue it for writing
 
-### Add a file to the staging area
+### Stage a file for addition
 
 1. Get the file as its current version, cache it as a Blob (don't queue for write back yet)
 2. Get the version of the designated file from the latest commit
@@ -578,7 +618,7 @@ A commit `Tree` is a `Tree` that every commit uses to record the associated file
    do not stage it, and remove it from the staging area if it is already there. End the execution.
 4. Modify cached staging area
 
-### The `rm` command
+### Stage a file for removal
 
 1. Abort if the file is neither staged nor tracked by the head commit.
 2. If the file is currently staged for addition, unstage it.
@@ -598,7 +638,7 @@ That is, when a file is staged for removal:
 In this manner, problems with naive approaches (such as introduce a "staging area for removal" `Tree`)
 is avoided, and the amount of codes to implement the `rm` command is trivial.
 
-### Print commit log
+### Print log
 
 1. Get the ID of the latest commit
 2. Print log information starting from that commit to the initial commit recursively
@@ -650,7 +690,7 @@ Conditions for "Modifications Not Staged For Commit":
 3. Staged for addition, but deleted in the working directory.
 4. Not staged for removal, but tracked in the current commit and deleted from the working directory.
 
-### Get a list of untracked files
+#### Get a list of untracked files
 
 1. Get the information of files in the `CWD` as a `Tree` object.
 2. Get the head `Commit` object.
@@ -659,25 +699,27 @@ Conditions for "Modifications Not Staged For Commit":
    2. is not tracked by the head commit
 4. Sort the untracked files list in lexicographical order
 
-### Checkout a file to `HEAD` commit
+### The `checkout` command
+
+#### Checkout a file to `HEAD` commit
 
 1. Get the ID of the latest commit
 2. Invoke `checkout2(String commitID, String fileName)` method with the ID of the latest commit.
 
-### Checkout a file to the commit with the designated ID
+#### Checkout a file to the commit with the designated ID
 
 1. Get the `Commit` object with the designated commit ID
 2. Get the designated file's `Blob` object form that commit
 3. Overwrite the file with that name in the `CWD`
 
-### Checkout to a designated branch
+#### Checkout to a designated branch
 
 1. Perform checks: Gitlet will abort if no branch with the given name exists, or that branch is the current branch,
    or a working file is untracked.
-2. Move the HEAD to that branch.
+2. Move the `HEAD` to that branch.
 3. Checkout to the commit that the branch is pointing to.
 
-### Checkout to a designated commit
+##### Checkout to a designated commit
 
 1. Delete all files in the `CWD`.
 2. Checkout all files tracked by that commit.
@@ -705,6 +747,65 @@ This command delete the branch with the given name. It does not delete any commi
 1. Perform the checks: the commit with the designated ID exists, and there is no working untracked file.
 2. Checkout to the designated commit.
 3. Move the current branch to that commit (The biggest difference between `reset` and `checkout [branch name]` command). 
+
+### Merge files from the given branch into the current branch
+
+The `merge` command is one of the most complicated commands in Gitlet. 
+Therefore, the execution of this command is divided to multiple helper methods.
+Generally, the following procedure is followed to execute this command.
+
+1. Get the latest `Commit` object of the current branch, the given branch, and the common ancestors (split commit).
+2. Perform checks.
+3. Calculate which files will be changed in what manners, and perform checks.
+4. Modify the `CWD` following the result from step 2, staging for addition or removal as we go.
+5. Make a merge commit.
+
+#### Get the latest common ancestor (split commit) of two commits
+
+1. Get a Set all ancestors' ID of a commit.
+2. Starting from the other commit, return the commit if its ID is in the Set.
+3. Go to its parent commit and check again.
+
+#### Determine which files will be changed in what manners
+
+1. Get a Set of file names that should be checked 
+   by combining sets of file names tracked by the split, current, and the other branch's head commits.
+2. Construct a Map of String to Set of String `Map<String, Set<String>>`, 
+   where `"other"` is mapped to a Set of files' file names that should use the version in the other (given) branch's head commit, 
+   and `"conflict"` is mapped to a Set of files' file names that conflict after merging.
+3. For file names in the Set need to be checked,
+   1. Add to `"other"`'s value Set 
+      if the version of such file in the split commit is the same of it in the current commit 
+      (has the same content or both not exists).
+   2. Add to `"conflictt"`'s value Set
+      if the version in the split commit, the current commit, 
+      and the other branch's head commit is all different from each other.
+   
+#### Perform checks for the merge command
+
+* Abort merging if a branch with the given name does not exist.
+* Abort merging if there are staged additions or removals present.
+* Abort merging if attempting to merge a branch with itself.
+* Exit if the split point is the same commit as the given branch's head commit. The merge is complete.
+* Fast-forward and exit if the split point is the same commit as the current branch.
+* Abort merging if an untracked file in the current commit would be overwritten or deleted by the merge.
+  This is checked after which files will be changed is determined.
+* Abort merging if there are unstaged changes to file that would be changed by the merge.
+  This is checked after which files will be changed is determined.
+
+#### Modify the `CWD` for merging, make merge Commit
+
+The Map recoding necessary modification is disassembled into two `Set`s 
+(one holding file names that should be changed to their version in the given branch's head commit, 
+and one holding file names that resulting in conflicts).
+Two helper methods are utilized to carry out the modifications. 
+The changes will be staged immediately.
+
+Making a merge `Commit` is not so different from making a normal commit,
+despite the new commit will have two parent commit IDs, 
+the first is the current commit ID and the second is the ID of the given branch's head commit.
+Lastly, Gitlet will print a message to the console if any conflict is made.
+
 
 ## Persistence
 
@@ -757,7 +858,7 @@ The `commit` command will modify persistence following the following rules (no p
 1. Save a serialized `Commit` object in the object database
 2. Overwrite the current branch's file, make it contains the new commit's ID
 3. Make a new staging area and overwrite the `STAGE` file
-4. Delete the previous staging area if it is not empty, and there is a commit already _(subtle bug may exist)_
+4. ~~Delete the previous staging area if it is not empty, and there is a commit already _(subtle bug may exist)_~~
 
 #### `rm` command
 
@@ -783,3 +884,7 @@ When a branch is removed, the corresponding file under the `.gitlet/branches` di
 #### `reset` command
 
 This command will write the current working directory and clear the staging area.
+
+#### `merge` command
+
+If the merging is carried out successfully, this command will change the persistence just like the `commit` command.

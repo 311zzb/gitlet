@@ -80,6 +80,10 @@ public class Main {
                 assertArgsNum(command, operands, 1);
                 Repository.reset(operands[0]);
             }
+            case "merge" -> {
+                assertArgsNum(command, operands, 1);
+                Repository.merge(operands[0]);
+            }
 
             default -> throw new GitletException("Unexpected command: " + command);
         }
