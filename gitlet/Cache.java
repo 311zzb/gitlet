@@ -39,24 +39,13 @@ public class Cache {
         return cachedHashObjects.get(id);
     }
     static Commit getCommit(String id) {
-        if (id == null) {
-            return null;
-        } // Special case: return null if requesting null commit.
-        Commit commit = (Commit) getHashObject(id);
-        if (commit == null) {
-            printAndExit("No commit with that id exists.");
-        } // Special case: print and exit if requested a Commit that does not exist.
-        return commit;
+        return (Commit) getHashObject(id);
     }
     static Tree getTree(String id) {
         return (Tree) getHashObject(id);
     }
     static Blob getBlob(String id) {
-        Blob blob = (Blob) getHashObject(id);
-        if (blob == null) {
-            return new Blob(null);
-        } // Special case: return a Blob with null content if requested a Blob that does not exist.
-        return blob;
+        return (Blob) getHashObject(id);
     }
 
     /** Get the Commit object of the latest commit. */

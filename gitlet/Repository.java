@@ -409,6 +409,9 @@ public class Repository {
     /** A private helper method that checkout all files that a Commit (with designated ID) tracked. */
     private static void checkoutAllCommitFile(String commitID) {
         Commit commit = getCommit(commitID);
+        if (commit == null) {
+            printAndExit("No commit with that id exists.");
+        } // Special case: print and exit if requested a Commit that does not exist.
         for (String fileName : commit.trackedFiles()) {
             checkoutCommitFile(commit, fileName);
         }

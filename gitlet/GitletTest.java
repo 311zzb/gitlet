@@ -499,6 +499,20 @@ public class GitletTest {
         GitletExecute("global-log"); // Should print out all three commits
     }
 
+    @Test
+    public void test29_bad_checkouts_err() throws IOException {
+        GitletExecute("init");
+        writeAndAdd("wug.txt", "wug");
+        GitletExecute("commit", "version 1 of wug.txt");
+        writeAndAdd("wug.txt", "not wug");
+        GitletExecute("commit", "version 2 of wug.txt");
+        String version2ID = getLatestCommitID();
+        String version1ID = getLatestCommit().getParentCommitID();
+//        GitletExecute("checkout", "--", "warg.txt");
+        GitletExecute("checkout", "5d0bc169a1737e955f9cb26b9e7aa21e4afd4d12", "--", "wug.txt");
+
+    }
+
     /* MISC ----------------------------------------------------------------------------------------------------------*/
 
     /** Execute commands with Gitlet and clean the cache after execution. */

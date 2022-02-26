@@ -47,12 +47,10 @@ from the cache.
       Special case: return `null` if requesting a commit with `null` or `""`.
    3. `static Commit getCommit(String id)`
       A method that lazy-load a `Commit` with `id` utilizing `getHashObject(String id)`.
-      Special case: print and exit if requested a Commit that does not exist.
    4. `static Tree getTree(String id)`
       A method that lazy-load a `Tree` with `id` utilizing `getHashObject(String id)`.
    5. `static Blob getBlob(String id)`
       A method that lazy-load a `Blob` with `id` utilizing `getHashObject(String id)`.
-      Special case: return a Blob with null content if requested a Blob that does not exist.
    6. `static Commit getLatestCommit()` Get the `Commit` object of the latest commit utilizing `getCommit(String id)`.
    7. `static final Set<String> queuedForWriteHashObjects`
       New HashObjects' IDs that are queued for writing to filesystem.
