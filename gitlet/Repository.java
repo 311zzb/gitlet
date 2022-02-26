@@ -643,7 +643,7 @@ public class Repository {
     /** Assert the CWD contains a .gitlet directory. */
     private static void assertGITLET() {
         if (!GITLET_DIR.exists()) {
-            printAndExit("A Gitlet version-control system have not initialized in the current directory.");
+            printAndExit("Not in an initialized Gitlet directory.");
         }
     }
 

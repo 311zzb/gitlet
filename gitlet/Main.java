@@ -1,6 +1,8 @@
 package gitlet;
 
 
+import static gitlet.Repository.printAndExit;
+
 /**
  * Driver class for Gitlet, a subset of the Git version-control system.
  * Account for validating the number of arguments and invoking package-private methods according to received commands.
@@ -15,7 +17,7 @@ public class Main {
      *  <COMMAND> <OPERAND1> <OPERAND2> ... 
      */
     public static void main(String[] args) {
-        assertNotArgsNum("Gitlet", args, 0);
+        assertNotArgsNum(args, 0);
         String command = args[0];
         String[] operands = getOperands(args);
 
@@ -85,7 +87,7 @@ public class Main {
                 Repository.merge(operands[0]);
             }
 
-            default -> throw new GitletException("Unexpected command: " + command);
+            default -> printAndExit("No command with that name exists.");
         }
         Cache.writeBack();
     }
@@ -108,15 +110,12 @@ public class Main {
 
     /**
      * Throw a GitletException if args have exactly n elements.
-     * @param cmd the current command
      * @param args the input arguments
      * @param n the tattoo number of arguments
      */
-    private static void assertNotArgsNum(String cmd, String[] args, int n) {
+    private static void assertNotArgsNum(String[] args, int n) {
         if (args.length == n) {
-            throw new GitletException(
-                    String.format("Invalid number of arguments for: %s.", cmd)
-            );
+            printAndExit("Please enter a command.");
         }
     }
 
@@ -141,11 +140,11 @@ public class Main {
            if (actual == null) {
                return;
            } else {
-               throw new GitletException("Make sure you use " + expected + ".");
+               throw new GitletException("Incorrect operands.");
            }
        }
        if (!expected.equals(actual)) {
-           throw new GitletException("Make sure you use " + expected + ".");
+           throw new GitletException("Incorrect operands.");
        }
     }
 }

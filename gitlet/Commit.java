@@ -1,6 +1,5 @@
 package gitlet;
 
-import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -159,7 +158,11 @@ public class Commit extends HashObject {
 
     /** Return the content of a designated file name in this commit. */
     String getFileContent(String fileName) {
-        return getBlob(getBlobID(fileName)).getContent();
+        Blob blob = getBlob(getBlobID(fileName));
+        if (blob == null) {
+            return null;
+        } // Special case: return null if there is no corresponding Blob.
+        return blob.getContent();
     }
 
     /** Return whether this Commit tracks a file with fileName. */
