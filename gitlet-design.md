@@ -17,10 +17,12 @@ This class contains only `static` methods since `Main` should not be instantiate
 1. `public static void main(String[] args)` The main method of Gitlet.
 2. `private static void assertArgsNum(String[] args, int n)`
    Throw a GitletException if args _don't have_ exactly n elements.
-3. `private static void assertNotArgsNum(String cmd, String[] args, int n)`
+3. `private static void assertNotArgsNum(String[] args, int n)`
    Throw a GitletException if args _have_ exactly n elements.
 4. `private static String[] getOperands(String[] args)`
    Strip the first element of the input array and return the rest.
+5. `private static void assertString(String expected, String actual)`
+   Assert two `String` are equal.
 
 ### Cache
 
@@ -240,8 +242,7 @@ It also sets up persistence and do additional error checking.
     4. `static void deleteCWDFiles()` Delete all files in the `CWD`.
     5. `private static Set<String> CWDFilesSet()` Return a Set of all files' names in the `CWD`.
     6. `private static<T> Set<T> combineSets(Set<T>... sets)` Generic method to merge (union) multiple sets in Java.
-    7. `private static boolean stringEqual(String s1, String s2)`
-       Return `true` if two `Strings` are equal. Two `null`s are considered as equal as well.
+    7. `static void printAndExit(String msg)` Print a message and exit the execution with status `0`.
 
 ### Branch
 

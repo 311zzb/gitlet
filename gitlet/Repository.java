@@ -579,10 +579,10 @@ public class Repository {
             String splitVer = split.getBlobID(file);
             String currVer = curr.getBlobID(file);
             String otherVer = other.getBlobID(file);
-            if (stringEqual(splitVer, currVer)) {
+            if (Objects.equals(splitVer, currVer)) {
                 map.get("other").add(file);
-            } else if (stringEqual(splitVer, otherVer)) { // do nothing
-            } else if (stringEqual(currVer, otherVer)) { // do nothing
+            } else if (Objects.equals(splitVer, otherVer)) { // do nothing
+            } else if (Objects.equals(currVer, otherVer)) { // do nothing
             } else {
                 map.get("conflict").add(file);
             }
@@ -598,14 +598,14 @@ public class Repository {
         if (!stagedFiles().isEmpty()) {
             printAndExit("You have uncommitted changes.");
         } // Abort merging if there are staged additions or removals present.
-        if (stringEqual(curr.id(), other.id())) {
+        if (Objects.equals(curr.id(), other.id())) {
             printAndExit("Cannot merge a branch with itself.");
         } // Abort merging if attempting to merge a branch with itself.
-        if (stringEqual(split.id(), other.id())) {
+        if (Objects.equals(split.id(), other.id())) {
             System.out.println("Given branch is an ancestor of the current branch.");
             System.exit(0);
         } // Exit if the split point is the same commit as the given branch. The merge is complete.
-        if (stringEqual(split.id(), curr.id())) {
+        if (Objects.equals(split.id(), curr.id())) {
             fastForward(other);
             System.out.println("Current branch fast-forwarded.");
             System.exit(0);
@@ -697,15 +697,7 @@ public class Repository {
         return collection;
     }
 
-    /** Return true if two Strings are equal. Two nulls are considered as equal as well. */
-    private static boolean stringEqual(String s1, String s2) {
-        if (s1 == null && s2 == null) {
-            return true;
-        }
-        return s1 != null && s1.equals(s2);
-    }
-
-    /** Print a message and exit the execution. */
+    /** Print a message and exit the execution with status 0. */
     static void printAndExit(String msg) {
         System.out.println(msg);
         System.exit(0);

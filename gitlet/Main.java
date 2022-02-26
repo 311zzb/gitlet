@@ -1,6 +1,8 @@
 package gitlet;
 
 
+import java.util.Objects;
+
 import static gitlet.Repository.printAndExit;
 
 /**
@@ -23,35 +25,35 @@ public class Main {
 
         switch (command) {
             case "init" -> {
-                assertArgsNum(command, operands, 0);
+                assertArgsNum(operands, 0);
                 Repository.init();
             }
             case "add" -> {
-                assertArgsNum(command, operands, 1);
+                assertArgsNum(operands, 1);
                 Repository.add(operands[0]);
             }
             case "commit" -> {
-                assertArgsNum(command, operands, 1);
+                assertArgsNum(operands, 1);
                 Repository.commit(operands[0]);
             }
             case "rm" -> {
-                assertArgsNum(command, operands, 1);
+                assertArgsNum(operands, 1);
                 Repository.rm(operands[0]);
             }
             case "log" -> {
-                assertArgsNum(command, operands, 0);
+                assertArgsNum(operands, 0);
                 Repository.log();
             }
             case "global-log" -> {
-                assertArgsNum(command, operands, 0);
+                assertArgsNum(operands, 0);
                 Repository.globalLog();
             }
             case "find" -> {
-                assertArgsNum(command, operands, 1);
+                assertArgsNum(operands, 1);
                 Repository.find(operands[0]);
             }
             case "status" -> {
-                assertArgsNum(command, operands, 0);
+                assertArgsNum(operands, 0);
                 Repository.status();
             }
             case "checkout" -> {
@@ -67,23 +69,23 @@ public class Main {
                         assertString("--", operands[1]);
                         Repository.checkout2(operands[0], operands[2]);
                     }
-                    default -> throw new GitletException("Invalid number of arguments for: checkout.");
+                    default -> printAndExit("Invalid number of arguments for: checkout.");
                 }
             }
             case "branch" -> {
-                assertArgsNum(command,operands, 1);
+                assertArgsNum(operands, 1);
                 Repository.branch(operands[0]);
             }
             case "rm-branch" -> {
-                assertArgsNum(command, operands, 1);
+                assertArgsNum(operands, 1);
                 Repository.rmBranch(operands[0]);
             }
             case "reset" -> {
-                assertArgsNum(command, operands, 1);
+                assertArgsNum(operands, 1);
                 Repository.reset(operands[0]);
             }
             case "merge" -> {
-                assertArgsNum(command, operands, 1);
+                assertArgsNum(operands, 1);
                 Repository.merge(operands[0]);
             }
 
@@ -96,15 +98,12 @@ public class Main {
 
     /**
      * Throw a GitletException if args don't have exactly n elements.
-     * @param cmd the current command
      * @param args the input arguments
      * @param n the necessary number of arguments
      */
-    private static void assertArgsNum(String cmd, String[] args, int n) {
+    private static void assertArgsNum(String[] args, int n) {
         if (args.length != n) {
-            throw new GitletException(
-                    String.format("Invalid number of arguments for: %s.", cmd)
-            );
+            printAndExit("Incorrect operands.");
         }
     }
 
@@ -136,15 +135,8 @@ public class Main {
      * @param actual the actual String
      */
     private static void assertString(String expected, String actual) {
-       if (expected == null) {
-           if (actual == null) {
-               return;
-           } else {
-               throw new GitletException("Incorrect operands.");
-           }
-       }
-       if (!expected.equals(actual)) {
-           throw new GitletException("Incorrect operands.");
-       }
+        if (!Objects.equals(expected, actual)) {
+            printAndExit("Incorrect operands.");
+        }
     }
 }
