@@ -203,7 +203,6 @@ public class Repository {
         if (foundCommitID.isEmpty()) {
             printAndExit("Found no commit with that message.");
         } // Special case: no such commit exists.
-        System.out.println("Commit ID(s) that match(es) the given message \"" + commitMessage + "\":");
         for (String CommitID : foundCommitID) {
             System.out.println(CommitID);
         }
