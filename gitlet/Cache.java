@@ -39,6 +39,9 @@ public class Cache {
         return cachedHashObjects.get(id);
     }
     static Commit getCommit(String id) {
+        if (id == null) {
+            return null;
+        } // Special case: return null if requesting null commit.
         Commit commit = (Commit) getHashObject(id);
         if (commit == null) {
             printAndExit("No commit with that id exists.");
