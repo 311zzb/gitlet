@@ -466,7 +466,7 @@ public class GitletTest {
         assertFile("e", null);
         assertFile("f", "!F");
         assertFile("g", "G");
-        assertFile("conflict", "<<<<<<< HEAD\n!CONFLICT\n=======\nCONFLICT\n>>>>>>>\n");
+        assertFile("conflict", "<<<<<<< HEAD\n!CONFLICT\n=======\nCONFLICT\n>>>>>>>");
     }
 
     /* AUTO GRADER DEBUGS */
