@@ -101,6 +101,7 @@ public class GitletTest {
         writeTestFile("_hello.txt", "hello");
         // Should remove _hello.txt from the staging area since it is now identical with the version in the latest commit
         GitletExecute("add", "_hello.txt");
+        assertTrue(getStage().isEmpty());
     }
 
     /* RM COMMAND ----------------------------------------------------------------------------------------------------*/
@@ -186,7 +187,14 @@ public class GitletTest {
     /** Test for global-log command with branching. */
     @Test
     public void globalLogBranchTest() throws  IOException {
-        // TODO
+        GitletExecute("init");
+        GitletExecute("branch", "cool-bean");
+        GitletExecute("commit", "dummy");
+        GitletExecute("commit", "not dummy");
+        GitletExecute("checkout", "cool-bean");
+        GitletExecute("commit", "not dummy");
+        GitletExecute("commit", "dummy");
+        GitletExecute("global-log");
     }
 
     /* FIND COMMAND --------------------------------------------------------------------------------------------------*/
@@ -207,7 +215,16 @@ public class GitletTest {
     /** Test for find command with branching. */
     @Test
     public void findBranchTest() throws IOException {
-        // TODO
+        GitletExecute("init");
+        GitletExecute("branch", "cool-bean");
+        GitletExecute("commit", "dummy");
+        GitletExecute("commit", "not dummy");
+        GitletExecute("checkout", "cool-bean");
+        GitletExecute("commit", "not dummy");
+        GitletExecute("commit", "dummy");
+        GitletExecute("global-log");
+
+        GitletExecute("find", "dummy");
     }
 
     /* STATUS COMMAND ------------------------------------------------------------------------------------------------*/

@@ -26,7 +26,7 @@ public class Commit extends HashObject {
     /** The ID of the parent commit. */
     private final String _parentCommitRef;
     /** The ID of the other parent (if any). */
-    private final String _parentCommitMergeRef; // TODO: merging of branches
+    private final String _parentCommitMergeRef;
     /** A time stamp of the commit been made. */
     private final Date _timeStamp;
     /** The ID of the associated Tree object. */
@@ -46,10 +46,10 @@ public class Commit extends HashObject {
         this._message = message;
         this._treeRef = treeRef;
         if (message.equals("initial commit")) {
-            this._timeStamp = new Date(0); // Special case: the time is set to 1970 for initial commit
-        } else {
-            this._timeStamp = new Date(System.currentTimeMillis());
-        }
+            this._timeStamp = new Date(0);
+            return;
+        } // Special case: the time is set to 1970 for initial commit
+        this._timeStamp = new Date(System.currentTimeMillis());
     }
 
     /** Constructor for merge commits. */
@@ -67,10 +67,13 @@ public class Commit extends HashObject {
      */
     @Override
     public String toString() {
-        return _parentCommitRef + "@" +
-                _message + "@" +
-                _treeRef + "@" +
-                _timeStamp.toString();
+        return _parentCommitRef
+                + "@"
+                + _message
+                + "@"
+                + _treeRef
+                + "@"
+                + _timeStamp.toString();
     }
 
     /** Return the log information of this Commit. */
@@ -79,16 +82,29 @@ public class Commit extends HashObject {
         DateFormat df = new SimpleDateFormat(pattern);
         String timeStampString = df.format(_timeStamp);
         if (_parentCommitMergeRef == null) {
-            return  "===\n" +
-                    "commit " + this.id() + "\n" +
-                    "Date: " + timeStampString + "\n" +
-                    _message + "\n";
+            return  "===\n"
+                    + "commit "
+                    + this.id()
+                    + "\n"
+                    + "Date: "
+                    + timeStampString
+                    + "\n"
+                    + _message
+                    + "\n";
         } else {
-            return  "===\n" +
-                    "commit " + this.id() + "\n" +
-                    "Merge: " + _parentCommitRef.substring(0, 7) + " " + _parentCommitMergeRef.substring(0, 7) + "\n" +
-                    "Date: " + timeStampString + "\n" +
-                    _message + "\n";
+            return  "===\n"
+                    + "commit "
+                    + this.id()
+                    + "\n"
+                    + "Merge: "
+                    + _parentCommitRef.substring(0, 7)
+                    + " "
+                    + _parentCommitMergeRef.substring(0, 7)
+                    + "\n"
+                    + "Date: "
+                    + timeStampString
+                    + "\n" + _message
+                    + "\n";
         }
     }
 
@@ -96,7 +112,7 @@ public class Commit extends HashObject {
      * Print information of this commit on System.out.
      */
     @Override
-    public void dump(){
+    public void dump() {
         super.dump();
         System.out.println("time: " + _timeStamp);
         System.out.println("message: " + _message);
@@ -178,6 +194,9 @@ public class Commit extends HashObject {
      * 6. Make a new staging area
      */
     static void mkCommit(String message) {
+        if (!message.equals("initial commit") && getStage().isEmpty()) {
+            throw new GitletException("No changes added to the commit.");
+        } // Special case: abort if no change is made.
         String parentCommitID = getLatestCommitID();
         String treeRef = mkCommitTree();
         Commit newCommit = new Commit(parentCommitID, message, treeRef);
@@ -188,6 +207,9 @@ public class Commit extends HashObject {
 
     /** Factory method. Make a new merge Commit. */
     static void mkMergeCommit(String givenBranchName, Boolean conflicted) {
+        if (getStage().isEmpty()) {
+            throw new GitletException("No changes added to the commit.");
+        } // Special case: abort if no change is made.
         String firstParentID = getLatestCommitID();
         String secondParentID = getBranch(givenBranchName);
         String currBranchName = getHEAD();

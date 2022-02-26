@@ -34,7 +34,7 @@ public class Repository {
     /** The branches directory. */
     static final File BRANCHES_DIR = join(GITLET_DIR, "branches");
     // A list of files that should be ignored when counting untracked files or delete all CWD files.
-    static final List<String> debugCWDFiles = Arrays.asList("gitlet-design.md", "Makefile", "pom.xml"); // TODO: delete this
+//    static final List<String> debugCWDFiles = Arrays.asList("gitlet-design.md", "Makefile", "pom.xml");
 
     /* INIT COMMAND --------------------------------------------------------------------------------------------------*/
 
@@ -102,10 +102,9 @@ public class Repository {
      */
     public static void commit(String message) {
         assertGITLET();
-        // TODO: assert the staging area is not empty. This is not implemented for testing convenience
         if (message.equals("")) {
             throw new GitletException("Please enter a commit message.");
-        } // Special case: abort if message is blank
+        } // Special case: abort if message is blank.
         mkCommit(message);
     }
 
@@ -216,7 +215,6 @@ public class Repository {
      * Recursively check if commit with CommitID and its ascendants have the designated commit message.
      * @param CommitID the designated commit ID.
      * @param commitMessage the matching commit message.
-     * TODO: test against branched repository
      */
     private static void findCheck(String CommitID, String commitMessage) {
         if (CommitID == null || visitedFindCommitID.contains(CommitID)) {
@@ -337,9 +335,9 @@ public class Repository {
         Commit headCommit = getLatestCommit();
         List<String> list = new ArrayList<>();
         for (String fileName : CWDFilesList) {
-            if (debugCWDFiles.contains(fileName)) {
-                continue;
-            } // Ignore development files todo: delete this
+//            if (debugCWDFiles.contains(fileName)) {
+//                continue;
+//            } // Ignore development files
             if (!isStagedForAdd(fileName) && !headCommit.trackedFile(fileName)) {
                 list.add(fileName);
             }
@@ -673,9 +671,9 @@ public class Repository {
     static void deleteCWDFiles() {
         Set<String> files = CWDFilesSet();
         for (String fileName : files) {
-            if (debugCWDFiles.contains(fileName)) {
-                continue;
-            } // Ignore development files todo: delete this
+//            if (debugCWDFiles.contains(fileName)) {
+//                continue;
+//            } // Ignore development files
             File file = join(CWD, fileName);
             file.delete();
         }
