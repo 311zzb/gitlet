@@ -121,9 +121,11 @@ It also sets up persistence and do additional error checking.
       The `.gitlet/HEAD` file. This file stores the name of the active branch.
    4. `static final File STAGE = join(GITLET_DIR, "STAGE")`
       The `.gitlet/STAGE` file, where the ID of the current staging area is stored.
-   5. `static final File OBJECTS_DIR = join(GITLET_DIR, "objects")`
+   5. `static final File ALL_COMMITS_ID = join(GITLET_DIR, "allCommitsID")`
+      The `.gitlet/allCommitsID` file, which is a serialized `Tree` that holds all the IDs of existing commits.
+   6. `static final File OBJECTS_DIR = join(GITLET_DIR, "objects")`
       The `.gilet/objects` directory. This is the object database where all `HashObject` live.
-   6. `static final File BRANCHES_DIR = join(GITLET_DIR, "branches")`
+   7. `static final File BRANCHES_DIR = join(GITLET_DIR, "branches")`
       The `.gitlet/branches` directory. Each branch is stored as a file under this directory.
 2. `init` command
    1. `public static void init()`
@@ -144,17 +146,14 @@ It also sets up persistence and do additional error checking.
    2. `private static void log(String CommitID)`
       Print log information recursively. Starting from the commit with the given commit ID, to the initial commit.
 7. `global-log` command
-   1. `private static final Set<String> loggedCommitID`
-      A Set that record the visited commits' IDs. No need to be persistent.
-   2. `public static void globalLog()`
+   1. `public static void globalLog()`
       Print log information about all commits ever made. Implementation details in the Algorithms section.
 8. `find` command
    1. `private static final List<String> foundCommitID` A list of commit IDs that have the designated commit message.
-   2. `private static final List<String> visitedFindCommitID` A list of commit IDs that are already visited.
-   3. `public static void find(String commitMessage)`
+   2. `public static void find(String commitMessage)`
       Execute the `find` command. Implementation details in the Algorithms section.
-   4. `private static void findCheck(String CommitID, String commitMessage)`
-      Recursively check if commit with `CommitID` and its ascendants have the designated commit message.
+   3. `private static void findCheck(String CommitID, String commitMessage)`
+      Check if the designated commit has the designated commit message.
 9. `status` command
    1. `public static void status()` Execute the status command. Implementation details in the Algorithms section.
    2. "Modifications Not Staged For Commit"
@@ -164,7 +163,7 @@ It also sets up persistence and do additional error checking.
          Implementation details in the Algorithms section.
       3. `private static Set<String> modifiedStatusFocusFiles()`
          Return a string `Set` that contains all file names that should be checked 
-         (file names in the CWD or the Stage or tracked by the Head Commit).
+         (file names in the `CWD` or the Stage or tracked by the head Commit).
       4. `private static boolean modifiedNotStagedFiles1(String fileName)`
          Return `true` if a file is tracked in the current commit, changed in the working directory, but not staged (modified).
       5. `private static boolean modifiedNotStagedFiles2(String fileName)`
@@ -373,6 +372,8 @@ as well as static method that carry out the procedure to make a new commit.
 22. `static void mkMergeCommit(String givenBranchName, Boolean conflicted)`
     Factory method. Make a new merge Commit.
 23. `static Commit lca(Commit commit1, Commit commit2)` Return the latest common ancestor (LCA) of two `Commit`s.
+24. `static void recordCommitID(String commitID)` Record a new commit's ID to the `.gitlet/allCommitsID` file.
+25. `static Tree getAllCommitsID()` Return a `Tree` object that captures all IDs of commits ever made.
 
 ### Tree
 
@@ -385,8 +386,7 @@ This class also contains `Tree` related static methods.
 #### Fields
 
 1. `private final Map<String, String> _structure` The `TreeMap` that stores `fileName` - `blobID` pairs.
-2. `private Tree() {_structure = new TreeMap<>()` The constructor of `Tree` class.
-   This method is `private` because no "naked" instantiation of `Tree` should be allowed outside the `Tree` class.
+2. `Tree()` The constructor of `Tree` class.
 3. `Tree(Tree another)` A constructor that deep-copy the passed-in `Tree`.
 4. `public String toString()` Content-addressable overriding `toString()` method.
 5. `public void dump()` Print information of this `Tree` on `System.out`.
@@ -438,7 +438,7 @@ This class also has `Blob` related static methods.
 
 ### GitletTest
 
-This class contains JUnit tests for Gitlet.
+This class contains JUnit tests and some helper methods for Gitlet.
 
 #### Fields
 
@@ -494,7 +494,10 @@ This class contains JUnit tests for Gitlet.
     2. `public void mergeSanityTest()` A sanity test for the merge command.
     3. `public void mergeConflictTest()` Test merging two branches with conflict.
     4. `public void mergeTest()` A hard (and comprehensive) test for the merge command.
-14. misc
+14. Auto grader debug tests
+    1. `public void test20_status_after_commit()`
+    2. `public void test24_global_log_prev()`
+15. misc
     1. `private static void GitletExecute(String... command)`
        Execute commands with Gitlet and clean the cache after execution.
        Special case: make sure there is no `.gitlet` directory before the init command. Implemented for testing purposes.
@@ -588,6 +591,7 @@ Due to performance concerns, referring commits with abbreviated IDs is not allow
 2. Make the default branch "master" which is pointing null for now (no pun intended)
 3. Make the HEAD pointing to the master branch
 4. Make a new staging area
+5. Initialize and serialize a `Tree` to `.gitlet/allCommitsID`
 
 ### Make a `Commit`
 
@@ -597,6 +601,7 @@ Due to performance concerns, referring commits with abbreviated IDs is not allow
 4. Cache the new Commit and queue it for write back
 5. Move the current branch pointing the new commit
 6. Make a new staging area
+7. Record the new commit's ID
 
 #### Make a commit `Tree`
 
@@ -648,17 +653,16 @@ is avoided, and the amount of codes to implement the `rm` command is trivial.
 
 ### Print global log
 
-1. Get a list of commit IDs that are pointed by any branch
-2. Print log information starting form each of the ID (ignore those commits that have been visited base on their IDs)
+1. Get the allCommitsID `Tree` which holds all commits' IDs.
+2. Print log information for each of the IDs.
 
 ### The `find` command
 
 This command has similar algorithm with the `global-log` command.
 Both of these commands cover all commits ever made by the same manner.
 
-1. Get a list of commit IDs that are pointed by any branch
-2. Recursively check the commits and their ascendants whether they have the designated commit message
-   (ignore those commits that have been visited base on their IDs)
+1. Get the allCommitsID `Tree` which holds all commits' IDs.
+2. Check each commit whether it has the designated commit message.
 
 ### Print repository status
 
@@ -816,6 +820,7 @@ CWD                                                      <==== Whatever the curr
 └── .gitlet                                              <==== All persistant data is stored within here
     ├── HEAD                                             <==== The name of the current branch
     ├── STAGE                                            <==== A hash pointer to the serialized staging area Tree
+    ├── allCommitsID                                     <==== A serialized Tree that contains all commits' IDs
     ├── objects                                          <==== The object database (all HashObject lives here)
     │   ├── d9                                           <==== Saves all HashObject with ID stating with "d9"
     │   │   ├── 91f6cad12cc1bfb64791e893fa01ac5bf8358e   <==== A saved HashObject, named after its ID without the first two letters
@@ -834,7 +839,7 @@ The `Repository.setUpPersistence()` method will set up all persistence. It will:
 
 1. Abort if there is already a Gitlet version-control system in the current directory
 2. Create `.gitlet/branches` and `.gitlet/objects` folders
-3. Create `.gitlet/HEAD` and `.gitlet/STAGE` files
+3. Create `.gitlet/HEAD`, `.gitlet/STAGE`, and `.gitlet/allCommitsID`
 
 After setting up all persistence, the `init` command will do its jobs.
 Finally, all changes that should be persistent (including branching, HEAD, new commit, and Tree for that commit)
@@ -858,7 +863,8 @@ The `commit` command will modify persistence following the following rules (no p
 1. Save a serialized `Commit` object in the object database
 2. Overwrite the current branch's file, make it contains the new commit's ID
 3. Make a new staging area and overwrite the `STAGE` file
-4. ~~Delete the previous staging area if it is not empty, and there is a commit already _(subtle bug may exist)_~~
+4. Record the new commits' ID to `.gitlet/allCommitsID`
+5. ~~Delete the previous staging area if it is not empty, and there is a commit already _(subtle bug may exist)_~~
 
 #### `rm` command
 

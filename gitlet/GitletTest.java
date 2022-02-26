@@ -469,7 +469,7 @@ public class GitletTest {
         assertFile("conflict", "<<<<<<< HEAD\n!CONFLICT\n=======\nCONFLICT\n>>>>>>>\n");
     }
 
-    /* AUTO GRADER DEBUG */
+    /* AUTO GRADER DEBUGS */
 
     @Test
     public void test20_status_after_commit() throws IOException {

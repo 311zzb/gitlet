@@ -19,7 +19,7 @@ public class Tree extends HashObject implements Iterable<String> {
     private final Map<String, String> _structure;
 
     /** Constructor */
-    private Tree() {
+    Tree() {
         _structure = new TreeMap<>();
     }
 

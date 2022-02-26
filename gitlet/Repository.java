@@ -29,6 +29,8 @@ public class Repository {
     static final File HEAD = join(GITLET_DIR, "HEAD");
     /** The STAGE file. */
     static final File STAGE = join(GITLET_DIR, "STAGE");
+    /** The allCommitsID file. */
+    static final File ALL_COMMITS_ID = join(GITLET_DIR, "allCommitsID");
     /** The objects directory. */
     static final File OBJECTS_DIR = join(GITLET_DIR, "objects");
     /** The branches directory. */
@@ -58,12 +60,14 @@ public class Repository {
      * 2. Make the default branch "master" which is pointing null for now (no pun intended)
      * 3. Make the HEAD pointing to the master branch
      * 4. Make a new staging area
+     * 5. Initialize and serialize a Tree to allCommitsID
      */
     private static void setUpRepository() throws IOException {
         setUpPersistence();
         mkNewBranch("master");
         moveHEAD("master");
         mkNewStage();
+        writeObject(ALL_COMMITS_ID, new Tree());
     }
 
     /** Set up the persistence directories. */
@@ -75,6 +79,7 @@ public class Repository {
         OBJECTS_DIR.mkdirs();
         HEAD.createNewFile();
         STAGE.createNewFile();
+        ALL_COMMITS_ID.createNewFile();
     }
 
     /* ADD COMMAND ---------------------------------------------------------------------------------------------------*/
@@ -154,10 +159,9 @@ public class Repository {
      * @param CommitID the given commit ID
      */
     private static void log(String CommitID) {
-        if (CommitID == null || loggedCommitID.contains(CommitID)) {
+        if (CommitID == null) {
             return;
         } // Special case: return if the CommitID is null or already printed (useful for global-log command)
-        loggedCommitID.add(CommitID);
         Commit commit = getCommit(CommitID);
         System.out.println(commit.logString());
         log(commit.getParentCommitID());
@@ -165,20 +169,17 @@ public class Repository {
 
     /* GLOBAL-LOG COMMAND --------------------------------------------------------------------------------------------*/
 
-    /** A Set that record the visited commits' IDs. No need to be persistent. */
-    private static final Set<String> loggedCommitID = new HashSet<>();
-
     /**
      * Print log information about all commits ever made.
-     * 1. Get a list of commit IDs that are pointed by any branch
-     * 2. Print log information starting form each of the ID
-     *    (ignore those commits that have been visited base on their IDs)
+     * 1. Get the allCommitsID Tree which holds all commits' IDs.
+     * 2. Print log information for each of the IDs.
      */
     public static void globalLog() {
         assertGITLET();
-        List<String> branchesCommitID = loadAllBranches();
-        for (String CommitID : branchesCommitID) {
-            log(CommitID);
+        Tree allCommitsID = getAllCommitsID();
+        for (String commitID : allCommitsID) {
+            Commit commit = getCommit(commitID);
+            System.out.println(commit.logString());
         }
     }
 
@@ -186,21 +187,18 @@ public class Repository {
 
     /** A list of commit IDs that have the designated commit message. */
     private static final List<String> foundCommitID = new ArrayList<>();
-    /** A list of commit IDs that are already visited. */
-    private static final List<String> visitedFindCommitID = new ArrayList<>();
 
     /**
      * Execute the find command.
-     * 1. Get a list of commit IDs that are pointed by any branch
-     * 2. Recursively check the commits and their ascendants whether they have the designated commit message
-     *    (ignore those commits that have been visited base on their IDs)
+     * 1. Get the allCommitsID Tree which holds all commits' IDs.
+     * 2. Check each commit whether it has the designated commit message.
      * @param commitMessage the designated commit message.
      */
     public static void find(String commitMessage) {
         assertGITLET();
-        List<String> branchesCommitID = loadAllBranches();
-        for (String CommitID : branchesCommitID) {
-            findCheck(CommitID, commitMessage);
+        Tree allCommitsID = getAllCommitsID();
+        for (String commitID : allCommitsID) {
+            findCheck(commitID, commitMessage);
         }
         if (foundCommitID.isEmpty()) {
             printAndExit("Found no commit with that message.");
@@ -212,20 +210,15 @@ public class Repository {
     }
 
     /**
-     * Recursively check if commit with CommitID and its ascendants have the designated commit message.
-     * @param CommitID the designated commit ID.
+     * Check if the designated commit has the designated commit message.
+     * @param commitID the designated commit ID.
      * @param commitMessage the matching commit message.
      */
-    private static void findCheck(String CommitID, String commitMessage) {
-        if (CommitID == null || visitedFindCommitID.contains(CommitID)) {
-            return;
-        } // Special case: return if CommitID is null or already visited.
-        visitedFindCommitID.add(CommitID);
-        Commit commit = getCommit(CommitID);
+    private static void findCheck(String commitID, String commitMessage) {
+        Commit commit = getCommit(commitID);
         if (commit.getMessage().equals(commitMessage)) {
-            foundCommitID.add(CommitID);
+            foundCommitID.add(commitID);
         }
-        findCheck(commit.getParentCommitID(), commitMessage);
     }
 
     /* STATUS COMMAND ------------------------------------------------------------------------------------------------*/

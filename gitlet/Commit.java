@@ -1,5 +1,6 @@
 package gitlet;
 
+import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -8,6 +9,7 @@ import java.util.Set;
 
 import static gitlet.Branch.*;
 import static gitlet.Cache.*;
+import static gitlet.Repository.ALL_COMMITS_ID;
 import static gitlet.Repository.printAndExit;
 import static gitlet.Stage.*;
 import static gitlet.Tree.*;
@@ -193,6 +195,7 @@ public class Commit extends HashObject {
      * 4. Cache the new Commit and queue it for write back
      * 5. Move the current branch pointing the new commit
      * 6. Make a new staging area
+     * 7. Record the new commit's ID
      */
     static void mkCommit(String message) {
         if (!message.equals("initial commit") && getStage().isEmpty()) {
@@ -204,6 +207,7 @@ public class Commit extends HashObject {
         String newCommitID = cacheAndQueueForWriteHashObject(newCommit);
         moveCurrBranch(newCommitID);
         mkNewStage();
+        recordCommitID(newCommitID);
     }
 
     /** Factory method. Make a new merge Commit. */
@@ -220,6 +224,7 @@ public class Commit extends HashObject {
         String newCommitID = cacheAndQueueForWriteHashObject(newCommit);
         moveCurrBranch(newCommitID);
         mkNewStage();
+        recordCommitID(newCommitID);
         if (conflicted) {
             System.out.println("Encountered a merge conflict.");
         }
@@ -240,5 +245,17 @@ public class Commit extends HashObject {
             commit2 = commit2.getParentCommit();
         }
         return null;
+    }
+
+    /** Record a new commit's ID to the allCommitsID file. */
+    static void recordCommitID(String commitID) {
+        Tree allCommitsID = getAllCommitsID();
+        allCommitsID.putBlobID(commitID, null);
+        Utils.writeObject(ALL_COMMITS_ID, allCommitsID);
+    }
+
+    /** Return a Tree object that captures all IDs of commits ever made. */
+    static Tree getAllCommitsID() {
+        return Utils.readObject(ALL_COMMITS_ID, Tree.class);
     }
 }
