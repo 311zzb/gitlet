@@ -8,6 +8,7 @@ import java.util.Set;
 
 import static gitlet.Branch.*;
 import static gitlet.Cache.*;
+import static gitlet.Repository.printAndExit;
 import static gitlet.Stage.*;
 import static gitlet.Tree.*;
 
@@ -195,7 +196,7 @@ public class Commit extends HashObject {
      */
     static void mkCommit(String message) {
         if (!message.equals("initial commit") && getStage().isEmpty()) {
-            throw new GitletException("No changes added to the commit.");
+            printAndExit("No changes added to the commit.");
         } // Special case: abort if no change is made.
         String parentCommitID = getLatestCommitID();
         String treeRef = mkCommitTree();
@@ -208,7 +209,7 @@ public class Commit extends HashObject {
     /** Factory method. Make a new merge Commit. */
     static void mkMergeCommit(String givenBranchName, Boolean conflicted) {
         if (getStage().isEmpty()) {
-            throw new GitletException("No changes added to the commit.");
+            printAndExit("No changes added to the commit.");
         } // Special case: abort if no change is made.
         String firstParentID = getLatestCommitID();
         String secondParentID = getBranch(givenBranchName);

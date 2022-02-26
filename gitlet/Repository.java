@@ -69,7 +69,7 @@ public class Repository {
     /** Set up the persistence directories. */
     static void setUpPersistence() throws IOException {
         if (GITLET_DIR.exists()) {
-            throw new GitletException("A Gitlet version-control system already exists in the current directory.");
+            printAndExit("A Gitlet version-control system already exists in the current directory.");
         } // Special case: Abort if there is already a Gitlet version-control system in the current directory.
         BRANCHES_DIR.mkdirs();
         OBJECTS_DIR.mkdirs();
@@ -89,7 +89,7 @@ public class Repository {
         assertGITLET();
         File targetFile = join(CWD, fileName);
         if (!targetFile.exists()) {
-            throw new GitletException("File does not exist.");
+            printAndExit("File does not exist.");
         } // Special case: abort if such file does not exist
         addToStage(fileName);
     }
@@ -103,7 +103,7 @@ public class Repository {
     public static void commit(String message) {
         assertGITLET();
         if (message.equals("")) {
-            throw new GitletException("Please enter a commit message.");
+            printAndExit("Please enter a commit message.");
         } // Special case: abort if message is blank.
         mkCommit(message);
     }
@@ -123,7 +123,7 @@ public class Repository {
         Tree stage = getStage();
         Commit headCommit = getLatestCommit();
         if (!stage.containsFile(fileName) && !headCommit.trackedFile(fileName)) {
-            throw new GitletException("No reason to remove the file.");
+            printAndExit("No reason to remove the file.");
         } // Special case: if the file is neither staged nor tracked by the head commit, print the error message
         if (stage.containsFile(fileName)) {
             removeFromStage(fileName);
@@ -203,7 +203,7 @@ public class Repository {
             findCheck(CommitID, commitMessage);
         }
         if (foundCommitID.isEmpty()) {
-            throw new GitletException("Found no commit with that message.");
+            printAndExit("Found no commit with that message.");
         } // Special case: no such commit exists.
         System.out.println("Commit ID(s) that match(es) the given message \"" + commitMessage + "\":");
         for (String CommitID : foundCommitID) {
@@ -371,7 +371,7 @@ public class Repository {
         assertGITLET();
         Commit commit = getCommit(commitID);
         if (commit == null) {
-            throw new GitletException("No commit with that id exists.");
+            printAndExit("No commit with that id exists.");
         } // Special case: abort if there is no commit with the given commit ID
         checkoutCommitFile(commit, fileName);
     }
@@ -385,13 +385,13 @@ public class Repository {
      */
     public static void checkout3(String branchName) {
         if (!existBranch(branchName)) {
-            throw new GitletException("No such branch exists.");
+            printAndExit("No such branch exists.");
         } // Special case: abort if no branch with that name exists.
         if (branchName.equals(getHEAD())) {
-            throw new GitletException("No need to checkout the current branch.");
+            printAndExit("No need to checkout the current branch.");
         } // Special case: abort if that branch is the current branch.
         if (!untrackedFiles().isEmpty()) {
-            throw new GitletException("There is an untracked file in the way; delete it, or add and commit it first.");
+            printAndExit("There is an untracked file in the way; delete it, or add and commit it first.");
         } // Special case: abort if a working file is untracked.
         String commitID = getBranch(branchName);
         checkoutToCommit(commitID);
@@ -422,7 +422,7 @@ public class Repository {
     private static void checkoutCommitFile(Commit commit, String fileName) {
         Blob blob = getBlob(commit.getBlobID(fileName));
         if (blob == null) {
-            throw new GitletException("File does not exist in that commit.");
+            printAndExit("File does not exist in that commit.");
         } // Special case: abort if such file does not exist in that commit
         overwriteCWDFile(fileName, blob);
     }
@@ -437,7 +437,7 @@ public class Repository {
     public static void branch(String branchName) {
         assertGITLET();
         if (existBranch(branchName)) {
-            throw new GitletException("A branch with that name already exists.");
+            printAndExit("A branch with that name already exists.");
         } // Special case: abort if a branch with the given name already exists
         mkNewBranch(branchName);
     }
@@ -453,10 +453,10 @@ public class Repository {
         assertGITLET();
         File targetBranch = join(BRANCHES_DIR, branchName);
         if (!targetBranch.exists()) {
-            throw new GitletException("A branch with that name does not exist.");
+            printAndExit("A branch with that name does not exist.");
         } // Special case: abort if a branch with the given name does not exist
         if (branchName.equals(getHEAD())) {
-            throw new GitletException("Cannot remove the current branch.");
+            printAndExit("Cannot remove the current branch.");
         } // Special case: abort if try to remove the current branch
         wipeBranch(branchName);
     }
@@ -473,10 +473,10 @@ public class Repository {
         assertGITLET();
         Commit commit = getCommit(commitID);
         if (commit == null) {
-            throw new GitletException("No commit with that id exists.");
+            printAndExit("No commit with that id exists.");
         } // Special case: abort if no commit with the given id exists.
         if (!untrackedFiles().isEmpty()) {
-            throw new GitletException("There is an untracked file in the way; delete it, or add and commit it first.");
+            printAndExit("There is an untracked file in the way; delete it, or add and commit it first.");
         } // Special case: abort if a working file is untracked.
         checkoutToCommit(commitID);
         String fullCommitID = commit.id(); // This prevents an abbreviated ID been written to branch files
@@ -594,13 +594,13 @@ public class Repository {
     /** Perform checks for the merge command. */
     private static void mergeChecks1(Commit split, Commit curr, Commit other) {
         if (other == null) {
-            throw new GitletException("A branch with that name does not exist.");
+            printAndExit("A branch with that name does not exist.");
         } // Abort merging if a branch with the given name does not exist.
         if (!stagedFiles().isEmpty()) {
-            throw new GitletException("You have uncommitted changes.");
+            printAndExit("You have uncommitted changes.");
         } // Abort merging if there are staged additions or removals present.
         if (stringEqual(curr.id(), other.id())) {
-            throw new GitletException("Cannot merge a branch with itself.");
+            printAndExit("Cannot merge a branch with itself.");
         } // Abort merging if attempting to merge a branch with itself.
         if (stringEqual(split.id(), other.id())) {
             System.out.println("Given branch is an ancestor of the current branch.");
@@ -629,11 +629,11 @@ public class Repository {
         List<String> modifiedNotStagedFiles = modifiedNotStagedFiles();
         for (String file: changingFiles) {
             if (untrackedFiles.contains(file)) {
-                throw new GitletException(
+                printAndExit(
                         "There is an untracked file in the way; delete it, or add and commit it first.");
             } // Abort merging if an untracked file in the current commit would be overwritten or deleted by the merge.
             if (modifiedNotStagedFiles.contains(file)) {
-                throw new GitletException(
+                printAndExit(
                         "There is an unstaged change in the way; revoke it, or add and commit it first.");
             } // Abort merging if there are unstaged changes to file that would be changed by the merge.
         }
@@ -644,7 +644,7 @@ public class Repository {
     /** Assert the CWD contains a .gitlet directory. */
     private static void assertGITLET() {
         if (!GITLET_DIR.exists()) {
-            throw new GitletException("A Gitlet version-control system have not initialized in the current directory.");
+            printAndExit("A Gitlet version-control system have not initialized in the current directory.");
         }
     }
 
@@ -704,5 +704,11 @@ public class Repository {
             return true;
         }
         return s1 != null && s1.equals(s2);
+    }
+
+    /** Print a message and exit the execution. */
+    static void printAndExit(String msg) {
+        System.out.println(msg);
+        System.exit(0);
     }
 }
