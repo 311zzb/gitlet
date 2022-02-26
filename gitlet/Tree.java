@@ -108,7 +108,7 @@ public class Tree extends HashObject implements Iterable<String> {
     void updateWith(Tree updater) {
         for (String key : updater) {
             String blobID = updater.getBlobID(key);
-            if (blobID == null) {
+            if (blobID.equals("")) {
                 this.removeBlobID(key);
             } // Special case: remove the corresponding pair from THIS if the value to a key in the updater is null
             else {

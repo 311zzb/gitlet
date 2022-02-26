@@ -469,6 +469,36 @@ public class GitletTest {
         assertFile("conflict", "<<<<<<< HEAD\n!CONFLICT\n=======\nCONFLICT\n>>>>>>>\n");
     }
 
+    /* AUTO GRADER DEBUG */
+
+    @Test
+    public void test20_status_after_commit() throws IOException {
+        GitletExecute("init");
+        writeAndAdd("f.txt", "wug");
+        writeAndAdd("g.txt", "not wug");
+        GitletExecute("commit", "Two files");
+        GitletExecute("status");
+
+        GitletExecute("rm", "f.txt");
+        GitletExecute("commit", "Removed f.txt");
+        GitletExecute("status");
+    }
+
+    @Test
+    public void test24_global_log_prev() throws IOException {
+        GitletExecute("init");
+        writeAndAdd("f.txt", "wug");
+        writeAndAdd("g.txt", "not wug");
+        GitletExecute("commit", "Two files");
+        writeAndAdd("h.txt", "h");
+        GitletExecute("commit", "Add h");
+//        GitletExecute("log");
+
+        String id = getLatestCommit().getParentCommitID();
+        GitletExecute("reset", id);
+        GitletExecute("global-log"); // Should print out all three commits
+    }
+
     /* MISC ----------------------------------------------------------------------------------------------------------*/
 
     /** Execute commands with Gitlet and clean the cache after execution. */
