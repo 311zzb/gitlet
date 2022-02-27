@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Stack;
 
 import static gitlet.Branch.*;
 import static gitlet.Cache.*;
@@ -26,13 +27,13 @@ public class Commit extends HashObject {
     /** The commit message */
     private final String _message;
     /** The ID of the parent commit. */
-    private final String _parentCommitRef;
-    /** The ID of the other parent (if any). */
-    private final String _parentCommitMergeRef;
+    private final String _parentCommitID;
+    /** The ID of the second parent (if any). */
+    private final String _parentMergeCommitID;
     /** A time stamp of the commit been made. */
     private final Date _timeStamp;
     /** The ID of the associated Tree object. */
-    private final String _treeRef;
+    private final String _treeID;
 
     /**
      * The constructor of the Commit class. This method is `private`
@@ -43,10 +44,10 @@ public class Commit extends HashObject {
      * @param treeRef the corresponding tree's hash
      */
     private Commit(String parentCommitID, String message, String treeRef) {
-        this._parentCommitRef = parentCommitID;
-        this._parentCommitMergeRef = null;
+        this._parentCommitID = parentCommitID;
+        this._parentMergeCommitID = null;
         this._message = message;
-        this._treeRef = treeRef;
+        this._treeID = treeRef;
         if (message.equals("initial commit")) {
             this._timeStamp = new Date(0);
             return;
@@ -56,10 +57,10 @@ public class Commit extends HashObject {
 
     /** Constructor for merge commits. */
     private Commit(String firstCommitID, String secondCommitID, String message, String treeRef) {
-        this._parentCommitRef = firstCommitID;
-        this._parentCommitMergeRef = secondCommitID;
+        this._parentCommitID = firstCommitID;
+        this._parentMergeCommitID = secondCommitID;
         this._message = message;
-        this._treeRef = treeRef;
+        this._treeID = treeRef;
         this._timeStamp = new Date(System.currentTimeMillis());
     }
 
@@ -69,11 +70,11 @@ public class Commit extends HashObject {
      */
     @Override
     public String toString() {
-        return _parentCommitRef
+        return _parentCommitID
                 + "@"
                 + _message
                 + "@"
-                + _treeRef
+                + _treeID
                 + "@"
                 + _timeStamp.toString();
     }
@@ -83,7 +84,7 @@ public class Commit extends HashObject {
         String pattern = "EEE MMM dd HH:mm:ss yyyy Z";
         DateFormat df = new SimpleDateFormat(pattern);
         String timeStampString = df.format(_timeStamp);
-        if (_parentCommitMergeRef == null) {
+        if (_parentMergeCommitID == null) {
             return  "===\n"
                     + "commit "
                     + this.id()
@@ -99,9 +100,9 @@ public class Commit extends HashObject {
                     + this.id()
                     + "\n"
                     + "Merge: "
-                    + _parentCommitRef.substring(0, 7)
+                    + _parentCommitID.substring(0, 7)
                     + " "
-                    + _parentCommitMergeRef.substring(0, 7)
+                    + _parentMergeCommitID.substring(0, 7)
                     + "\n"
                     + "Date: "
                     + timeStampString
@@ -118,8 +119,8 @@ public class Commit extends HashObject {
         super.dump();
         System.out.println("time: " + _timeStamp);
         System.out.println("message: " + _message);
-        System.out.println("parent: " + _parentCommitRef);
-        System.out.println("treeRef: " + _treeRef);
+        System.out.println("parent: " + _parentCommitID);
+        System.out.println("treeRef: " + _treeID);
     }
 
     /** Get the message of this commit. */
@@ -129,7 +130,12 @@ public class Commit extends HashObject {
 
     /** Get the ID of the parent commit. */
     String getParentCommitID() {
-        return _parentCommitRef;
+        return _parentCommitID;
+    }
+
+    /** Get the ID of the second parent commit. */
+    String getParentMergeCommitID() {
+        return _parentMergeCommitID;
     }
 
     /** Get the Commit object of the parent commit. */
@@ -137,11 +143,16 @@ public class Commit extends HashObject {
         return getCommit(getParentCommitID());
     }
 
+    /** Get the Commit object ot the second parent commit. */
+    Commit getParentMergeCommit() {
+        return getCommit(getParentMergeCommitID());
+    }
+
     /**
      * Get the ID of the associating Tree of this commit.
      */
     String getCommitTreeID() {
-        return _treeRef;
+        return _treeID;
     }
 
     /** Get the associating Tree of this commit. */
@@ -175,17 +186,6 @@ public class Commit extends HashObject {
     Set<String> trackedFiles() {
         Tree commitTree = this.getCommitTree();
         return new HashSet<>(commitTree.trackedFiles());
-    }
-
-    /** Return a string Set of all ancestors' ID of this commit. */
-    Set<String> ancestor() {
-        Commit curr = this;
-        Set<String> set = new HashSet<>();
-        while (curr != null) {
-            set.add(curr.id());
-            curr = curr.getParentCommit();
-        }
-        return set;
     }
 
     /* STATIC METHODS ------------------------------------------------------------------------------------------------*/
@@ -240,14 +240,36 @@ public class Commit extends HashObject {
      * @return the commit ID of the LCA.
      */
     static Commit lca(Commit commit1, Commit commit2) {
-        Set<String> set = new HashSet<>(commit1.ancestor());
-        while (commit2 != null) {
-            if (set.contains(commit2.id())) {
-                return commit2;
+        Set<String> set = new HashSet<>(ancestors(commit1));
+        Stack<Commit> bfs = new Stack<>(); // the Stack for bfs
+        bfs.push(commit2);
+        while (!bfs.empty()) {
+            Commit curr = bfs.pop();
+            if (curr == null) {
+                continue;
+            } // Special case: skip null Commit.
+            if (set.contains(curr.id())) {
+                return curr;
             }
-            commit2 = commit2.getParentCommit();
+            bfs.push(curr.getParentCommit());
+            bfs.push(curr.getParentMergeCommit());
         }
         return null;
+    }
+
+    /**
+     * Recursively collect and return a Set of all ancestors' ID of the given Commit object,
+     * including merge parents.
+     */
+    static Set<String> ancestors(Commit commit) {
+        Set<String> set = new HashSet<>();
+        if (commit == null) {
+            return set;
+        } // Special case: return an empty Set if the given Commit is null.
+        set.add(commit.id());
+        set.addAll(ancestors(commit.getParentMergeCommit()));
+        set.addAll(ancestors(commit.getParentCommit()));
+        return set;
     }
 
     /** Record a new commit's ID to the allCommitsID file. */

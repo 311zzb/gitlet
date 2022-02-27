@@ -466,7 +466,7 @@ public class GitletTest {
         assertFile("e", null);
         assertFile("f", "!F");
         assertFile("g", "G");
-        assertFile("conflict", "<<<<<<< HEAD\n!CONFLICT\n=======\nCONFLICT\n>>>>>>>");
+        assertFile("conflict", "<<<<<<< HEAD\n!CONFLICT\n=======\nCONFLICT\n>>>>>>>\n");
     }
 
     /* AUTO GRADER DEBUGS */
@@ -539,10 +539,45 @@ public class GitletTest {
         assertFileNotExist("g.txt");
         assertFile("h.txt", "Another wug.\n");
         assertFile("k.txt", "And yet another wug.\n");
-        assertFile("f.txt", "<<<<<<< HEAD\nAnother wug.\n=======\n>>>>>>>");
+        assertFile("f.txt", "<<<<<<< HEAD\nAnother wug.\n=======\n>>>>>>>\n");
 
         GitletExecute("log");
         GitletExecute("status");
+    }
+
+    @Test
+    public void test36a_merge_parent2() throws IOException {
+        GitletExecute("init");
+        GitletExecute("branch", "B1");
+        GitletExecute("branch", "B2");
+
+        GitletExecute("checkout", "B1");
+        writeAndAdd("h.txt", "This is a wug.\n");
+        GitletExecute("commit", "Add h.txt");
+
+        GitletExecute("checkout", "B2");
+        writeAndAdd("f.txt", "This is a wug.\n");
+        GitletExecute("commit", "f.txt added");
+
+        GitletExecute("branch", "C1");
+        writeAndAdd("g.txt", "This is not a wug.\n");
+        GitletExecute("rm", "f.txt");
+        GitletExecute("commit", "g.txt added, f.txt removed");
+
+        GitletExecute("checkout", "B1");
+        assertFile("h.txt", "This is a wug.\n");
+        assertFileNotExist("f.txt");
+        assertFileNotExist("g.txt");
+
+        GitletExecute("merge", "C1");
+        assertFile("f.txt", "This is a wug.\n");
+        assertFile("h.txt", "This is a wug.\n");
+        assertFileNotExist("g.txt");
+
+        GitletExecute("merge", "B2");
+        assertFileNotExist("f.txt");
+        assertFile("g.txt", "This is not a wug.\n");
+        assertFile("h.txt", "This is a wug.\n");
     }
 
     /* MISC ----------------------------------------------------------------------------------------------------------*/

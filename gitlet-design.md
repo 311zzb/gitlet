@@ -346,14 +346,14 @@ as well as static method that carry out the procedure to make a new commit.
 #### Fields
 
 1. `private final String _message` The commit message.
-2. `private final String _parentCommitRef` The ID of the parent commit.
-3. `private final String _parentCommitMergeRef` The ID of the other parent (if any). Not implemented yet.
+2. `private final String _parentCommitID` The ID of the parent commit.
+3. `private final String _parentMergeCommitID` The ID of the second parent (if any).
 4. `private final Date _timeStamp` A time stamp of the commit been made.
-5. `private final String _treeRef` The ID of the associated `Tree` object.
+5. `private final String _treeID` The ID of the associated `Tree` object.
 6. `private Commit(String parentCommitID, String message, String treeRef)`
    The constructor of `Commit` class. This method is `private`
    because no "naked" instantiation of `Commit` is allowed outside the `Commit` class.
-   Additionally, the time stamp is set to 1970.01.01 for initial commit.
+   Additionally, the time stamp is set to `1970.01.01 00:00:00` for initial commit.
 7. `private Commit(String firstCommitID, String secondCommitID, String message, String treeRef)`
    Constructor for merge commits.
 8. `public String toString()` Content-addressable overriding `toString()` method.
@@ -361,22 +361,26 @@ as well as static method that carry out the procedure to make a new commit.
 10. `public void dump()` Print information of this `Commit` on `System.out`.
 11. `String getMessage()` Get the message of this `Commit`.
 12. `String getParentCommitID()` Get the ID of the parent commit.
-13. `Commit getParentCommit()` Get the `Commit` object of the parent commit.
-14. `String getCommitTreeID()` Get the ID of the associating `Tree` of this commit.
-15. `Tree getCommitTree()` Get the associating `Tree` of this commit.
-16. `String getBlobID(String fileName)` Get the ID of the `Blob` of a designated file name in this commit.
-17. `String getFileContent(String fileName)` Return the content of a designated file name in this commit.
+13. `String getParentMergeCommitID()` Get the ID of the second parent commit.
+14. `Commit getParentCommit()` Get the `Commit` object of the parent commit.
+15. `Commit getParentMergeCommit()` Get the `Commit` object ot the second parent commit.
+16. `String getCommitTreeID()` Get the ID of the associating `Tree` of this commit.
+17. `Tree getCommitTree()` Get the associating `Tree` of this commit.
+18. `String getBlobID(String fileName)` Get the ID of the `Blob` of a designated file name in this commit.
+19. `String getFileContent(String fileName)` Return the content of a designated file name in this commit.
     Special case: return an empty `String` if there is no corresponding `Blob`.
-18. `Boolean trackedFile(String fileName)` Return whether this `Commit` contains a file with `fileName`.
-19. `Set<String> trackedFiles()` Return a string `Set` of tracked files of this commit.
-20. `Set<String> ancestor()` Return a string `Set` of all ancestors' ID of this commit.
-21. `static void mkCommit(String message)` Factory method. Make a new `Commit`.
+20. `Boolean trackedFile(String fileName)` Return whether this `Commit` contains a file with `fileName`.
+21. `Set<String> trackedFiles()` Return a string `Set` of tracked files of this commit.
+22. `static void mkCommit(String message)` Factory method. Make a new `Commit`.
     Implementation details in the Algorithm section.
-22. `static void mkMergeCommit(String givenBranchName, Boolean conflicted)`
+23. `static void mkMergeCommit(String givenBranchName, Boolean conflicted)`
     Factory method. Make a new merge Commit.
-23. `static Commit lca(Commit commit1, Commit commit2)` Return the latest common ancestor (LCA) of two `Commit`s.
-24. `static void recordCommitID(String commitID)` Record a new commit's ID to the `.gitlet/allCommitsID` file.
-25. `static Tree getAllCommitsID()` Return a `Tree` object that captures all IDs of commits ever made.
+24. `static Commit lca(Commit commit1, Commit commit2)` Return the latest common ancestor (LCA) of two `Commit`s.
+25. `static Set<String> ancestors(Commit commit)`
+    Recursively collect and return a `Set` of all ancestors' ID of the given `Commit` object, including merge parents.
+    Special case: return an empty `Set` if the given `Commit` is `null`.
+26. `static void recordCommitID(String commitID)` Record a new commit's ID to the `.gitlet/allCommitsID` file.
+27. `static Tree getAllCommitsID()` Return a `Tree` object that captures all IDs of commits ever made.
 
 ### Tree
 
@@ -502,6 +506,7 @@ This class contains JUnit tests and some helper methods for Gitlet.
     2. `public void test24_global_log_prev()`
     3. `public void test29_bad_checkouts_err()`
     4. `public void test35_merge_rm_conflicts()`
+    5. `public void test36a_merge_parent2()`
 15. misc
     1. `private static void GitletExecute(String... command)`
        Execute commands with Gitlet and clean the cache after execution.
@@ -771,9 +776,11 @@ Generally, the following procedure is followed to execute this command.
 
 #### Get the latest common ancestor (split commit) of two commits
 
-1. Get a Set all ancestors' ID of a commit.
-2. Starting from the other commit, return the commit if its ID is in the Set.
-3. Go to its parent commit and check again.
+1. Get a `Set` of all ancestors' ID of a commit. 
+   This is accomplished by recursively collect all parent commit(s)' ID(s) and their parent(s)' ID(s), 
+   like breadth-first-search.
+   Note that a merge commit has two parents, both will be collected as its ancestor.
+2. Starting from the other commit, breadth-first-search the first commit that its ID is in the `Set`.
 
 #### Determine which files will be changed in what manners
 
