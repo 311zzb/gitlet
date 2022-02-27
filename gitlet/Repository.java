@@ -529,7 +529,7 @@ public class Repository {
     private static String makeConflictContent(String fileName, Commit curr, Commit other) {
         String currContent = curr.getFileContent(fileName);
         String otherContent = other.getFileContent(fileName);
-        return "<<<<<<< HEAD\n" + currContent + "=======\n" + otherContent + ">>>>>>>";
+        return "<<<<<<< HEAD\n" + currContent + "=======\n" + otherContent + ">>>>>>>\n";
     }
 
     /**
