@@ -14,14 +14,16 @@ The cache write back method `Cache.writeBack()` which enabling the persistence o
 
 This class contains only `static` methods since `Main` should not be instantiated.
 
-1. `public static void main(String[] args)` The main method of Gitlet.
-2. `private static void assertArgsNum(String[] args, int n)`
+1. `static final File localCWD  = new File(System.getProperty("user.dir"))`
+   The current working directory `File` object.
+2. `public static void main(String[] args)` The main method of Gitlet.
+3. `private static void assertArgsNum(String[] args, int n)`
    Throw a GitletException if args _don't have_ exactly n elements.
-3. `private static void assertNotArgsNum(String[] args, int n)`
+4. `private static void assertNotArgsNum(String[] args, int n)`
    Throw a GitletException if args _have_ exactly n elements.
-4. `private static String[] getOperands(String[] args)`
+5. `private static String[] getOperands(String[] args)`
    Strip the first element of the input array and return the rest.
-5. `private static void assertString(String expected, String actual)`
+6. `private static void assertString(String expected, String actual)`
    Assert two `String` are equal.
 
 ### Cache
@@ -115,20 +117,25 @@ It also sets up persistence and do additional error checking.
 #### Fields
 
 1. Static Variables
-   1. `static final File CWD = new File(System.getProperty("user.dir"))`
+   1. `static File CWD`
       The Current Working Directory. A package-private static variable.
-   2. `static final File GITLET_DIR = join(CWD, ".gitlet")`
+   2. `static File GITLET_DIR`
       The `.gitlet` directory, where all the state of the repository will be stored. Package-private.
-   3. `static final File HEAD = join(GITLET_DIR, "HEAD")`
+   3. `static File HEAD`
       The `.gitlet/HEAD` file. This file stores the name of the active branch.
-   4. `static final File STAGE = join(GITLET_DIR, "STAGE")`
+   4. `static File STAGE`
       The `.gitlet/STAGE` file, where the ID of the current staging area is stored.
-   5. `static final File ALL_COMMITS_ID = join(GITLET_DIR, "allCommitsID")`
+   5. `static File ALL_COMMITS_ID`
       The `.gitlet/allCommitsID` file, which is a serialized `Tree` that holds all the IDs of existing commits.
-   6. `static final File OBJECTS_DIR = join(GITLET_DIR, "objects")`
+   6. `static File OBJECTS_DIR`
       The `.gilet/objects` directory. This is the object database where all `HashObject` live.
-   7. `static final File BRANCHES_DIR = join(GITLET_DIR, "branches")`
+   7. `static File BRANCHES_DIR`
       The `.gitlet/branches` directory. Each branch is stored as a file under this directory.
+   8. `static void assignStaticVariables(File cwd)`
+      Assign the above static variables according to the given `CWD`.
+      This is useful dealing with local and remote repositories.
+      The current working directory is passed in as `CWD` for default, but the remote repository directory
+      will be passed in when manipulating it.
 2. `init` command
    1. `public static void init()`
       The method which handles the `init` command. Implementation details in the Algorithms section.
@@ -443,6 +450,32 @@ This class also has `Blob` related static methods.
 7. `static String currFileID(String fileName)`
    Return the `ID` of a designated file's `Blob` without cache or saving a `Blob`.
 
+### Remote
+
+Represent a remote Gitlet repository and accommodating remote commands related methods.
+
+#### Fields
+
+1. Non-static methods
+   1. `File _remoteWD` Stores the working directory of this remote repository as a `File` object.
+   2. `private Remote(File remoteGitlet)` Construct a remote repository representation.
+   3. `private void remoteRunner()`
+      Change the `CWD` in the Gitlet running environment to the remote repository's working directory.
+      Must call before commanding the remote repository.
+2. Static methods
+   1. `add-remote` command
+      1. `public static void addRemote(String remoteName, String path)`
+         Execute the add-remote command by creating a reference to the remote repository.
+      2. `private static void writeRemote(File remoteFile, String path)`
+         Write a remote repository reference.
+      3. `static File readRemote(String remoteName)`
+         Get the `File` referencing the remote (in the local repository).
+   2. `rm-remote` command
+      1. `static File getRemoteGitlet(String remoteName)`
+         Get the `File` of the remote `.gitlet` directory.
+   3. `push` command
+      1. 
+
 ### GitletTest
 
 This class contains JUnit tests and some helper methods for Gitlet.
@@ -501,24 +534,29 @@ This class contains JUnit tests and some helper methods for Gitlet.
     2. `public void mergeSanityTest()` A sanity test for the merge command.
     3. `public void mergeConflictTest()` Test merging two branches with conflict.
     4. `public void mergeTest()` A hard (and comprehensive) test for the merge command.
-14. Auto grader debug tests
+14. `add-remote` command
+    1. `public void addRemoteTest()`A sanity test for `add-remote`.
+15. `push` command
+    1. `public void pushTest()` A sanity test for add-remote command.
+16. Auto grader debug tests
     1. `public void test20_status_after_commit()`
     2. `public void test24_global_log_prev()`
     3. `public void test29_bad_checkouts_err()`
     4. `public void test35_merge_rm_conflicts()`
     5. `public void test36a_merge_parent2()`
-15. misc
-    1. `private static void GitletExecute(String... command)`
+17. misc
+    1. `static final File CWD` The local repository's working directory.
+    2. `private static void GitletExecute(String... command)`
        Execute commands with Gitlet and clean the cache after execution.
        Special case: make sure there is no `.gitlet` directory before the init command. Implemented for testing purposes.
-    2. `private static void writeTestFile(String fileName, String content)`
+    3. `private static void writeTestFile(String fileName, String content)`
        Write content into a designated file name. Overwriting or creating file as needed.
-    3. `private static void deleteTestFile(String fileName)` Delete the file with the designated name.
-    4. `private static String readTestFile(String fileName)` Read the designated file as String and return it.
-    5. `private static void deleteDirectory(File directoryToBeDeleted)` Delete a directory recursively.
-    6. `private static void writeAndAdd(String fileName, String content)`
+    4. `private static void deleteTestFile(String fileName)` Delete the file with the designated name.
+    5. `private static String readTestFile(String fileName)` Read the designated file as String and return it.
+    6. `private static void deleteDirectory(File directoryToBeDeleted)` Delete a directory recursively.
+    7. `private static void writeAndAdd(String fileName, String content)`
        Write a test file with the designated file name and content, then add it to the stage.
-    7. `private static void assertFile(String fileName, String content)`
+    8. `private static void assertFile(String fileName, String content)`
        Assert a designated file has the designated content.
 
 ## Algorithms
@@ -823,6 +861,24 @@ the first is the current commit ID and the second is the ID of the given branch'
 Lastly, Gitlet will print a message to the console if any conflict is made.
 
 
+### Remote commands
+
+Commands related with remote repository requires reuse of existing code for the local repository.
+To fulfill this demand, static variables (such as `CWD`, or `GITLET_DIR`)
+in the Repository class are no longer final and will be assigned each time.
+That is, when executing commands on the local repository, static variables will be assigned normally;
+while executing commands on the remote repository, these static variables will be assigned according to the remote
+working directory, thus reuse the existing code to manipulating the remote repository.
+
+
+#### add and remove a remote
+
+This command only involved manipulation to the local repository (creating path reference to the remote repository).
+
+#### `push` command
+
+
+
 ## Persistence
 
 The directory structure looks like this:
@@ -838,8 +894,11 @@ CWD                                                      <==== Whatever the curr
     │   │   ├── 91f6cad12cc1bfb64791e893fa01ac5bf8358e   <==== A saved HashObject, named after its ID without the first two letters
     │   │   └── ...                                    
     │   └── ...                                        
-    └── branches                                         <==== Store all the branch references
-        ├── master                                       <==== The default branch. Contains a hash pointer to a commit
+    ├── branches                                         <==== Store all the branch references
+    │   ├── master                                       <==== The default branch. Contains a hash pointer to a commit
+    │   └── ...
+    └── remotes                                          <==== Store all the remote references
+        ├── R1                                           <==== A remote references in String, e.g. [remote directory]/.gitlet
         └── ...
 ```
 
@@ -906,3 +965,8 @@ This command will write the current working directory and clear the staging area
 #### `merge` command
 
 If the merging is carried out successfully, this command will change the persistence just like the `commit` command.
+
+#### `add-remote` and `rm-remote` command
+
+These two command will create/delete files in `.gitlet/remotes/` directory.
+

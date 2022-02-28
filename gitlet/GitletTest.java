@@ -469,6 +469,27 @@ public class GitletTest {
         assertFile("conflict", "<<<<<<< HEAD\n!CONFLICT\n=======\nCONFLICT\n>>>>>>>\n");
     }
 
+    /* ADD-REMOTE COMMAND */
+
+    /** A sanity test for add-remote command. */
+    @Test
+    public void addRemoteTest() throws IOException {
+        GitletExecute("init");
+        GitletExecute("add-remote", "test", "D:/_SDE/cs61b/PlayGround/.gitlet");
+        Remote.readRemote("test");
+    }
+
+    /* PUSH COMMAND */
+
+    /** A sanity test for add-remote command. */
+    @Test
+    public void pushTest() throws IOException {
+        GitletExecute("init");
+        GitletExecute("add-remote", "PlayGround2", "D:/_SDE/cs61b/PlayGround2/.gitlet");
+        GitletExecute("push", "PlayGround2", "remoteBranchName");
+    }
+
+
     /* AUTO GRADER DEBUGS */
 
     @Test
@@ -582,9 +603,12 @@ public class GitletTest {
 
     /* MISC ----------------------------------------------------------------------------------------------------------*/
 
+    static final File CWD = new File(System.getProperty("user.dir"));
+
     /** Execute commands with Gitlet and clean the cache after execution. */
     private static void GitletExecute(String... command) throws IOException {
         if (command[0].equals("init")) {
+            Repository.assignStaticVariables(CWD);
             Repository.deleteCWDFiles();
             deleteDirectory(GITLET_DIR);
         } // Special case: make sure there is no .gitlet directory before init command. Implemented for testing purposes.

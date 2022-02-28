@@ -1,6 +1,7 @@
 package gitlet;
 
 
+import java.io.File;
 import java.util.Objects;
 
 import static gitlet.Repository.printAndExit;
@@ -14,6 +15,8 @@ import static gitlet.Repository.printAndExit;
  */
 public class Main {
 
+    static final File localCWD  = new File(System.getProperty("user.dir"));
+
     /**
      * Usage: java gitlet.Main ARGS, where ARGS contains
      *  <COMMAND> <OPERAND1> <OPERAND2> ... 
@@ -23,6 +26,7 @@ public class Main {
         String command = args[0];
         String[] operands = getOperands(args);
 
+        Repository.assignStaticVariables(localCWD);
         switch (command) {
             case "init" -> {
                 assertArgsNum(operands, 0);
@@ -87,6 +91,18 @@ public class Main {
             case "merge" -> {
                 assertArgsNum(operands, 1);
                 Repository.merge(operands[0]);
+            }
+            case "add-remote" -> {
+                assertArgsNum(operands, 2);
+                Remote.addRemote(operands[0], operands[1]);
+            }
+            case "rm-remote" -> {
+                assertArgsNum(operands, 1);
+                Remote.rmRemote(operands[0]);
+            }
+            case "push" -> {
+                assertArgsNum(operands, 2);
+                Remote.push(operands[0], operands[1]);
             }
 
             default -> printAndExit("No command with that name exists.");

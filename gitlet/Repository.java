@@ -22,21 +22,34 @@ import static gitlet.Utils.*;
 public class Repository {
 
     /** The current working directory. */
-    static final File CWD = new File(System.getProperty("user.dir"));
+    static File CWD;
     /** The .gitlet directory. */
-    static final File GITLET_DIR = join(CWD, ".gitlet");
+    static File GITLET_DIR;
     /** The HEAD file. */
-    static final File HEAD = join(GITLET_DIR, "HEAD");
+    static File HEAD;
     /** The STAGE file. */
-    static final File STAGE = join(GITLET_DIR, "STAGE");
+    static File STAGE;
     /** The allCommitsID file. */
-    static final File ALL_COMMITS_ID = join(GITLET_DIR, "allCommitsID");
+    static File ALL_COMMITS_ID;
     /** The objects directory. */
-    static final File OBJECTS_DIR = join(GITLET_DIR, "objects");
+    static File OBJECTS_DIR;
     /** The branches directory. */
-    static final File BRANCHES_DIR = join(GITLET_DIR, "branches");
+    static File BRANCHES_DIR;
+    /** The remotes directory. */
+    static File REMOTES_DIR;
     // A list of files that should be ignored when counting untracked files or delete all CWD files.
     static final List<String> debugCWDFiles = Arrays.asList("gitlet-design.md", "Makefile", "pom.xml");
+
+    static void assignStaticVariables(File cwd) {
+        CWD = cwd;
+        GITLET_DIR = join(CWD, ".gitlet");
+        HEAD = join(GITLET_DIR, "HEAD");
+        STAGE = join(GITLET_DIR, "STAGE");
+        ALL_COMMITS_ID = join(GITLET_DIR, "allCommitsID");
+        OBJECTS_DIR = join(GITLET_DIR, "objects");
+        BRANCHES_DIR = join(GITLET_DIR, "branches");
+        REMOTES_DIR = join(GITLET_DIR, "remotes");
+    }
 
     /* INIT COMMAND --------------------------------------------------------------------------------------------------*/
 
@@ -77,6 +90,7 @@ public class Repository {
         } // Special case: Abort if there is already a Gitlet version-control system in the current directory.
         BRANCHES_DIR.mkdirs();
         OBJECTS_DIR.mkdirs();
+        REMOTES_DIR.mkdirs();
         HEAD.createNewFile();
         STAGE.createNewFile();
         ALL_COMMITS_ID.createNewFile();
