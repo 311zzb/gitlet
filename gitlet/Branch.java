@@ -27,7 +27,7 @@ public class Branch {
         if (Objects.equals(branchName, "")) {
             return null;
         } // Special case: loading a "no branch".
-        File branchFile = join(BRANCHES_DIR, branchName);
+        File branchFile = branchFile(branchName);
         if (!branchFile.exists()) {
             return null;
         } // Special case: loading a branch that do not exist.
@@ -44,7 +44,7 @@ public class Branch {
      * @return a List contains all commit IDs that are pointed by a branch.
      */
     static List<String> loadAllBranches() {
-        List<String> branches = plainFilenamesIn(BRANCHES_DIR);
+        List<String> branches = allBranches();
         assert branches != null;
         List<String> branchesCommitID = new ArrayList<>();
         for (String branch : branches) {
@@ -55,7 +55,7 @@ public class Branch {
 
     /** Print the "Branches" status. */
     static void branchStatus() {
-        List<String> branches = plainFilenamesIn(BRANCHES_DIR);
+        List<String> branches = allBranches();
         assert branches != null;
         sortLexico(branches);
         System.out.println("=== Branches ===");
@@ -75,7 +75,7 @@ public class Branch {
      * @param branchName the designated branch name
      */
     static void writeBranch(String branchName) {
-        File branchFile = join(BRANCHES_DIR, branchName);
+        File branchFile = branchFile(branchName);
         writeContents(branchFile, getBranch(branchName));
     }
 
@@ -85,7 +85,7 @@ public class Branch {
      * @param branchName the designated branch name.
      */
     static void deleteBranch(String branchName) {
-        File branchFile = join(BRANCHES_DIR, branchName);
+        File branchFile = branchFile(branchName);
         branchFile.delete();
     }
 
@@ -103,6 +103,15 @@ public class Branch {
      */
     static void moveCurrBranch(String commitID) {
         cacheBranch(getHEAD(), commitID);
+    }
+
+    /**
+     * Move the designated branch to point to a commit with designated ID.
+     * @param branchName the designated branch's name.
+     * @param commitID the designated commit's ID.
+     */
+    static void moveBranch(String branchName, String commitID) {
+        cacheBranch(branchName, commitID);
     }
 
     /**
@@ -125,6 +134,47 @@ public class Branch {
      */
     static void moveHEAD(String branchName) {
         cacheHEAD(branchName);
+    }
+
+    /**
+     * Get the File object of a branch with designated name.
+     * @param branchName the designated branch name.
+     * @return the File object of that branch.
+     */
+    private static File branchFile(String branchName) {
+        File branchFile;
+        if (branchName.contains("/")) {
+            String folder = branchName.split("/")[0];
+            String file = branchName.split("/")[1];
+            join(BRANCHES_DIR, folder).mkdir();
+            branchFile = join(BRANCHES_DIR, folder, file);
+        } else {
+            branchFile = join(BRANCHES_DIR, branchName);
+        }
+        return branchFile;
+    }
+
+    /** Return a List of all branches' names. Support fetched remote branches. */
+    private static List<String> allBranches() {
+        List<String> branches = new ArrayList<>();
+        File[] files = BRANCHES_DIR.listFiles();
+        for (File file : files) {
+            if (file.isDirectory()) {
+                String remoteName = file.getName();
+                List<String> remoteBranchNames = plainFilenamesIn(file);
+                if (remoteBranchNames == null) {
+                    continue;
+                }
+                for (String remoteBranchName : remoteBranchNames) {
+                    String branchName = remoteName + "/" + remoteBranchName;
+                    branches.add(branchName);
+                }
+            } else {
+                branches.add(file.getName());
+            }
+        }
+        sortLexico(branches);
+        return branches;
     }
 
 }

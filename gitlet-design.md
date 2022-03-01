@@ -280,11 +280,16 @@ This class will never be instantiated since there are only static methods.
 7. `static void mkNewBranch(String branchName, String commitID)`
    Make a new branch with designated name at the latest commit by caching it manually.
 8. `static void moveCurrBranch(String commitID)` Make the current branch pointing to a designated commit.
-9. `static String loadHEAD()`
-   Load the `HEAD` file and return the current branch's name. Invoked by the Cache class.
-10. `static void writeHEAD()`
+9. `static void moveBranch(String branchName, String commitID)`
+   Move the designated branch to point to a commit with designated ID.
+10. `static String loadHEAD()`
+    Load the `HEAD` file and return the current branch's name. Invoked by the Cache class.
+11. `static void writeHEAD()`
     Get the `HEAD` from cache and write it back to filesystem. Invoked by the Cache class.
-11. `static void moveHEAD(String branchName)` Make the `HEAD` pointing to a designated branch.
+12. `static void moveHEAD(String branchName)` Make the `HEAD` pointing to a designated branch.
+13. `private static File branchFile(String branchName)` Get the `File` object of a branch with designated name.
+14. `private static List<String> allBranches()` 
+    Return a `List` of all branches' names. Support fetched remote branches.
 
 ### Stage
 
@@ -485,6 +490,9 @@ Represent a remote Gitlet repository and accommodating remote commands related m
       11. `private boolean existBranch(String branchName)`
       12. `private void mkNewBranch(String branchName)`
       13. `private void mkNewStage()`
+      14. `private Tree getCommitTree(Commit commit)`
+      15. `private Blob getBlob(String blobID)` 
+      16. `private void recordCommitID(String commitID)`
 2. Static methods
    1. `add-remote` command
       1. `public static void addRemote(String remoteName, String path)`
@@ -508,6 +516,15 @@ Represent a remote Gitlet repository and accommodating remote commands related m
          and its associating `Tree` and `Blob` to the remote repository.
       5. `private static void pushCommit(Commit commit, Remote remote)`
          Push a single `Commit` and its associating `Tree` and `Blob` to the remote repository.
+   4. `fetch` command
+      1. `public static void fetch(String remoteName, String remoteBranchName)`
+         Execute the `fetch` command. Implementation details in the Algorithms section.
+      2. `private static Set<String> commitsToFetch(Commit localC, Commit remoteC, Remote remote)`
+         Return a `Set` of String containing the IDs of commits that should be fetched from the remote repo.
+      3. `private static void fetchCommits(Remote remote, Set<String> commitIDs)`
+         Fetch commits that their IDs in the `Set` to the local repo.
+      4. `private static void fetchCommit(Remote remote, String commitID)`
+         Fetch a commit to the local repo.
 
 ### GitletTest
 
@@ -571,13 +588,15 @@ This class contains JUnit tests and some helper methods for Gitlet.
     1. `public void addRemoteTest()`A sanity test for `add-remote`.
 15. `push` command
     1. `public void pushTest()` A sanity test for add-remote command.
-16. Auto grader debug tests
+16. `fetch` command
+    1. `public void fetchTest()` A sanity test for fetch command.
+17. Auto grader debug tests
     1. `public void test20_status_after_commit()`
     2. `public void test24_global_log_prev()`
     3. `public void test29_bad_checkouts_err()`
     4. `public void test35_merge_rm_conflicts()`
     5. `public void test36a_merge_parent2()`
-17. misc
+18. misc
     1. `static final File CWD` The local repository's working directory.
     2. `private static void GitletExecute(String... command)`
        Execute commands with Gitlet and clean the cache after execution.
@@ -913,11 +932,20 @@ This command only involved manipulation to the local repository (creating path r
 1. Get the `Commit` object of the local repository's head commit 
    and the front commit of the remote repository's given branch. 
    Create a new branch at the remote repository if such branch does not exist.
-2. Calculate the commits to push by contracting the ancestors of the two commits.
-3. Push the `Commits` (and their associating `Tree` and `Blob`) to the remote repository.
+2. Calculate the commits need to be pushed by contracting the ancestors of the two commits.
+3. Push the `Commit`s (and their associating `Tree` and `Blob`) to the remote repository.
    Specifically, using the caching and writing back mechanisms developed for the local repository.
+   Commit's IDs are added to the remote `allCommitsID` file upon pushing.
 4. Reset the remote repository (change it to the given branch and fast-forward that branch).
 
+#### `fetch` command
+
+1. Get the `Commit` object of the local repository's fetched branch's head commit
+   and the head commit of the remote repository's designated branch.
+2. Calculate the commits need to be fetched by contracting the ancestors of the two commits.
+3. Fetch the `Commit`s (and their associating `Tree` and `Blob`) to the local repository.
+   Specifically, using the caching and writing back mechanisms of the local repository.
+   Commit's IDs are added to the local `allCommitsID` file upon fetching.
 
 ## Persistence
 
@@ -935,6 +963,9 @@ CWD                                                      <==== Whatever the curr
     │   │   └── ...                                    
     │   └── ...                                        
     ├── branches                                         <==== Store all the branch references
+    │   ├── R1                                           <==== Directory of branches fetched from a remote repository
+    │   │   ├── master                                   <==== A branch fetched from a remote, will be displayed as "R1/master"
+    │   │   └── ...
     │   ├── master                                       <==== The default branch. Contains a hash pointer to a commit
     │   └── ...
     └── remotes                                          <==== Store all the remote references
@@ -1008,5 +1039,9 @@ If the merging is carried out successfully, this command will change the persist
 
 #### `add-remote` and `rm-remote` command
 
-These two command will create/delete files in `.gitlet/remotes/` directory.
+These two commands will create/delete files in `.gitlet/remotes/` directory.
 
+#### `push`, `fetch`, and `pull` command
+
+These two commands will add serialized `HashObject` to the object database, 
+as well as the branch files, the `.gitlet/HEAD` file, and the `.gitlet/allCommitsID` file.

@@ -104,6 +104,10 @@ public class Main {
                 assertArgsNum(operands, 2);
                 Remote.push(operands[0], operands[1]);
             }
+            case "fetch" -> {
+                assertArgsNum(operands, 2);
+                Remote.fetch(operands[0], operands[1]);
+            }
 
             default -> printAndExit("No command with that name exists.");
         }

@@ -3,6 +3,7 @@ package gitlet;
 import java.io.File;
 import java.util.Set;
 
+import static gitlet.Commit.recordCommitID;
 import static gitlet.Repository.*;
 import static gitlet.Utils.*;
 import static java.io.File.separator;
@@ -103,6 +104,23 @@ public class Remote {
     private void mkNewStage() {
         remoteRunner();
         Stage.mkNewStage();
+        localRunner();
+    }
+    private Tree getCommitTree(Commit commit) {
+        remoteRunner();
+        Tree x = commit.getCommitTree();
+        localRunner();
+        return x;
+    }
+    private Blob getBlob(String blobID) {
+        remoteRunner();
+        Blob x = Cache.getBlob(blobID);
+        localRunner();
+        return x;
+    }
+    private void recordCommitID(String commitID) {
+        remoteRunner();
+        Commit.recordCommitID(commitID);
         localRunner();
     }
 
@@ -224,7 +242,57 @@ public class Remote {
             Blob blob = tree.getBlob(fileName);
             remote.cacheAndQueueForWriteHashObject(blob);
         }
+        remote.recordCommitID(commit.id());
     }
 
+    /* FETCH COMMAND */
+
+    public static void fetch(String remoteName, String remoteBranchName) {
+        File remoteGitlet = getRemoteGitlet(remoteName);
+        Remote remote = new Remote(remoteGitlet);
+        if (!remote.existBranch(remoteBranchName)) {
+            printAndExit("That remote does not have that branch.");
+        } // Special case:abort if the remote repo does not have a branch with the given name.
+        String remoteHeadCommitID = remote.getBranch(remoteBranchName);
+        Commit remoteHeadCommit = remote.getCommit(remoteHeadCommitID);
+        Commit localHeadCommit;
+        String localNewBranchName = remoteName + "/" + remoteBranchName;
+        if (!Branch.existBranch(localNewBranchName)) {
+            Branch.mkNewBranch(localNewBranchName);
+            localHeadCommit = null;
+        } else {
+            localHeadCommit = Cache.getCommit(Cache.getBranch(localNewBranchName));
+        }
+        Set<String> commitsToFetch = commitsToFetch(localHeadCommit, remoteHeadCommit, remote);
+        fetchCommits(remote, commitsToFetch);
+        Branch.moveBranch(localNewBranchName, remoteHeadCommitID);
+    }
+
+    /** Return a Set of String containing the IDs of commits that should be fetched from the remote repo. */
+    private static Set<String> commitsToFetch(Commit localC, Commit remoteC, Remote remote) {
+        Set<String> localCommitAncestors = Commit.ancestors(localC);
+        Set<String> remoteCommitAncestors = remote.commitAncestors(remoteC);
+        remoteCommitAncestors.removeAll(localCommitAncestors);
+        return remoteCommitAncestors;
+    }
+
+    private static void fetchCommits(Remote remote, Set<String> commitIDs) {
+        for (String commitID : commitIDs) {
+            fetchCommit(remote, commitID);
+        }
+    }
+
+    private static void fetchCommit(Remote remote, String commitID) {
+        Commit commit = remote.getCommit(commitID);
+
+        Cache.cacheAndQueueForWriteHashObject(commit);
+        Tree tree = remote.getCommitTree(commit);
+        Cache.cacheAndQueueForWriteHashObject(tree);
+        for (String fileName : tree) {
+            Blob blob = remote.getBlob(tree.getBlobID(fileName));
+            Cache.cacheAndQueueForWriteHashObject(blob);
+        }
+        Commit.recordCommitID(commitID);
+    }
 
 }

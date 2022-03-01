@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 
 import static gitlet.Cache.*;
 import static gitlet.Repository.*;
@@ -483,7 +484,7 @@ public class GitletTest {
 
     static final String remoteWD = "D:/_SDE/cs61b/PlayGround2/.gitlet";
 
-    /** A sanity test for add-remote command. */
+    /** A sanity test for push command. */
     @Test
     public void pushTest() throws IOException {
         GitletExecute("init");
@@ -494,6 +495,19 @@ public class GitletTest {
         GitletExecute("commit", "yet another random commit");
         GitletExecute("add-remote", "PlayGround2", remoteWD);
         GitletExecute("push", "PlayGround2", "cool-bean");
+    }
+
+    /* FETCH COMMAND */
+
+    /** A sanity test for fetch command. */
+    @Test
+    public void fetchTest() throws IOException {
+        GitletExecute("init");
+        GitletExecute("add-remote", "PlayGround2", remoteWD);
+        GitletExecute("fetch", "PlayGround2","master");
+        GitletExecute("status");
+        GitletExecute("checkout", "PlayGround2/master");
+        GitletExecute("global-log");
     }
 
 
