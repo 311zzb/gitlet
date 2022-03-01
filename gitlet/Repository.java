@@ -409,12 +409,12 @@ public class Repository {
     }
 
     /**
-     * A private helper method that checkout to a Commit (with designated ID).
+     * A helper method that checkout to a Commit (with designated ID).
      * 1. Delete all files in the CWD
      * 2. Checkout all files tracked by that commit
      * 3. Clean the staging area
      */
-    private static void checkoutToCommit(String commitID) {
+    static void checkoutToCommit(String commitID) {
         deleteCWDFiles();
         checkoutAllCommitFile(commitID);
         mkNewStage();

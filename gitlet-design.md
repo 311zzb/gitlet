@@ -44,60 +44,65 @@ from the cache.
 
 1. Caching `HashObject`
    1. `static final Map<String, HashObject> cachedHashObjects` A `Map` that stores cached ID and `HashObject` pairs.
-   2. `private static HashObject getHashObject(String id)`
+   2. `static Map<String, HashObject> cachedRemoteHashObjects` The cache for the remote repository.
+   3. `private static HashObject getHashObject(String id)`
       Lazy loading and caching of HashObjects.
       Being `private` because a `HashObject` will never be requested as `HashObject`
       (as `Commit` or `Tree` or `Blob` instead).
       Special case: return `null` if requesting a commit with `null` or `""`.
-   3. `static Commit getCommit(String id)`
+   4. `static Commit getCommit(String id)`
       A method that lazy-load a `Commit` with `id` utilizing `getHashObject(String id)`.
-   4. `static Tree getTree(String id)`
+   5. `static Tree getTree(String id)`
       A method that lazy-load a `Tree` with `id` utilizing `getHashObject(String id)`.
-   5. `static Blob getBlob(String id)`
+   6. `static Blob getBlob(String id)`
       A method that lazy-load a `Blob` with `id` utilizing `getHashObject(String id)`.
-   6. `static Commit getLatestCommit()` Get the `Commit` object of the latest commit utilizing `getCommit(String id)`.
-   7. `static final Set<String> queuedForWriteHashObjects`
+   7. `static Commit getLatestCommit()` Get the `Commit` object of the latest commit utilizing `getCommit(String id)`.
+   8. `static final Set<String> queuedForWriteHashObjects`
       New HashObjects' IDs that are queued for writing to filesystem.
-   8. `static String cacheAndQueueForWriteHashObject(HashObject object)`
+   9. `static String cacheAndQueueForWriteHashObject(HashObject object)`
       Manually cache a `HashObject` by put a `HashObject` into the cache,
       and queue it for writing to filesystem. Return its ID.
-   9. `static void writeBackAllQueuedHashObject()`
-      Write back all queued-for-writing `HashObjects` to filesystem. Invoked upon exit.
-   10. `static final Set<String> queuedForDeleteHashObject`
+   10. `static void writeBackAllQueuedHashObject()`
+       Write back all queued-for-writing `HashObjects` to filesystem. Invoked upon exit.
+   11. `static final Set<String> queuedForDeleteHashObject`
        Deprecated `HashObject`s' IDs that are queued for deletion from filesystem.
-   11. `static void queueForDeleteHashObject(String id)` Given Qa `HashObject`'s ID, queue it for deletion.
-   12. `static void deleteAllQueuedHashObject()` Delete all queued-for-deletion `HashObject`s. Invoked upon exit.
+   12. `static void queueForDeleteHashObject(String id)` Given Qa `HashObject`'s ID, queue it for deletion.
+   13. `static void deleteAllQueuedHashObject()` Delete all queued-for-deletion `HashObject`s. Invoked upon exit.
 2. Caching Branches
    1. `static final Map<String, String> cachedBranches` A `Map` that stores cached branch name and commit ID pairs.
-   2. `static String getBranch(String branchName)` Lazy loading and caching of branches.
-   3. `static String getLatestCommitID()`
+   2. `static Map<String, String> cachedRemoteBranches` The cache for the remote repository.
+   3. `static String getBranch(String branchName)` Lazy loading and caching of branches.
+   4. `static String getLatestCommitID()`
       A method that lazy-load the ID of the latest commit by `getBranch(getHEAD())`.
-   4. `static void cacheBranch(String branchName, String commitID)`
+   5. `static void cacheBranch(String branchName, String commitID)`
       Manually cache a `Branch` by putting a `branchName` - `commitID` pair into the cache.
-   5. `static void wipeBranch(String branchName)`
+   6. `static void wipeBranch(String branchName)`
       Manually wipe the pointer of a designated branch.
-   6. `static void writeBackAllBranches()`
+   7. `static void writeBackAllBranches()`
       Write back (update) all branches to filesystem. Invoked upon exit.
       If a branch's pointer is wiped out, delete the branch file in the filesystem.
       Special case: ignore branch with empty name.
 3. Caching `HEAD`
    1. `static String cachedHEAD` A `String` that stores cached `HEAD`, the current branch's name.
-   2. `static String getHEAD()` Lazy loading and caching of `HEAD`.
-   3. `static void cacheHEAD(String branchName)`
+   2. `static String cachedRemoteHEAD` The cache for the remote repository.
+   3. `static String getHEAD()` Lazy loading and caching of `HEAD`.
+   4. `static void cacheHEAD(String branchName)`
       Manually cache the `HEAD` by assigning the `cachedHEAD` to a given `branchName`.
-   4. `static void writeBackHEAD()` Write back (update) the `HEAD` file. Invoked upon exit.
+   5. `static void writeBackHEAD()` Write back (update) the `HEAD` file. Invoked upon exit.
 4. Caching `STAGE` (Stage ID)
    1. `static String cachedStageID` A `String` that stores cached `STAGE`, the ID of the current staging area.
-   2. `static String getStageID()`
+   2. `static String cachedRemoteStageID` The cache for the remote repository.
+   3. `static String getStageID()`
       Lazy loading and caching of STAGE (the ID of the saved staging area).
       Notice: this DOES NOT point to the current staging area after the staging area is modified and before write back.
-   3. `static void cacheStageID(String newStageID)`
+   4. `static void cacheStageID(String newStageID)`
       Manually cache the `STAGE` by assigning the `cachedStageID` to a given `stageID`.
-   4. `static void writeBackStageID()` Write back STAGE file. Invoked upon exit.
+   5. `static void writeBackStageID()` Write back STAGE file. Invoked upon exit.
 5. Caching the Stage Area
    1. `static Tree cachedStage` A `Tree` that stores cached staging area.
-   2. `static Tree getStage()` Get the `Tree` object representing the staging area utilizing `getTree(getStageID())`.
-   3. `static void cacheStage(Tree stage)`
+   2. `static Tree cachedRemoteStage` The cache for the remote repository.
+   3. `static Tree getStage()` Get the `Tree` object representing the staging area utilizing `getTree(getStageID())`.
+   4. `static void cacheStage(Tree stage)`
       Queue the previous staging area for deletion and manually cache the passed-in Stage.
       Special case:
       queue the previous staging area for deletion only if
@@ -107,6 +112,7 @@ from the cache.
 6. MISC
    1. `static void writeBack()` Write back all caches. Invoked upon exit.
    2. `static void cleanCache()` Reset all caches. Used for testing proposes.
+   3. `private static boolean inRemoteRepo()` Return `true` if currently operating on the remote repository.
 
 ### Repository
 
@@ -204,8 +210,8 @@ It also sets up persistence and do additional error checking.
     3. `public static void checkout3(String branchName)`
        Execute checkout command usage 3 (checkout all files to the designated branch).
        Implementation details in the Algorithms section.
-    4. `private static void checkoutToCommit(String commitID)`
-       A private helper method that checkout to a `Commit` (with designated ID).
+    4. `static void checkoutToCommit(String commitID)`
+       A helper method that checkout to a `Commit` (with designated ID).
     5. `private static void checkoutAllCommitFile(String commitID)`
        A private helper method that checkout all files that a `Commit` (with designated ID) tracked.
     6. `private static void checkoutCommitFile(Commit commit, String fileName)`
@@ -462,6 +468,23 @@ Represent a remote Gitlet repository and accommodating remote commands related m
    3. `private void remoteRunner()`
       Change the `CWD` in the Gitlet running environment to the remote repository's working directory.
       Must call before commanding the remote repository.
+   4. `private void localRunner()`
+      Change the `CWD` in Gitlet running environment to the local repository's working directory.
+   5. Methods that simply calling `remoteRunner()` and `localRunner()` before and after 
+      calling the method with the same signature from other classes.
+      1. `private String getHEAD()`
+      2. `private Commit getLatestCommit()`
+      3. `private String getBranch(String branchName)`
+      4. `private Commit getCommit(String id)`
+      5. `private String cacheAndQueueForWriteHashObject(HashObject object)`
+      6. `private void writeBack()`
+      7. `private Set<String> commitAncestors(Commit commit)`
+      8. `private void moveHEAD(String branchName)`
+      9. `private void moveCurrBranch(String commitID)`
+      10. `private void checkoutToCommit(String commitID)`
+      11. `private boolean existBranch(String branchName)`
+      12. `private void mkNewBranch(String branchName)`
+      13. `private void mkNewStage()`
 2. Static methods
    1. `add-remote` command
       1. `public static void addRemote(String remoteName, String path)`
@@ -474,7 +497,17 @@ Represent a remote Gitlet repository and accommodating remote commands related m
       1. `static File getRemoteGitlet(String remoteName)`
          Get the `File` of the remote `.gitlet` directory.
    3. `push` command
-      1. 
+      1. `public static void push(String remoteName, String remoteBranchName)`
+         Executing the `push` command.
+      2. `private static void pushReset(Remote remote, String commitID, String remoteBranchName)`
+         Fast-forward the remote repository.
+      3. `private static Set<String> commitsToPush(Commit localC, Commit remoteC, Remote remote)`
+         Return a `Set` of `String` containing the IDs of commits that should be pushed to the remote repo.
+      4. `private static void pushCommits(Set<String> commitIDs, Remote remote)`
+         Push all `Commit` with the designated ID in the `Set`, 
+         and its associating `Tree` and `Blob` to the remote repository.
+      5. `private static void pushCommit(Commit commit, Remote remote)`
+         Push a single `Commit` and its associating `Tree` and `Blob` to the remote repository.
 
 ### GitletTest
 
@@ -865,7 +898,7 @@ Lastly, Gitlet will print a message to the console if any conflict is made.
 
 Commands related with remote repository requires reuse of existing code for the local repository.
 To fulfill this demand, static variables (such as `CWD`, or `GITLET_DIR`)
-in the Repository class are no longer final and will be assigned each time.
+in the `Repository` class are no longer final and will be assigned each time.
 That is, when executing commands on the local repository, static variables will be assigned normally;
 while executing commands on the remote repository, these static variables will be assigned according to the remote
 working directory, thus reuse the existing code to manipulating the remote repository.
@@ -877,6 +910,13 @@ This command only involved manipulation to the local repository (creating path r
 
 #### `push` command
 
+1. Get the `Commit` object of the local repository's head commit 
+   and the front commit of the remote repository's given branch. 
+   Create a new branch at the remote repository if such branch does not exist.
+2. Calculate the commits to push by contracting the ancestors of the two commits.
+3. Push the `Commits` (and their associating `Tree` and `Blob`) to the remote repository.
+   Specifically, using the caching and writing back mechanisms developed for the local repository.
+4. Reset the remote repository (change it to the given branch and fast-forward that branch).
 
 
 ## Persistence

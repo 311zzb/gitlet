@@ -1,6 +1,7 @@
 package gitlet;
 
 import java.io.File;
+import java.util.Set;
 
 import static gitlet.Repository.*;
 import static gitlet.Utils.*;
@@ -24,6 +25,85 @@ public class Remote {
      */
     private void remoteRunner() {
         Repository.assignStaticVariables(this._remoteWD);
+    }
+    /**
+     * Change the CWD in Gitlet running environment to the local repository's working directory.
+     */
+    private void localRunner() {
+        Repository.assignStaticVariables(Main.localCWD);
+    }
+
+    private String getHEAD() {
+        remoteRunner();
+        String x = Cache.getHEAD();
+        localRunner();
+        return x;
+    }
+    private Commit getLatestCommit() {
+        remoteRunner();
+        Commit x = Cache.getLatestCommit();
+        localRunner();
+        return x;
+    }
+    private String getBranch(String branchName) {
+        remoteRunner();
+        String x = Cache.getBranch(branchName);
+        localRunner();
+        return x;
+    }
+    private Commit getCommit(String id) {
+        remoteRunner();
+        Commit x = Cache.getCommit(id);
+        localRunner();
+        return x;
+    }
+    private String cacheAndQueueForWriteHashObject(HashObject object) {
+        remoteRunner();
+        String x = Cache.cacheAndQueueForWriteHashObject(object);
+        localRunner();
+        return x;
+    }
+    private void writeBack() {
+        remoteRunner();
+        Cache.writeBack();
+        localRunner();
+    }
+    private Set<String> commitAncestors(Commit commit) {
+        remoteRunner();
+        Set<String> x = Commit.ancestors(commit);
+        localRunner();
+        return x;
+    }
+    private void moveHEAD(String branchName) {
+        remoteRunner();
+        Branch.moveHEAD(branchName);
+        localRunner();
+    }
+    private void moveCurrBranch(String commitID) {
+        remoteRunner();
+        Branch.moveCurrBranch(commitID);
+        localRunner();
+    }
+    private void checkoutToCommit(String commitID) {
+        remoteRunner();
+        Repository.checkoutToCommit(commitID);
+        localRunner();
+    }
+    private boolean existBranch(String branchName) {
+        remoteRunner();
+        boolean x = Branch.existBranch(branchName);
+        localRunner();
+        return x;
+    }
+    private void mkNewBranch(String branchName) {
+        remoteRunner();
+        Branch.mkNewBranch(branchName);
+        localRunner();
+    }
+    private void mkNewStage() {
+        remoteRunner();
+        Stage.mkNewStage();
+        localRunner();
     }
 
 
@@ -95,13 +175,55 @@ public class Remote {
     /* PUSH COMMAND */
 
     public static void push(String remoteName, String remoteBranchName) {
-//        File remoteGitlet = getRemoteGitlet(remoteName);
-//        Remote remote = new Remote(remoteGitlet);
-//        Commit remoteHeadCommit =
-//        Commit localHeadCommit = Cache.getLatestCommit();
-//
-//
-//
+        File remoteGitlet = getRemoteGitlet(remoteName);
+        Remote remote = new Remote(remoteGitlet);
+        if (!remote.existBranch(remoteBranchName)) {
+            remote.mkNewBranch(remoteBranchName);
+        } // Special case: create a new branch if the remote does not have the input branch.
+        String remoteHeadCommitID = remote.getBranch(remoteBranchName);
+        Commit remoteHeadCommit = remote.getCommit(remoteHeadCommitID);
+        Commit localHeadCommit = Cache.getLatestCommit();
+
+        Set<String> commitsToPush = commitsToPush(localHeadCommit, remoteHeadCommit, remote);
+        pushCommits(commitsToPush, remote);
+        pushReset(remote, localHeadCommit.id(), remoteBranchName);
+    }
+
+    private static void pushReset(Remote remote, String commitID, String remoteBranchName) {
+        remote.moveHEAD(remoteBranchName);
+        remote.moveCurrBranch(commitID);
+        remote.checkoutToCommit(commitID);
+        remote.mkNewStage();
+        remote.writeBack();
+    }
+
+    /** Return a Set of String containing the IDs of commits that should be pushed to the remote repo. */
+    private static Set<String> commitsToPush(Commit localC, Commit remoteC, Remote remote) {
+        Set<String> localCommitAncestors = Commit.ancestors(localC);
+        if (!localCommitAncestors.contains(remoteC.id())) {
+            printAndExit("Please pull down remote changes before pushing.");
+        } // Special case: abort if the remote branch’s head is not in the history of the current local head.
+        Set<String> remoteCommitAncestors = remote.commitAncestors(remoteC);
+        localCommitAncestors.removeAll(remoteCommitAncestors);
+        return localCommitAncestors;
+    }
+
+    private static void pushCommits(Set<String> commitIDs, Remote remote) {
+        for (String commitID : commitIDs) {
+            Commit commit = Cache.getCommit(commitID);
+            pushCommit(commit, remote);
+        }
+        remote.writeBack();
+    }
+
+    private static void pushCommit(Commit commit, Remote remote) {
+        remote.cacheAndQueueForWriteHashObject(commit);
+        Tree tree = commit.getCommitTree();
+        remote.cacheAndQueueForWriteHashObject(tree);
+        for (String fileName : tree) {
+            Blob blob = tree.getBlob(fileName);
+            remote.cacheAndQueueForWriteHashObject(blob);
+        }
     }
 
 

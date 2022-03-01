@@ -4,7 +4,7 @@ import java.util.*;
 
 import static gitlet.Branch.*;
 import static gitlet.HashObject.*;
-import static gitlet.Repository.printAndExit;
+import static gitlet.Repository.CWD;
 import static gitlet.Stage.*;
 
 /**
@@ -27,16 +27,18 @@ public class Cache {
     /* CACHING OBJECT ------------------------------------------------------------------------------------------------*/
 
     /** A Map that stores cached ID and HashObject pairs. */
-    static final Map<String, HashObject> cachedHashObjects = new TreeMap<>();
+    static Map<String, HashObject> cachedHashObjects = new TreeMap<>();
+    static Map<String, HashObject> cachedRemoteHashObjects = new TreeMap<>();
     /** Lazy loading and caching of HashObjects. */
     private static HashObject getHashObject(String id) {
+        Map<String, HashObject> currCachedHashObjects = inRemoteRepo()? cachedRemoteHashObjects : cachedHashObjects;
         if (id == null || id.equals("")) {
             return null;
         } // Special case: Get null or "" HashObject
-        if (!cachedHashObjects.containsKey(id)) {
-            cachedHashObjects.put(id, loadHashObject(id));
+        if (!currCachedHashObjects.containsKey(id)) {
+            currCachedHashObjects.put(id, loadHashObject(id));
         }
-        return cachedHashObjects.get(id);
+        return currCachedHashObjects.get(id);
     }
     static Commit getCommit(String id) {
         return (Commit) getHashObject(id);
@@ -60,8 +62,9 @@ public class Cache {
      * @return the ID of the HashObject
      */
     static String cacheAndQueueForWriteHashObject(HashObject object) {
+        Map<String, HashObject> currCachedHashObjects = inRemoteRepo()? cachedRemoteHashObjects : cachedHashObjects;
         String id = object.id();
-        cachedHashObjects.put(id, object);
+        currCachedHashObjects.put(id, object);
         queuedForWriteHashObjects.add(id);
         return id;
     }
@@ -89,34 +92,39 @@ public class Cache {
     /* CACHING BRANCH ------------------------------------------------------------------------------------------------*/
 
     /** Cached branches. */
-    static final Map<String, String> cachedBranches = new TreeMap<>();
+    static Map<String, String> cachedBranches = new TreeMap<>();
+    static Map<String, String> cachedRemoteBranches = new TreeMap<>();
     /** Lazy loading and caching of branches.
      * @return the Commit ID pointed by branch branchName */
     static String getBranch(String branchName) {
-        if (!cachedBranches.containsKey(branchName)) {
-            cachedBranches.put(branchName, loadBranch(branchName));
+        Map<String, String> currCachedBranches = inRemoteRepo()? cachedRemoteBranches : cachedBranches;
+        if (!currCachedBranches.containsKey(branchName)) {
+            currCachedBranches.put(branchName, loadBranch(branchName));
         }
-        return cachedBranches.get(branchName);
+        return currCachedBranches.get(branchName);
     }
     static String getLatestCommitID() {
         return getBranch(getHEAD());
     }
     static void cacheBranch(String branchName, String commitID) {
-        cachedBranches.put(branchName, commitID);
+        Map<String, String> currCachedBranches = inRemoteRepo()? cachedRemoteBranches : cachedBranches;
+        currCachedBranches.put(branchName, commitID);
     }
     static void wipeBranch(String branchName) {
-        cachedBranches.put(branchName, "");
+        Map<String, String> currCachedBranches = inRemoteRepo()? cachedRemoteBranches : cachedBranches;
+        currCachedBranches.put(branchName, "");
     }
     /**
      * Write back (update) all branches to filesystem. Invoked upon exit.
      * If a branch's pointer is wiped out, delete the branch file in the filesystem.
      */
     static void writeBackAllBranches() {
-        for (String branchName : cachedBranches.keySet()) {
+        Map<String, String> currCachedBranches = inRemoteRepo()? cachedRemoteBranches : cachedBranches;
+        for (String branchName : currCachedBranches.keySet()) {
             if (branchName.equals("")) {
                 continue;
             } // Special case: ignore branch with empty name.
-            if (cachedBranches.get(branchName).equals("")) { // wiped branches
+            if (currCachedBranches.get(branchName).equals("")) { // wiped branches
                 deleteBranch(branchName);
             } else {
                 writeBranch(branchName);
@@ -127,16 +135,28 @@ public class Cache {
     /* CACHING HEAD --------------------------------------------------------------------------------------------------*/
 
     static String cachedHEAD = null;
+    static String cachedRemoteHEAD = null;
     /** Lazy loading and caching of HEAD (the current branch's branch name).
      * @return the current branch's name */
     static String getHEAD() {
-        if (cachedHEAD == null) {
-            cachedHEAD = loadHEAD();
+        if (inRemoteRepo()) {
+            if (cachedRemoteHEAD == null) {
+                cachedRemoteHEAD = loadHEAD();
+            }
+            return cachedRemoteHEAD;
+        } else {
+            if (cachedHEAD == null) {
+                cachedHEAD = loadHEAD();
+            }
+            return cachedHEAD;
         }
-        return cachedHEAD;
     }
     static void cacheHEAD(String branchName) {
-        cachedHEAD = branchName;
+        if (inRemoteRepo()) {
+            cachedRemoteHEAD = branchName;
+        } else {
+            cachedHEAD = branchName;
+        }
     }
     /** Write back HEAD file. Invoked upon exit. */
     static void writeBackHEAD() {
@@ -146,18 +166,30 @@ public class Cache {
     /* CACHING STAGE ID ----------------------------------------------------------------------------------------------*/
 
     static String cachedStageID = null;
+    static String cachedRemoteStageID = null;
     /**
      * Lazy loading and caching of STAGE (the ID of the saved staging area).
      * Notice: this DOES NOT point to the current staging area after the staging area is modified and before write back.
      */
     static String getStageID() {
-        if (cachedStageID == null) {
-            cachedStageID = loadStageID();
+        if (inRemoteRepo()) {
+            if (cachedRemoteStageID == null) {
+                cachedRemoteStageID = loadStageID();
+            }
+            return cachedRemoteStageID;
+        } else {
+            if (cachedStageID == null) {
+                cachedStageID = loadStageID();
+            }
+            return cachedStageID;
         }
-        return cachedStageID;
     }
     static void cacheStageID(String stageID) {
-        cachedStageID = stageID;
+        if (inRemoteRepo()) {
+            cachedRemoteStageID = stageID;
+        } else {
+            cachedStageID = stageID;
+        }
     }
     /** Write back STAGE file. Invoked upon exit. */
     static void writeBackStageID() {
@@ -168,12 +200,20 @@ public class Cache {
 
     /** Cached staging area. */
     static Tree cachedStage = null;
+    static Tree cachedRemoteStage = null;
     /** Get the Tree object representing the staging area. */
     static Tree getStage() {
-        if (cachedStage == null) {
-            cachedStage = getTree(getStageID());
+        if (inRemoteRepo()) {
+            if (cachedRemoteStage == null) {
+                cachedRemoteStage = getTree(getStageID());
+            }
+            return cachedRemoteStage;
+        } else {
+            if (cachedStage == null) {
+                cachedStage = getTree(getStageID());
+            }
+            return cachedStage;
         }
-        return cachedStage;
     }
     /**
      * Queue the previous staging area for deletion and manually cache the passed-in Stage.
@@ -192,7 +232,11 @@ public class Cache {
 //            and the previous staging area is different from the Tree of the latest commit,
 //            and the previous staging area is not empty.
 //           */
-        cachedStage = stage;
+        if (inRemoteRepo()) {
+            cachedRemoteStage = stage;
+        } else {
+            cachedStage = stage;
+        }
         String newStageID = cacheAndQueueForWriteHashObject(stage);
         cacheStageID(newStageID);
     }
@@ -225,5 +269,10 @@ public class Cache {
         cachedHEAD = null;
         cachedStageID = null;
         cachedStage = null;
+    }
+
+    /** Return true if currently operating on the remote repository. */
+    private static boolean inRemoteRepo() {
+        return !CWD.equals(Main.localCWD);
     }
 }

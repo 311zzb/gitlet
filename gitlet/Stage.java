@@ -99,6 +99,9 @@ public class Stage {
     /** Return a sorted List of file names in the current staging area. */
     static List<String> stagedFiles() {
         Tree stage = getStage();
+        if (stage == null) {
+            return new Tree().trackedFiles();
+        }
         return stage.trackedFiles();
     }
 
@@ -127,12 +130,12 @@ public class Stage {
     /** Return true if a designated file is staged for addition. */
     static boolean isStagedForAdd(String fileName) {
         Tree stage = getStage();
-        return stage.containsFile(fileName) && !stage.getBlobID(fileName).equals("");
+        return stage != null && stage.containsFile(fileName) && !stage.getBlobID(fileName).equals("");
     }
 
     /** Return true if a designated file is staged for removal. */
     static boolean isStagedForRemoval(String fileName) {
         Tree stage = getStage();
-        return stage.containsFile(fileName) && stage.getBlobID(fileName).equals("");
+        return stage != null && stage.containsFile(fileName) && stage.getBlobID(fileName).equals("");
     }
 }

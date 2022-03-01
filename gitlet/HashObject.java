@@ -71,7 +71,6 @@ public class HashObject implements Serializable, Dumpable {
      * @param id the designated objects id
      */
     static void writeCachedHashObject(String id) {
-        assert cachedHashObjects.containsKey(id);
         if (OPTIMIZATION) {
             File folder = optimizedObjectIDFolder(id);
             if (!folder.exists()) {

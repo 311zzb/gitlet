@@ -481,12 +481,19 @@ public class GitletTest {
 
     /* PUSH COMMAND */
 
+    static final String remoteWD = "D:/_SDE/cs61b/PlayGround2/.gitlet";
+
     /** A sanity test for add-remote command. */
     @Test
     public void pushTest() throws IOException {
         GitletExecute("init");
-        GitletExecute("add-remote", "PlayGround2", "D:/_SDE/cs61b/PlayGround2/.gitlet");
-        GitletExecute("push", "PlayGround2", "remoteBranchName");
+        writeAndAdd("a", "a");
+        GitletExecute("commit", "random commit");
+        writeAndAdd("b", "b");
+        writeAndAdd("c", "c");
+        GitletExecute("commit", "yet another random commit");
+        GitletExecute("add-remote", "PlayGround2", remoteWD);
+        GitletExecute("push", "PlayGround2", "cool-bean");
     }
 
 
@@ -603,7 +610,7 @@ public class GitletTest {
 
     /* MISC ----------------------------------------------------------------------------------------------------------*/
 
-    static final File CWD = new File(System.getProperty("user.dir"));
+    static File CWD = new File(System.getProperty("user.dir"));
 
     /** Execute commands with Gitlet and clean the cache after execution. */
     private static void GitletExecute(String... command) throws IOException {
