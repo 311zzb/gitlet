@@ -16,14 +16,15 @@ This class contains only `static` methods since `Main` should not be instantiate
 
 1. `static final File localCWD  = new File(System.getProperty("user.dir"))`
    The current working directory `File` object.
-2. `public static void main(String[] args)` The main method of Gitlet.
-3. `private static void assertArgsNum(String[] args, int n)`
+2. `static String currCommand` A static variable that holds the current command. Used during `pull` command.
+3. `public static void main(String[] args)` The main method of Gitlet.
+4. `private static void assertArgsNum(String[] args, int n)`
    Throw a GitletException if args _don't have_ exactly n elements.
-4. `private static void assertNotArgsNum(String[] args, int n)`
+5. `private static void assertNotArgsNum(String[] args, int n)`
    Throw a GitletException if args _have_ exactly n elements.
-5. `private static String[] getOperands(String[] args)`
+6. `private static String[] getOperands(String[] args)`
    Strip the first element of the input array and return the rest.
-6. `private static void assertString(String expected, String actual)`
+7. `private static void assertString(String expected, String actual)`
    Assert two `String` are equal.
 
 ### Cache
@@ -244,8 +245,9 @@ It also sets up persistence and do additional error checking.
        A private helper method that captures the logic of the merge command.
     8. `private static void mergeChecks1(Commit curr, Commit other)` Perform checks for the merge command.
     9. `private static void fastForward(Commit other)`
-       Fast-forward the current branch to the designated commit.
+       Fast-forward the current branch to the designated commit and print information.
        Only called when the split commit is the same as the current commit.
+       Special case: do not print fast-forward info when pulling.
     10. `private static void mergeChecks2(Set<String> changingFiles)` Perform checks for the merge command.
 15. misc
     1. `private static void assertGITLET()` Assert the `CWD` contains a `.gitlet` directory.
@@ -525,6 +527,9 @@ Represent a remote Gitlet repository and accommodating remote commands related m
          Fetch commits that their IDs in the `Set` to the local repo.
       4. `private static void fetchCommit(Remote remote, String commitID)`
          Fetch a commit to the local repo.
+   5. `pull` command
+      1. `public static void pull(String remoteName, String remoteBranchName)`
+         Execute the `pull` command. Implementation details in the Algorithms section.
 
 ### GitletTest
 
@@ -590,13 +595,15 @@ This class contains JUnit tests and some helper methods for Gitlet.
     1. `public void pushTest()` A sanity test for add-remote command.
 16. `fetch` command
     1. `public void fetchTest()` A sanity test for fetch command.
-17. Auto grader debug tests
+17. `pull` command
+    1. `public void pullTest()` A sanity test for pull command.
+18. Auto grader debug tests
     1. `public void test20_status_after_commit()`
     2. `public void test24_global_log_prev()`
     3. `public void test29_bad_checkouts_err()`
     4. `public void test35_merge_rm_conflicts()`
     5. `public void test36a_merge_parent2()`
-18. misc
+19. misc
     1. `static final File CWD` The local repository's working directory.
     2. `private static void GitletExecute(String... command)`
        Execute commands with Gitlet and clean the cache after execution.
@@ -946,6 +953,11 @@ This command only involved manipulation to the local repository (creating path r
 3. Fetch the `Commit`s (and their associating `Tree` and `Blob`) to the local repository.
    Specifically, using the caching and writing back mechanisms of the local repository.
    Commit's IDs are added to the local `allCommitsID` file upon fetching.
+
+#### `pull` command
+
+This command is executed simply fetch the designated remote branch using the `fetch` command,
+and then merge the fetched branch into the current branch using the `merge` command.
 
 ## Persistence
 

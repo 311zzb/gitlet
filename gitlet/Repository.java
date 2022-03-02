@@ -618,24 +618,25 @@ public class Repository {
             printAndExit("Cannot merge a branch with itself.");
         } // Abort merging if attempting to merge a branch with itself.
         if (Objects.equals(split.id(), other.id())) {
-            System.out.println("Given branch is an ancestor of the current branch.");
-            System.exit(0);
+            printAndExit("Given branch is an ancestor of the current branch.");
         } // Exit if the split point is the same commit as the given branch. The merge is complete.
         if (Objects.equals(split.id(), curr.id())) {
             fastForward(other);
-            System.out.println("Current branch fast-forwarded.");
             System.exit(0);
         } // Fast-forward and exit if the split point is the same commit as the current branch.
     }
 
     /**
-     * Fast-forward the current branch to the designated commit.
+     * Fast-forward the current branch to the designated commit and print information.
      * Only called when the split commit is the same as the current commit.
      * */
     private static void fastForward(Commit other) {
         String commitID = other.id();
         checkoutToCommit(commitID);
         moveCurrBranch(commitID);
+        if (!Main.currCommand.equals("pull")) {
+            System.out.println("Current branch fast-forwarded.");
+        } // Special case: do not print fast-forward when pulling.
     }
 
     /** Perform checks for the merge command. */

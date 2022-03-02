@@ -506,8 +506,19 @@ public class GitletTest {
         GitletExecute("add-remote", "PlayGround2", remoteWD);
         GitletExecute("fetch", "PlayGround2","master");
         GitletExecute("status");
-        GitletExecute("checkout", "PlayGround2/master");
         GitletExecute("global-log");
+    }
+
+    /* PULL COMMAND */
+
+    /** A sanity test for pull command. */
+    @Test
+    public void pullTest() throws IOException {
+        GitletExecute("init");
+        GitletExecute("add-remote", "PlayGround2", remoteWD);
+        GitletExecute("pull", "PlayGround2","master");
+        GitletExecute("status");
+        GitletExecute("log");
     }
 
 

@@ -16,6 +16,7 @@ import static gitlet.Repository.printAndExit;
 public class Main {
 
     static final File localCWD  = new File(System.getProperty("user.dir"));
+    static String currCommand;
 
     /**
      * Usage: java gitlet.Main ARGS, where ARGS contains
@@ -24,6 +25,7 @@ public class Main {
     public static void main(String[] args) {
         assertNotArgsNum(args, 0);
         String command = args[0];
+        currCommand = command;
         String[] operands = getOperands(args);
 
         Repository.assignStaticVariables(localCWD);
@@ -108,7 +110,10 @@ public class Main {
                 assertArgsNum(operands, 2);
                 Remote.fetch(operands[0], operands[1]);
             }
-
+            case "pull" -> {
+                assertArgsNum(operands, 2);
+                Remote.pull(operands[0], operands[1]);
+            }
             default -> printAndExit("No command with that name exists.");
         }
         Cache.writeBack();

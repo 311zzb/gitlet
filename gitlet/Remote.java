@@ -295,4 +295,11 @@ public class Remote {
         Commit.recordCommitID(commitID);
     }
 
+    /* PULL COMMAND */
+
+    public static void pull(String remoteName, String remoteBranchName) {
+        fetch(remoteName, remoteBranchName);
+        String localNewBranchName = remoteName + "/" + remoteBranchName;
+        Repository.merge(localNewBranchName);
+    }
 }
