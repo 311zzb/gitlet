@@ -272,7 +272,7 @@ public class Cache {
     }
 
     /** Return true if currently operating on the remote repository. */
-    private static boolean inRemoteRepo() {
+    static boolean inRemoteRepo() {
         return !CWD.equals(Main.localCWD);
     }
 }

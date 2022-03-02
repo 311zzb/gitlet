@@ -415,7 +415,9 @@ public class Repository {
      * 3. Clean the staging area
      */
     static void checkoutToCommit(String commitID) {
-        deleteCWDFiles();
+        if (!Cache.inRemoteRepo()) {
+            deleteCWDFiles();
+        }
         checkoutAllCommitFile(commitID);
         mkNewStage();
     }
