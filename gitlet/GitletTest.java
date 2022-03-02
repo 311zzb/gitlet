@@ -4,10 +4,9 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 
 import static gitlet.Cache.*;
-import static gitlet.Repository.*;
+import static gitlet.Repository.GITLET_DIR;
 import static gitlet.Utils.*;
 import static org.junit.Assert.*;
 
@@ -18,71 +17,71 @@ import static org.junit.Assert.*;
  */
 public class GitletTest {
 
-    /* INIT COMMAND --------------------------------------------------------------------------------------------------*/
+    /* INIT COMMAND */
 
     /** Sanity test for init command. */
     @Test
     public void initCommandSanityTest() throws IOException {
-        GitletExecute("init");
+        gitletExecute("init");
     }
 
-    /* ADD COMMAND ---------------------------------------------------------------------------------------------------*/
+    /* ADD COMMAND */
 
     /** Sanity test for add command. */
     @Test
     public void addCommandSanityTest() throws IOException {
-        GitletExecute("init");
+        gitletExecute("init");
 
         writeTestFile("_hello.txt", "hello");
-        GitletExecute("add", "_hello.txt");
+        gitletExecute("add", "_hello.txt");
     }
 
     /** Test using add command twice. */
     @Test
     public void addCommandTwiceTest() throws IOException {
-        GitletExecute("init");
+        gitletExecute("init");
 
         writeTestFile("_hello.txt", "hello");
-        GitletExecute("add", "_hello.txt");
+        gitletExecute("add", "_hello.txt");
 
         writeTestFile("_bye.txt", "bye");
-        GitletExecute("add", "_bye.txt");
+        gitletExecute("add", "_bye.txt");
     }
 
-    /* COMMIT COMMAND ------------------------------------------------------------------------------------------------*/
+    /* COMMIT COMMAND */
 
     /** Sanity test for commit command. */
     @Test
     public void commitSanityTest() throws IOException {
-        GitletExecute("init");
+        gitletExecute("init");
 
         writeTestFile("_hello.txt", "hello");
-        GitletExecute("add", "_hello.txt");
+        gitletExecute("add", "_hello.txt");
         writeTestFile("_bye.txt", "bye");
-        GitletExecute("add", "_bye.txt");
+        gitletExecute("add", "_bye.txt");
 
-        GitletExecute("commit", "added hello and bye");
+        gitletExecute("commit", "added hello and bye");
     }
 
     /** Dummy commit test. */
     @Test
     public void dummyCommitTest() throws IOException {
-        GitletExecute("init");
+        gitletExecute("init");
 
-        GitletExecute("commit", "dummy commit");
+        gitletExecute("commit", "dummy commit");
     }
 
     /** Add a file, make a commit, and add another file. */
     @Test
     public void commitAndAddTest() throws IOException {
-        GitletExecute("init");
+        gitletExecute("init");
 
         writeTestFile("_hello.txt", "hello");
-        GitletExecute("add", "_hello.txt");
-        GitletExecute("commit", "added hello");
+        gitletExecute("add", "_hello.txt");
+        gitletExecute("commit", "added hello");
 
         writeTestFile("_bye.txt", "bye");
-        GitletExecute("add", "_bye.txt");
+        gitletExecute("add", "_bye.txt");
     }
 
     /**
@@ -91,32 +90,33 @@ public class GitletTest {
      */
     @Test
     public void addAndRestoreTest() throws IOException {
-        GitletExecute("init");
+        gitletExecute("init");
 
         writeTestFile("_hello.txt", "hello");
-        GitletExecute("add", "_hello.txt");
-        GitletExecute("commit", "added hello");
+        gitletExecute("add", "_hello.txt");
+        gitletExecute("commit", "added hello");
 
         writeTestFile("_hello.txt", "hello world");
-        GitletExecute("add", "_hello.txt");
+        gitletExecute("add", "_hello.txt");
         writeTestFile("_hello.txt", "hello");
-        // Should remove _hello.txt from the staging area since it is now identical with the version in the latest commit
-        GitletExecute("add", "_hello.txt");
+        // Should remove _hello.txt from the staging area
+        // since it is now identical with the version in the latest commit
+        gitletExecute("add", "_hello.txt");
         assertTrue(getStage().isEmpty());
     }
 
-    /* RM COMMAND ----------------------------------------------------------------------------------------------------*/
+    /* RM COMMAND */
 
     /**
      * The rm command should unstage the added file.
      */
     @Test
     public void rmUnstageTest() throws IOException {
-        GitletExecute("init");
+        gitletExecute("init");
 
         writeTestFile("_hello.txt", "hello");
-        GitletExecute("add", "_hello.txt");
-        GitletExecute("rm", "_hello.txt");
+        gitletExecute("add", "_hello.txt");
+        gitletExecute("rm", "_hello.txt");
     }
 
     /**
@@ -126,339 +126,347 @@ public class GitletTest {
      */
     @Test
     public void rmCommitTest() throws IOException {
-        GitletExecute("init");
+        gitletExecute("init");
 
         writeTestFile("_hello.txt", "hello");
-        GitletExecute("add", "_hello.txt");
-        GitletExecute("commit", "added hello");
+        gitletExecute("add", "_hello.txt");
+        gitletExecute("commit", "added hello");
 
-        GitletExecute("rm", "_hello.txt");
-        GitletExecute("commit", "removed hello");
+        gitletExecute("rm", "_hello.txt");
+        gitletExecute("commit", "removed hello");
     }
 
 
-    /* LOG COMMAND ---------------------------------------------------------------------------------------------------*/
+    /* LOG COMMAND */
 
     /** Sanity test for log command. */
     @Test
     public void logSanityTest() throws IOException {
-        GitletExecute("init");
-        GitletExecute("log");
+        gitletExecute("init");
+        gitletExecute("log");
     }
 
     /** Simple test for log command. */
     @Test
     public void simpleLogTest() throws  IOException {
-        GitletExecute("init");
-        GitletExecute("commit", "dummy commit");
-        GitletExecute("log");
+        gitletExecute("init");
+        gitletExecute("commit", "dummy commit");
+        gitletExecute("log");
     }
 
     /** Normal test for log command. */
     @Test
     public void normalLogTest() throws  IOException {
-        GitletExecute("init");
+        gitletExecute("init");
 
         writeTestFile("_hello.txt", "hello");
-        GitletExecute("add", "_hello.txt");
-        GitletExecute("commit", "added hello");
+        gitletExecute("add", "_hello.txt");
+        gitletExecute("commit", "added hello");
 
         writeTestFile("_bye.txt", "bye");
-        GitletExecute("add", "_bye.txt");
-        GitletExecute("commit", "added bye");
+        gitletExecute("add", "_bye.txt");
+        gitletExecute("commit", "added bye");
 
-        GitletExecute("log");
+        gitletExecute("log");
     }
 
 
-    /* GLOBAL-LOG COMMAND --------------------------------------------------------------------------------------------*/
+    /* GLOBAL-LOG COMMAND */
 
     /** Sanity test for global-log command. */
     @Test
     public void globalLogSanityTest() throws  IOException {
-        GitletExecute("init");
+        gitletExecute("init");
 
-        GitletExecute("commit", "dummy 1");
-        GitletExecute("commit", "dummy 2");
-        GitletExecute("commit", "dummy 3");
+        gitletExecute("commit", "dummy 1");
+        gitletExecute("commit", "dummy 2");
+        gitletExecute("commit", "dummy 3");
 
-        GitletExecute("global-log");
+        gitletExecute("global-log");
     }
 
     /** Test for global-log command with branching. */
     @Test
     public void globalLogBranchTest() throws  IOException {
-        GitletExecute("init");
-        GitletExecute("branch", "cool-bean");
-        GitletExecute("commit", "dummy");
-        GitletExecute("commit", "not dummy");
-        GitletExecute("checkout", "cool-bean");
-        GitletExecute("commit", "not dummy");
-        GitletExecute("commit", "dummy");
-        GitletExecute("global-log");
+        gitletExecute("init");
+        gitletExecute("branch", "cool-bean");
+        gitletExecute("commit", "dummy");
+        gitletExecute("commit", "not dummy");
+        gitletExecute("checkout", "cool-bean");
+        gitletExecute("commit", "not dummy");
+        gitletExecute("commit", "dummy");
+        gitletExecute("global-log");
     }
 
-    /* FIND COMMAND --------------------------------------------------------------------------------------------------*/
+    /* FIND COMMAND */
 
     /** Sanity test for find command. */
     @Test
     public void findSanityTest() throws IOException {
-        GitletExecute("init");
+        gitletExecute("init");
 
-        GitletExecute("commit", "dummy");
-        GitletExecute("commit", "dummy");
-        GitletExecute("commit", "not dummy");
-        GitletExecute("log");
+        gitletExecute("commit", "dummy");
+        gitletExecute("commit", "dummy");
+        gitletExecute("commit", "not dummy");
+        gitletExecute("log");
 
-        GitletExecute("find", "dummy");
+        gitletExecute("find", "dummy");
     }
 
     /** Test for find command with branching. */
     @Test
     public void findBranchTest() throws IOException {
-        GitletExecute("init");
-        GitletExecute("branch", "cool-bean");
-        GitletExecute("commit", "dummy");
-        GitletExecute("commit", "not dummy");
-        GitletExecute("checkout", "cool-bean");
-        GitletExecute("commit", "not dummy");
-        GitletExecute("commit", "dummy");
-        GitletExecute("global-log");
+        gitletExecute("init");
+        gitletExecute("branch", "cool-bean");
+        gitletExecute("commit", "dummy");
+        gitletExecute("commit", "not dummy");
+        gitletExecute("checkout", "cool-bean");
+        gitletExecute("commit", "not dummy");
+        gitletExecute("commit", "dummy");
+        gitletExecute("global-log");
 
-        GitletExecute("find", "dummy");
+        gitletExecute("find", "dummy");
     }
 
-    /* STATUS COMMAND ------------------------------------------------------------------------------------------------*/
+    /* STATUS COMMAND */
 
     /** Basic test for status command. */
     @Test
     public void statusBasicTest() throws IOException {
-        GitletExecute("init");
+        gitletExecute("init");
 
         writeTestFile("_hello.txt", "hello");
-        GitletExecute("add", "_hello.txt");
-        GitletExecute("commit", "added hello");
+        gitletExecute("add", "_hello.txt");
+        gitletExecute("commit", "added hello");
         writeTestFile("_bye.txt", "bye");
-        GitletExecute("add", "_bye.txt");
-        GitletExecute("rm", "_hello.txt");
+        gitletExecute("add", "_bye.txt");
+        gitletExecute("rm", "_hello.txt");
 
-        GitletExecute("status");
+        gitletExecute("status");
     }
 
-    /** Test extra functions ("Modification Not Staged For Commit") condition 3 of status command. */
+    /**
+     * Test extra functions ("Modification Not Staged For Commit")
+     * condition 3 of status command.
+     */
     @Test
     public void statusModification3Test() throws IOException {
-        GitletExecute("init");
+        gitletExecute("init");
 
         writeTestFile("_hello.txt", "hello");
-        GitletExecute("add", "_hello.txt");
+        gitletExecute("add", "_hello.txt");
 
         deleteTestFile("_hello.txt");
-        GitletExecute("status");
+        gitletExecute("status");
     }
 
-    /** Test extra functions ("Modification Not Staged For Commit") condition 4 of status command. */
+    /**
+     * Test extra functions ("Modification Not Staged For Commit")
+     * condition 4 of status command.
+     */
     @Test
     public void statusModification4Test() throws IOException {
-        GitletExecute("init");
+        gitletExecute("init");
 
         writeTestFile("_hello.txt", "hello");
-        GitletExecute("add", "_hello.txt");
-        GitletExecute("commit", "added hello");
+        gitletExecute("add", "_hello.txt");
+        gitletExecute("commit", "added hello");
 
         deleteTestFile("_hello.txt");
-        GitletExecute("status");
+        gitletExecute("status");
     }
 
     /** Test extra functions ("Untracked Files") of status command. */
     @Test
     public void statusUntrackedTest() throws IOException {
-        GitletExecute("init");
+        gitletExecute("init");
 
         writeTestFile("_hello.txt", "hello");
-        GitletExecute("add", "_hello.txt");
-        GitletExecute("commit", "added hello");
+        gitletExecute("add", "_hello.txt");
+        gitletExecute("commit", "added hello");
         writeTestFile("_bye.txt", "bye");
-        GitletExecute("status");
+        gitletExecute("status");
     }
 
-    /* CHECKOUT COMMAND ----------------------------------------------------------------------------------------------*/
+    /* CHECKOUT COMMAND */
 
     /** Sanity test for checkout usage 1. */
     @Test
     public void checkoutHeadFileSanityTest() throws IOException {
-        GitletExecute("init");
+        gitletExecute("init");
 
         writeTestFile("_hello.txt", "hello");
-        GitletExecute("add", "_hello.txt");
-        GitletExecute("commit", "added hello");
+        gitletExecute("add", "_hello.txt");
+        gitletExecute("commit", "added hello");
 
         writeTestFile("_hello.txt", "hello world");
         assertEquals("hello world", readTestFile("_hello.txt"));
-        GitletExecute("checkout", "--", "_hello.txt"); // java gitlet.Main checkout -- _hello.txt
+        gitletExecute("checkout", "--", "_hello.txt"); // java gitlet.Main checkout -- _hello.txt
         assertEquals("hello", readTestFile("_hello.txt"));
     }
 
     /** Sanity test for checkout usage 2. */
     @Test
     public void checkoutCommitFileSanityTest() throws IOException {
-        GitletExecute("init");
+        gitletExecute("init");
 
         writeTestFile("_hello.txt", "hello");
-        GitletExecute("add", "_hello.txt");
-        GitletExecute("commit", "added hello");
+        gitletExecute("add", "_hello.txt");
+        gitletExecute("commit", "added hello");
 
         writeTestFile("_hello.txt", "hello world");
         assertEquals("hello world", readTestFile("_hello.txt"));
-        GitletExecute("add", "_hello.txt");
-        GitletExecute("commit", "changed hello");
+        gitletExecute("add", "_hello.txt");
+        gitletExecute("commit", "changed hello");
         String commitID = Cache.getCommit(getLatestCommitID()).getParentCommitID();
-        GitletExecute("checkout", commitID.substring(0, 6), "--", "_hello.txt"); // java gitlet.Main checkout [abbreviated commit id] -- _hello.txt
+        // java gitlet.Main checkout [abbreviated commit id] -- _hello.txt
+        gitletExecute("checkout", commitID.substring(0, 6), "--", "_hello.txt");
         assertEquals("hello", readTestFile("_hello.txt"));
     }
 
     /** Sanity test for checkout usage 3. */
     @Test
     public void checkoutBranchSanityTest() throws IOException {
-        GitletExecute("init");
+        gitletExecute("init");
 
         writeTestFile("_hello.txt", "hello");
-        GitletExecute("add", "_hello.txt");
-        GitletExecute("commit", "added hello");
+        gitletExecute("add", "_hello.txt");
+        gitletExecute("commit", "added hello");
 
-        GitletExecute("branch", "cool-bean");
-        GitletExecute("checkout", "cool-bean");
-        GitletExecute("status");
+        gitletExecute("branch", "cool-bean");
+        gitletExecute("checkout", "cool-bean");
+        gitletExecute("status");
     }
 
-    /* BRANCH COMMAND ------------------------------------------------------------------------------------------------*/
+    /* BRANCH COMMAND */
 
     /** Sanity test for branch command. */
     @Test
     public void branchSanityTest() throws IOException {
-        GitletExecute("init");
+        gitletExecute("init");
 
-        GitletExecute("branch", "cool-bean");
-        GitletExecute("branch", "hot-bean");
-        GitletExecute("status");
+        gitletExecute("branch", "cool-bean");
+        gitletExecute("branch", "hot-bean");
+        gitletExecute("status");
     }
 
-    /* RM-BRANCH COMMAND ---------------------------------------------------------------------------------------------*/
+    /* RM-BRANCH COMMAND */
 
     /** Sanity test for rm-branch command. */
     @Test
     public void rmBranchSanityTest() throws IOException {
-        GitletExecute("init");
+        gitletExecute("init");
 
-        GitletExecute("branch", "cool-bean");
-        GitletExecute("branch", "hot-bean");
-        GitletExecute("rm-branch", "cool-bean");
-        GitletExecute("status");
+        gitletExecute("branch", "cool-bean");
+        gitletExecute("branch", "hot-bean");
+        gitletExecute("rm-branch", "cool-bean");
+        gitletExecute("status");
     }
 
-    /* RESET COMMAND -------------------------------------------------------------------------------------------------*/
+    /* RESET COMMAND */
 
     /** Sanity test for reset command. */
     @Test
     public void resetSanityTest() throws IOException {
-        GitletExecute("init");
+        gitletExecute("init");
 
         writeTestFile("_hello.txt", "hello");
-        GitletExecute("add", "_hello.txt");
-        GitletExecute("commit", "added hello");
+        gitletExecute("add", "_hello.txt");
+        gitletExecute("commit", "added hello");
 
         String commitID = Cache.getCommit(getLatestCommitID()).getParentCommitID();
-        GitletExecute("reset", commitID);
-        GitletExecute("log");
+        gitletExecute("reset", commitID);
+        gitletExecute("log");
     }
 
-    /* MERGE COMMAND -------------------------------------------------------------------------------------------------*/
+    /* MERGE COMMAND */
 
     /** Test the lca method. */
     @Test
     public void lcaTest() throws IOException {
-        GitletExecute("init");
-        GitletExecute("branch", "hot-bean");
-        GitletExecute("commit", "done something");
-        GitletExecute("checkout", "hot-bean");
-        GitletExecute("commit", "done something else");
+        gitletExecute("init");
+        gitletExecute("branch", "hot-bean");
+        gitletExecute("commit", "done something");
+        gitletExecute("checkout", "hot-bean");
+        gitletExecute("commit", "done something else");
         Commit commit1 = getCommit(getBranch("master"));
         Commit commit2 = getCommit(getBranch("hot-bean"));
-        GitletExecute("global-log");
-        System.out.println(Commit.lca(commit1, commit2).id()); // Should be the ID of the initial commit.
+        gitletExecute("global-log");
+        // Should be the ID of the initial commit.
+        System.out.println(Commit.lca(commit1, commit2).id());
     }
 
     /** A sanity test for the merge command. */
     @Test
     public void mergeSanityTest() throws IOException {
-        GitletExecute("init");
+        gitletExecute("init");
 
-        GitletExecute("branch", "hot-bean");
-        GitletExecute("checkout", "hot-bean");
+        gitletExecute("branch", "hot-bean");
+        gitletExecute("checkout", "hot-bean");
 
         writeTestFile("_hello.txt", "hello");
-        GitletExecute("add", "_hello.txt");
-        GitletExecute("commit", "added hello");
+        gitletExecute("add", "_hello.txt");
+        gitletExecute("commit", "added hello");
 
-        GitletExecute("checkout", "master");
+        gitletExecute("checkout", "master");
         writeTestFile("_bye.txt", "bye");
-        GitletExecute("add", "_bye.txt");
-        GitletExecute("commit", "added bye");
+        gitletExecute("add", "_bye.txt");
+        gitletExecute("commit", "added bye");
 
-        GitletExecute("merge", "hot-bean");
-        GitletExecute("global-log");
+        gitletExecute("merge", "hot-bean");
+        gitletExecute("global-log");
     }
 
     /** Test merging two branches with conflict. */
     @Test
     public void mergeConflictTest() throws IOException {
-        GitletExecute("init");
-        GitletExecute("branch", "cool-bean");
+        gitletExecute("init");
+        gitletExecute("branch", "cool-bean");
 
         writeAndAdd("conflict", "CONFLICT\n");
-        GitletExecute("commit", "CONFLICT commit");
+        gitletExecute("commit", "CONFLICT commit");
 
-        GitletExecute("checkout", "cool-bean");
+        gitletExecute("checkout", "cool-bean");
         writeAndAdd("conflict", "!CONFLICT\n");
-        GitletExecute("commit", "!CONFLICT commit");
+        gitletExecute("commit", "!CONFLICT commit");
 
-        GitletExecute("merge", "master");
-        GitletExecute("log");
+        gitletExecute("merge", "master");
+        gitletExecute("log");
     }
 
     /** A hard (and comprehensive) test for the merge command. */
     @Test
     public void mergeTest() throws IOException {
-        GitletExecute("init");
+        gitletExecute("init");
         writeAndAdd("a", "A");
         writeAndAdd("b", "B");
         writeAndAdd("c", "C");
         writeAndAdd("d", "D");
         writeAndAdd("e", "E");
         writeAndAdd("conflict", "Hi mom");
-        GitletExecute("commit", "split commit");
-        GitletExecute("branch", "branch1");
+        gitletExecute("commit", "split commit");
+        gitletExecute("branch", "branch1");
 
         writeAndAdd("a", "!A");
         writeAndAdd("b", "B");
-        GitletExecute("rm", "c");
-        GitletExecute("rm", "d");
+        gitletExecute("rm", "c");
+        gitletExecute("rm", "d");
         writeAndAdd("e", "E");
         writeAndAdd("f", "!F");
         writeAndAdd("conflict", "CONFLICT\n");
-        GitletExecute("commit", "master commit");
+        gitletExecute("commit", "master commit");
 
-        GitletExecute("checkout", "branch1");
+        gitletExecute("checkout", "branch1");
         writeAndAdd("a", "A");
         writeAndAdd("b", "!B");
-        GitletExecute("rm", "c");
+        gitletExecute("rm", "c");
         writeAndAdd("d", "D");
-        GitletExecute("rm", "e");
+        gitletExecute("rm", "e");
         writeAndAdd("g", "G");
         writeAndAdd("conflict", "!CONFLICT\n");
-        GitletExecute("commit", "branch1 commit");
+        gitletExecute("commit", "branch1 commit");
 
-        GitletExecute("merge", "master");
+        gitletExecute("merge", "master");
 
         assertFile("a", "!A");
         assertFile("b", "!B");
@@ -467,7 +475,8 @@ public class GitletTest {
         assertFile("e", null);
         assertFile("f", "!F");
         assertFile("g", "G");
-        assertFile("conflict", "<<<<<<< HEAD\n!CONFLICT\n=======\nCONFLICT\n>>>>>>>\n");
+        assertFile("conflict",
+                "<<<<<<< HEAD\n!CONFLICT\n=======\nCONFLICT\n>>>>>>>\n");
     }
 
     /* ADD-REMOTE COMMAND */
@@ -475,26 +484,26 @@ public class GitletTest {
     /** A sanity test for add-remote command. */
     @Test
     public void addRemoteTest() throws IOException {
-        GitletExecute("init");
-        GitletExecute("add-remote", "test", "D:/_SDE/cs61b/PlayGround/.gitlet");
+        gitletExecute("init");
+        gitletExecute("add-remote", "test", "D:/_SDE/cs61b/PlayGround/.gitlet");
         Remote.readRemote("test");
     }
 
     /* PUSH COMMAND */
 
-    static final String remoteWD = "D:/_SDE/cs61b/PlayGround2/.gitlet";
+    static final String REMOTE_WD = "D:/_SDE/cs61b/PlayGround2/.gitlet";
 
     /** A sanity test for push command. */
     @Test
     public void pushTest() throws IOException {
-        GitletExecute("init");
+        gitletExecute("init");
         writeAndAdd("a", "a");
-        GitletExecute("commit", "random commit");
+        gitletExecute("commit", "random commit");
         writeAndAdd("b", "b");
         writeAndAdd("c", "c");
-        GitletExecute("commit", "yet another random commit");
-        GitletExecute("add-remote", "PlayGround2", remoteWD);
-        GitletExecute("push", "PlayGround2", "cool-bean");
+        gitletExecute("commit", "yet another random commit");
+        gitletExecute("add-remote", "PlayGround2", REMOTE_WD);
+        gitletExecute("push", "PlayGround2", "cool-bean");
     }
 
     /* FETCH COMMAND */
@@ -502,11 +511,11 @@ public class GitletTest {
     /** A sanity test for fetch command. */
     @Test
     public void fetchTest() throws IOException {
-        GitletExecute("init");
-        GitletExecute("add-remote", "PlayGround2", remoteWD);
-        GitletExecute("fetch", "PlayGround2","master");
-        GitletExecute("status");
-        GitletExecute("global-log");
+        gitletExecute("init");
+        gitletExecute("add-remote", "PlayGround2", REMOTE_WD);
+        gitletExecute("fetch", "PlayGround2", "master");
+        gitletExecute("status");
+        gitletExecute("global-log");
     }
 
     /* PULL COMMAND */
@@ -514,136 +523,138 @@ public class GitletTest {
     /** A sanity test for pull command. */
     @Test
     public void pullTest() throws IOException {
-        GitletExecute("init");
-        GitletExecute("add-remote", "PlayGround2", remoteWD);
-        GitletExecute("pull", "PlayGround2","master");
-        GitletExecute("status");
-        GitletExecute("log");
+        gitletExecute("init");
+        gitletExecute("add-remote", "PlayGround2", REMOTE_WD);
+        gitletExecute("pull", "PlayGround2", "master");
+        gitletExecute("status");
+        gitletExecute("log");
     }
 
 
     /* AUTO GRADER DEBUGS */
 
     @Test
-    public void test20_status_after_commit() throws IOException {
-        GitletExecute("init");
+    public void test20StatusAfterCommit() throws IOException {
+        gitletExecute("init");
         writeAndAdd("f.txt", "wug");
         writeAndAdd("g.txt", "not wug");
-        GitletExecute("commit", "Two files");
-        GitletExecute("status");
+        gitletExecute("commit", "Two files");
+        gitletExecute("status");
 
-        GitletExecute("rm", "f.txt");
-        GitletExecute("commit", "Removed f.txt");
-        GitletExecute("status");
+        gitletExecute("rm", "f.txt");
+        gitletExecute("commit", "Removed f.txt");
+        gitletExecute("status");
     }
 
     @Test
-    public void test24_global_log_prev() throws IOException {
-        GitletExecute("init");
+    public void test24GlobalLogPrev() throws IOException {
+        gitletExecute("init");
         writeAndAdd("f.txt", "wug");
         writeAndAdd("g.txt", "not wug");
-        GitletExecute("commit", "Two files");
+        gitletExecute("commit", "Two files");
         writeAndAdd("h.txt", "h");
-        GitletExecute("commit", "Add h");
+        gitletExecute("commit", "Add h");
 //        GitletExecute("log");
 
         String id = getLatestCommit().getParentCommitID();
-        GitletExecute("reset", id);
-        GitletExecute("global-log"); // Should print out all three commits
+        gitletExecute("reset", id);
+        gitletExecute("global-log"); // Should print out all three commits
     }
 
     @Test
-    public void test29_bad_checkouts_err() throws IOException {
-        GitletExecute("init");
+    public void test29BadCheckoutsErr() throws IOException {
+        gitletExecute("init");
         writeAndAdd("wug.txt", "wug");
-        GitletExecute("commit", "version 1 of wug.txt");
+        gitletExecute("commit", "version 1 of wug.txt");
         writeAndAdd("wug.txt", "not wug");
-        GitletExecute("commit", "version 2 of wug.txt");
+        gitletExecute("commit", "version 2 of wug.txt");
         String version2ID = getLatestCommitID();
         String version1ID = getLatestCommit().getParentCommitID();
-//        GitletExecute("checkout", "--", "warg.txt");
-        GitletExecute("checkout", "5d0bc169a1737e955f9cb26b9e7aa21e4afd4d12", "--", "wug.txt");
+        gitletExecute("checkout",
+                "5d0bc169a1737e955f9cb26b9e7aa21e4afd4d12", "--", "wug.txt");
 
     }
 
     @Test
-    public void test35_merge_rm_conflicts() throws IOException {
-        GitletExecute("init");
+    public void test35MergeRmConflicts() throws IOException {
+        gitletExecute("init");
         writeAndAdd("f.txt", "This is a wug.\n");
         writeAndAdd("g.txt", "This is not a wug.\n");
-        GitletExecute("commit", "Two files");
+        gitletExecute("commit", "Two files");
 
-        GitletExecute("branch", "other");
+        gitletExecute("branch", "other");
         writeAndAdd("h.txt", "Another wug.\n");
-        GitletExecute("rm", "g.txt");
+        gitletExecute("rm", "g.txt");
         writeAndAdd("f.txt", "Another wug.\n");
-        GitletExecute("commit", "Add h.txt, remove g.txt, and change f.txt");
+        gitletExecute("commit", "Add h.txt, remove g.txt, and change f.txt");
 
-        GitletExecute("checkout", "other");
-        GitletExecute("rm", "f.txt");
+        gitletExecute("checkout", "other");
+        gitletExecute("rm", "f.txt");
         writeAndAdd("k.txt", "And yet another wug.\n");
-        GitletExecute("commit", "Add k.txt and remove f.txt");
+        gitletExecute("commit", "Add k.txt and remove f.txt");
 
-        GitletExecute("checkout", "master");
+        gitletExecute("checkout", "master");
         String masterHead = getBranch("master");
 
-        GitletExecute("merge", "other");
+        gitletExecute("merge", "other");
 
         assertFileNotExist("g.txt");
         assertFile("h.txt", "Another wug.\n");
         assertFile("k.txt", "And yet another wug.\n");
-        assertFile("f.txt", "<<<<<<< HEAD\nAnother wug.\n=======\n>>>>>>>\n");
+        assertFile("f.txt",
+                "<<<<<<< HEAD\nAnother wug.\n=======\n>>>>>>>\n");
 
-        GitletExecute("log");
-        GitletExecute("status");
+        gitletExecute("log");
+        gitletExecute("status");
     }
 
     @Test
-    public void test36a_merge_parent2() throws IOException {
-        GitletExecute("init");
-        GitletExecute("branch", "B1");
-        GitletExecute("branch", "B2");
+    public void test36AMergeParent2() throws IOException {
+        gitletExecute("init");
+        gitletExecute("branch", "B1");
+        gitletExecute("branch", "B2");
 
-        GitletExecute("checkout", "B1");
+        gitletExecute("checkout", "B1");
         writeAndAdd("h.txt", "This is a wug.\n");
-        GitletExecute("commit", "Add h.txt");
+        gitletExecute("commit", "Add h.txt");
 
-        GitletExecute("checkout", "B2");
+        gitletExecute("checkout", "B2");
         writeAndAdd("f.txt", "This is a wug.\n");
-        GitletExecute("commit", "f.txt added");
+        gitletExecute("commit", "f.txt added");
 
-        GitletExecute("branch", "C1");
+        gitletExecute("branch", "C1");
         writeAndAdd("g.txt", "This is not a wug.\n");
-        GitletExecute("rm", "f.txt");
-        GitletExecute("commit", "g.txt added, f.txt removed");
+        gitletExecute("rm", "f.txt");
+        gitletExecute("commit", "g.txt added, f.txt removed");
 
-        GitletExecute("checkout", "B1");
+        gitletExecute("checkout", "B1");
         assertFile("h.txt", "This is a wug.\n");
         assertFileNotExist("f.txt");
         assertFileNotExist("g.txt");
 
-        GitletExecute("merge", "C1");
+        gitletExecute("merge", "C1");
         assertFile("f.txt", "This is a wug.\n");
         assertFile("h.txt", "This is a wug.\n");
         assertFileNotExist("g.txt");
 
-        GitletExecute("merge", "B2");
+        gitletExecute("merge", "B2");
         assertFileNotExist("f.txt");
         assertFile("g.txt", "This is not a wug.\n");
         assertFile("h.txt", "This is a wug.\n");
     }
 
-    /* MISC ----------------------------------------------------------------------------------------------------------*/
+    /* MISC */
 
     static File CWD = new File(System.getProperty("user.dir"));
 
     /** Execute commands with Gitlet and clean the cache after execution. */
-    private static void GitletExecute(String... command) throws IOException {
+    private static void gitletExecute(String... command) throws IOException {
         if (command[0].equals("init")) {
             Repository.assignStaticVariables(CWD);
             Repository.deleteCWDFiles();
             deleteDirectory(GITLET_DIR);
-        } // Special case: make sure there is no .gitlet directory before init command. Implemented for testing purposes.
+        } // Special case: make sure there is no .gitlet directory before init command.
+          // Implemented for testing purposes.
         Main.main(command);
         cleanCache();
     }
@@ -680,7 +691,7 @@ public class GitletTest {
     /** Write a test file with the designated file name and content, then add it to the stage. */
     private static void writeAndAdd(String fileName, String content) throws IOException {
         writeTestFile(fileName, content);
-        GitletExecute("add", fileName);
+        gitletExecute("add", fileName);
     }
 
     /** Assert a designated file has the designated content. */

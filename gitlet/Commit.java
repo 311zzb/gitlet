@@ -7,12 +7,12 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Stack;
 
-import static gitlet.Branch.*;
+import static gitlet.Branch.moveCurrBranch;
 import static gitlet.Cache.*;
 import static gitlet.Repository.ALL_COMMITS_ID;
 import static gitlet.Repository.printAndExit;
-import static gitlet.Stage.*;
-import static gitlet.Tree.*;
+import static gitlet.Stage.mkNewStage;
+import static gitlet.Tree.mkCommitTree;
 
 /**
  * This class represents a Commit in Gitlet, it extends the HashObject class.
@@ -188,7 +188,7 @@ public class Commit extends HashObject {
         return new HashSet<>(commitTree.trackedFiles());
     }
 
-    /* STATIC METHODS ------------------------------------------------------------------------------------------------*/
+    /* STATIC METHODS */
 
     /**
      * Factory method. Make a new Commit.

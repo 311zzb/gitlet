@@ -1,7 +1,9 @@
 package gitlet;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 import static gitlet.Cache.*;
 import static gitlet.Repository.*;
@@ -16,12 +18,13 @@ import static gitlet.Utils.*;
  */
 public class Branch {
 
-    /* STATIC METHODS ------------------------------------------------------------------------------------------------*/
+    /* STATIC METHODS */
 
     /**
      * Load a branch file from filesystem with designated name.
      * @param branchName the designated branch name
-     * @return the pointed Commit ID, null if the branch name is "" (nothing) or there is no such branch.
+     * @return the pointed Commit ID,
+     * null if the branch name is "" (nothing) or there is no such branch.
      */
     static String loadBranch(String branchName) {
         if (Objects.equals(branchName, "")) {

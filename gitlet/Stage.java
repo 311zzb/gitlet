@@ -2,11 +2,12 @@ package gitlet;
 
 import java.util.List;
 
+import static gitlet.Blob.mkBlob;
 import static gitlet.Cache.*;
 import static gitlet.Repository.STAGE;
-import static gitlet.Tree.*;
-import static gitlet.Utils.*;
-import static gitlet.Blob.*;
+import static gitlet.Tree.mkNewEmptyTree;
+import static gitlet.Utils.readContentsAsString;
+import static gitlet.Utils.writeContents;
 
 /**
  * This class houses static methods that related to Stage (the staging area).
@@ -17,7 +18,7 @@ import static gitlet.Blob.*;
  */
 public class Stage {
 
-    /* STATIC METHODS ------------------------------------------------------------------------------------------------*/
+    /* STATIC METHODS */
 
 
     /**
@@ -28,15 +29,15 @@ public class Stage {
     }
 
     /**
-     * Copy the staging area and add a fileName - BlobID pair.
+     * Copy the staging area and add a fileName - blobID pair.
      * Mark the previous staging area Tree for deletion.
      * This function should only be invoked once per run.
      * @param fileName the designated file name
-     * @param BlobID the designated ID
+     * @param blobID the designated ID
      */
-    static void putInStage(String fileName, String BlobID) {
+    static void putInStage(String fileName, String blobID) {
         Tree stage = new Tree(getStage());
-        stage.putBlobID(fileName, BlobID);
+        stage.putBlobID(fileName, blobID);
         cacheStage(stage);
     }
 
@@ -73,8 +74,10 @@ public class Stage {
      * 1. Get the file as its current version, cache it as a Blob (don't queue for write back yet)
      * 2. Get the version of the designated file from the latest commit
      * 3. Special case:
-     *    If the current version of the file is identical to the version in the latest commit (by comparing IDs),
-     *    do not stage it, and remove it from the staging area if it is already there. End the execution.
+     *    If the current version of the file is identical
+     *    to the version in the latest commit (by comparing IDs),
+     *    do not stage it, and remove it from the staging area
+     *    if it is already there. End the execution.
      * 4. Modify cached staging area
      *
      * @param fileName the designated file name
@@ -130,12 +133,16 @@ public class Stage {
     /** Return true if a designated file is staged for addition. */
     static boolean isStagedForAdd(String fileName) {
         Tree stage = getStage();
-        return stage != null && stage.containsFile(fileName) && !stage.getBlobID(fileName).equals("");
+        return stage != null
+                && stage.containsFile(fileName)
+                && !stage.getBlobID(fileName).equals("");
     }
 
     /** Return true if a designated file is staged for removal. */
     static boolean isStagedForRemoval(String fileName) {
         Tree stage = getStage();
-        return stage != null && stage.containsFile(fileName) && stage.getBlobID(fileName).equals("");
+        return stage != null
+                && stage.containsFile(fileName)
+                && stage.getBlobID(fileName).equals("");
     }
 }

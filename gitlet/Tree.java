@@ -1,14 +1,17 @@
 package gitlet;
 
-import java.util.*;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 import static gitlet.Cache.*;
-import static gitlet.Repository.CWD;
-import static gitlet.Utils.*;
 
 /**
  * Represent a Gitlet Tree, corresponding to UNIX directory entries.
- * An instance of Tree object contains a TreeMap as instance variable, which has zero or more entries.
+ * An instance of Tree object contains a TreeMap as instance variable,
+ * which has zero or more entries.
  * Each of these entries is a fileName-BlobID pair.
  * This class also contains Tree related static methods.
  *
@@ -44,7 +47,7 @@ public class Tree extends HashObject implements Iterable<String> {
      * Print the treeMap in this object on System.out.
      */
     @Override
-    public void dump(){
+    public void dump() {
         super.dump();
         System.out.println(_structure);
     }
@@ -81,7 +84,8 @@ public class Tree extends HashObject implements Iterable<String> {
 
     /** Remove an entry with fileName as the key from this Tree. */
     void removeBlobID(String fileName) {
-//        queueForDeleteHashObject(getBlobID(fileName)); // This may unintended delete Blob in previous commits
+        // This may unintended delete Blob in previous commits
+        //queueForDeleteHashObject(getBlobID(fileName));
         _structure.remove(fileName);
     }
 
@@ -110,15 +114,16 @@ public class Tree extends HashObject implements Iterable<String> {
             String blobID = updater.getBlobID(key);
             if (blobID.equals("")) {
                 this.removeBlobID(key);
-            } // Special case: remove the corresponding pair from THIS if the value to a key in the updater is null
-            else {
+                // Special case: remove the corresponding pair from THIS
+                // if the value to a key in the updater is null
+            } else {
                 this.putBlobID(key, blobID);
             }
         }
     }
 
 
-    /* STATIC METHODS ------------------------------------------------------------------------------------------------*/
+    /* STATIC METHODS */
 
     /**
      * Factory method.
@@ -144,7 +149,8 @@ public class Tree extends HashObject implements Iterable<String> {
 
     /**
      * Factory method.
-     * Return a Tree that capture the Tree from the latest commit as well as current addition and removal status.
+     * Return a Tree that capture the Tree from the latest commit
+     * as well as current addition and removal status.
      * 1. Get a copy of the Tree of the latest commit
      * 2. Get the staging area Tree
      * 3. Update that copy with the staging area
@@ -168,20 +174,5 @@ public class Tree extends HashObject implements Iterable<String> {
         } else {
             return new Tree(latestCommitTree);
         }
-    }
-
-    /** Return a temporary Tree that capture information of files in CWD. */
-    static Tree CWDFiles() {
-        List<String> files = plainFilenamesIn(CWD);
-        if (files == null) {
-            return new Tree();
-        } // Special case: return an empty if CWD is empty.
-        Tree tree = new Tree();
-        for (String file : files) {
-            String content = readContentsAsString(join(CWD, file));
-            Blob blob = new Blob(content);
-            tree.putBlobID(file, blob.id());
-        }
-        return tree;
     }
 }

@@ -3,8 +3,8 @@ package gitlet;
 import java.io.File;
 import java.util.Set;
 
-import static gitlet.Commit.recordCommitID;
-import static gitlet.Repository.*;
+import static gitlet.Repository.REMOTES_DIR;
+import static gitlet.Repository.printAndExit;
 import static gitlet.Utils.*;
 import static java.io.File.separator;
 
@@ -215,12 +215,16 @@ public class Remote {
         remote.writeBack();
     }
 
-    /** Return a Set of String containing the IDs of commits that should be pushed to the remote repo. */
+    /**
+     * Return a Set of String containing the IDs of commits
+     * that should be pushed to the remote repo.
+     */
     private static Set<String> commitsToPush(Commit localC, Commit remoteC, Remote remote) {
         Set<String> localCommitAncestors = Commit.ancestors(localC);
         if (!localCommitAncestors.contains(remoteC.id())) {
             printAndExit("Please pull down remote changes before pushing.");
-        } // Special case: abort if the remote branch’s head is not in the history of the current local head.
+        } // Special case: abort if the remote branch’s head is not
+          // in the history of the current local head.
         Set<String> remoteCommitAncestors = remote.commitAncestors(remoteC);
         localCommitAncestors.removeAll(remoteCommitAncestors);
         return localCommitAncestors;
@@ -268,7 +272,10 @@ public class Remote {
         Branch.moveBranch(localNewBranchName, remoteHeadCommitID);
     }
 
-    /** Return a Set of String containing the IDs of commits that should be fetched from the remote repo. */
+    /**
+     * Return a Set of String containing the IDs of commits
+     * that should be fetched from the remote repo.
+     */
     private static Set<String> commitsToFetch(Commit localC, Commit remoteC, Remote remote) {
         Set<String> localCommitAncestors = Commit.ancestors(localC);
         Set<String> remoteCommitAncestors = remote.commitAncestors(remoteC);

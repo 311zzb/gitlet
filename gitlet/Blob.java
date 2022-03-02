@@ -2,9 +2,10 @@ package gitlet;
 
 import java.io.File;
 
-import static gitlet.Cache.*;
+import static gitlet.Cache.cacheAndQueueForWriteHashObject;
 import static gitlet.Repository.CWD;
-import static gitlet.Utils.*;
+import static gitlet.Utils.join;
+import static gitlet.Utils.readContentsAsString;
 
 /**
  *
@@ -36,7 +37,7 @@ public class Blob extends HashObject {
         System.out.println(_content);
     }
 
-    /* STATIC METHODS ------------------------------------------------------------------------------------------------*/
+    /* STATIC METHODS */
 
     /**
      * Factory method. Make a new Blob with a designated file.

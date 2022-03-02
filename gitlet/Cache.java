@@ -1,14 +1,19 @@
 package gitlet;
 
-import java.util.*;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import static gitlet.Branch.*;
 import static gitlet.HashObject.*;
 import static gitlet.Repository.CWD;
-import static gitlet.Stage.*;
+import static gitlet.Stage.loadStageID;
+import static gitlet.Stage.writeStageID;
 
 /**
- * This class is used to house static methods that facilitate lazy loading and caching of persistence.
+ * This class is used to house static methods that facilitate
+ * lazy loading and caching of persistence.
  * This file will set up data structures for caching, load necessary objects,
  * and write back the cache at the very end of execution.
  * This class will never be instantiated.
@@ -17,21 +22,23 @@ import static gitlet.Stage.*;
  * For example, instead of deserialize and serialize objects directly,
  * Cache class will invoke methods from the corresponding class to do that.
  *
- * On the other hand, the Cache class will do all the get xxx() methods which retrieving desired objects lazily
+ * On the other hand, the Cache class will do all the get xxx() methods
+ * which retrieving desired objects lazily
  * from the cache.
  *
  * @author XIE Changyuan
  */
 public class Cache {
 
-    /* CACHING OBJECT ------------------------------------------------------------------------------------------------*/
+    /* CACHING OBJECT */
 
     /** A Map that stores cached ID and HashObject pairs. */
     static Map<String, HashObject> cachedHashObjects = new TreeMap<>();
     static Map<String, HashObject> cachedRemoteHashObjects = new TreeMap<>();
     /** Lazy loading and caching of HashObjects. */
     private static HashObject getHashObject(String id) {
-        Map<String, HashObject> currCachedHashObjects = inRemoteRepo()? cachedRemoteHashObjects : cachedHashObjects;
+        Map<String, HashObject> currCachedHashObjects =
+                inRemoteRepo() ? cachedRemoteHashObjects : cachedHashObjects;
         if (id == null || id.equals("")) {
             return null;
         } // Special case: Get null or "" HashObject
@@ -57,39 +64,40 @@ public class Cache {
 
 
     /** New HashObjects' IDs that are queued for writing to filesystem. */
-    static final Set<String> queuedForWriteHashObjects = new TreeSet<>();
+    static final Set<String> QUEUED_FOR_WRITE_HASH_OBJECTS = new TreeSet<>();
     /** Put a HashObject into the cache, and queue for writing to filesystem.
      * @return the ID of the HashObject
      */
     static String cacheAndQueueForWriteHashObject(HashObject object) {
-        Map<String, HashObject> currCachedHashObjects = inRemoteRepo()? cachedRemoteHashObjects : cachedHashObjects;
+        Map<String, HashObject> currCachedHashObjects =
+                inRemoteRepo() ? cachedRemoteHashObjects : cachedHashObjects;
         String id = object.id();
         currCachedHashObjects.put(id, object);
-        queuedForWriteHashObjects.add(id);
+        QUEUED_FOR_WRITE_HASH_OBJECTS.add(id);
         return id;
     }
     /** Write back all queued-for-writing HashObjects to filesystem. Invoked upon exit. */
     static void writeBackAllQueuedHashObject() {
-        for (String id : queuedForWriteHashObjects) {
+        for (String id : QUEUED_FOR_WRITE_HASH_OBJECTS) {
             writeCachedHashObject(id);
         }
     }
 
 
     /** Deprecated HashObjects' IDs that are queued for deletion from filesystem. */
-    static final Set<String> queuedForDeleteHashObject = new TreeSet<>();
+    static final Set<String> QUEUED_FOR_DELETE_HASH_OBJECT = new TreeSet<>();
     /** Given a HashObject's ID, queue it for deletion. */
     static void queueForDeleteHashObject(String id) {
-        queuedForDeleteHashObject.add(id);
+        QUEUED_FOR_DELETE_HASH_OBJECT.add(id);
     }
     /** Delete all queued-for-deletion HashObjects. Invoked upon exit. */
     static void deleteAllQueuedHashObject() {
-        for (String id : queuedForDeleteHashObject) {
+        for (String id : QUEUED_FOR_DELETE_HASH_OBJECT) {
             deleteHashObject(id);
         }
     }
 
-    /* CACHING BRANCH ------------------------------------------------------------------------------------------------*/
+    /* CACHING BRANCH */
 
     /** Cached branches. */
     static Map<String, String> cachedBranches = new TreeMap<>();
@@ -97,7 +105,8 @@ public class Cache {
     /** Lazy loading and caching of branches.
      * @return the Commit ID pointed by branch branchName */
     static String getBranch(String branchName) {
-        Map<String, String> currCachedBranches = inRemoteRepo()? cachedRemoteBranches : cachedBranches;
+        Map<String, String> currCachedBranches =
+                inRemoteRepo() ? cachedRemoteBranches : cachedBranches;
         if (!currCachedBranches.containsKey(branchName)) {
             currCachedBranches.put(branchName, loadBranch(branchName));
         }
@@ -107,11 +116,13 @@ public class Cache {
         return getBranch(getHEAD());
     }
     static void cacheBranch(String branchName, String commitID) {
-        Map<String, String> currCachedBranches = inRemoteRepo()? cachedRemoteBranches : cachedBranches;
+        Map<String, String> currCachedBranches =
+                inRemoteRepo() ? cachedRemoteBranches : cachedBranches;
         currCachedBranches.put(branchName, commitID);
     }
     static void wipeBranch(String branchName) {
-        Map<String, String> currCachedBranches = inRemoteRepo()? cachedRemoteBranches : cachedBranches;
+        Map<String, String> currCachedBranches =
+                inRemoteRepo() ? cachedRemoteBranches : cachedBranches;
         currCachedBranches.put(branchName, "");
     }
     /**
@@ -119,7 +130,8 @@ public class Cache {
      * If a branch's pointer is wiped out, delete the branch file in the filesystem.
      */
     static void writeBackAllBranches() {
-        Map<String, String> currCachedBranches = inRemoteRepo()? cachedRemoteBranches : cachedBranches;
+        Map<String, String> currCachedBranches =
+                inRemoteRepo() ? cachedRemoteBranches : cachedBranches;
         for (String branchName : currCachedBranches.keySet()) {
             if (branchName.equals("")) {
                 continue;
@@ -132,7 +144,7 @@ public class Cache {
         }
     }
 
-    /* CACHING HEAD --------------------------------------------------------------------------------------------------*/
+    /* CACHING HEAD */
 
     static String cachedHEAD = null;
     static String cachedRemoteHEAD = null;
@@ -163,13 +175,14 @@ public class Cache {
         writeHEAD();
     }
 
-    /* CACHING STAGE ID ----------------------------------------------------------------------------------------------*/
+    /* CACHING STAGE ID */
 
     static String cachedStageID = null;
     static String cachedRemoteStageID = null;
     /**
      * Lazy loading and caching of STAGE (the ID of the saved staging area).
-     * Notice: this DOES NOT point to the current staging area after the staging area is modified and before write back.
+     * Notice: this DOES NOT point to the current staging area after the
+     * staging area is modified and before write back.
      */
     static String getStageID() {
         if (inRemoteRepo()) {
@@ -196,7 +209,7 @@ public class Cache {
         writeStageID(getStageID());
     }
 
-    /* CACHING STAGE -------------------------------------------------------------------------------------------------*/
+    /* CACHING STAGE */
 
     /** Cached staging area. */
     static Tree cachedStage = null;
@@ -247,7 +260,7 @@ public class Cache {
     }
 
 
-    /* MISC ----------------------------------------------------------------------------------------------------------*/
+    /* MISC */
 
     /**
      * Write back all caches. Invoked upon exit.
@@ -263,8 +276,8 @@ public class Cache {
     /** Reset all caches. Used for testing proposes. */
     static void cleanCache() {
         cachedHashObjects.clear();
-        queuedForWriteHashObjects.clear();
-        queuedForDeleteHashObject.clear();
+        QUEUED_FOR_WRITE_HASH_OBJECTS.clear();
+        QUEUED_FOR_DELETE_HASH_OBJECT.clear();
         cachedBranches.clear();
         cachedHEAD = null;
         cachedStageID = null;

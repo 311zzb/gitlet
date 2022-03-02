@@ -8,8 +8,10 @@ import static gitlet.Repository.printAndExit;
 
 /**
  * Driver class for Gitlet, a subset of the Git version-control system.
- * Account for validating the number of arguments and invoking package-private methods according to received commands.
- * The cache write back method `Cache.writeBack()` which enabling the persistence of Gitlet is also invoked in this class.
+ * Account for validating the number of arguments and invoking
+ * package-private methods according to received commands.
+ * The cache write back method `Cache.writeBack()` which enabling
+ * the persistence of Gitlet is also invoked in this class.
  *
  * @author XIE Changyuan
  */
@@ -114,12 +116,14 @@ public class Main {
                 assertArgsNum(operands, 2);
                 Remote.pull(operands[0], operands[1]);
             }
-            default -> printAndExit("No command with that name exists.");
+            default -> {
+                printAndExit("No command with that name exists.");
+            }
         }
         Cache.writeBack();
     }
 
-    /* HELPER METHODS ------------------------------------------------------------------------------------------------*/
+    /* HELPER METHODS */
 
     /**
      * Throw a GitletException if args don't have exactly n elements.
