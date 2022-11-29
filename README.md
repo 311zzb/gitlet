@@ -1,7 +1,5 @@
 # Gitlet Design Document
 
-**Name**: XIE Changyuan
-
 ## Classes and Data Structures
 
 ### Main
